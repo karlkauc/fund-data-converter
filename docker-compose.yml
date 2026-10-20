@@ -1,0 +1,16 @@
+# Local deployment behind Apache (converter.status20.net → 127.0.0.1:8095).
+services:
+  tpt-fundsxml-converter:
+    build: .
+    image: tpt-fundsxml-converter:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8095:8080"
+    environment:
+      LOG_LEVEL: INFO
+      MAX_UPLOAD_MB: "25"
+      MAX_POSITIONS: "10000"
+      MAX_CONCURRENT_CONVERSIONS: "1"
+      # Apache appends the client IP to X-Forwarded-For.
+      TRUSTED_PROXY_HOPS: "1"
+    mem_limit: 1g
