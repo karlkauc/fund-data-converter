@@ -39,3 +39,6 @@ coverage/
 .env.local
 
 /*.png
+
+# Local test data (real fund files)
+testfiles/
