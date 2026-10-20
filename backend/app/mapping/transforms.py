@@ -32,6 +32,11 @@ def _identity_from(v: str, _ctx: dict[str, str]) -> str | None:
 
 
 IDENTITY = Transform("identity", _identity_to, _identity_from)
+# A value written where the schema expects another field (it reads back as that field), so the TPT
+# value itself is kept as custom attribute too.
+STAND_IN = Transform(
+    "stand_in", lambda v, _c: (v, False), lambda _v, _c: None, "stands in for a missing mandatory value"
+)
 
 
 def _scale(factor: Decimal, name: str, note: str) -> Transform:
@@ -79,6 +84,18 @@ COUPON_FREQUENCY = _mapping(
 )
 OPTION_DIRECTION = _mapping("option_direction", {"I": "Issuer", "B": "Bearer", "O": "Both"})
 REDEMPTION_TYPE = _mapping("redemption_type", {"Bullet": "Bullet", "Sinkable": "Sinkable"})
+
+
+def _rate_type_from(v: str, _ctx: dict[str, str]) -> str | None:
+    return {"fix": "Fixed", "zero": "Fixed", "float": "Floating"}.get(v.strip().lower())
+
+
+RATE_TYPE = Transform(
+    "rate_type",
+    _mapping("rate_type", {"Fixed": "fix", "Floating": "float"}).to_xml,
+    _rate_type_from,
+    "Fixed ↔ fix (zero coupon read as Fixed), Floating ↔ float",
+)
 
 
 def _tpt_version_to(v: str, ctx: dict[str, str]) -> tuple[str | None, bool]:
@@ -231,6 +248,14 @@ def _asset_type_from(v: str, _ctx: dict[str, str]) -> str | None:
         "SW": "D",
         "FX": "E",
         "CE": "0",
+        # FundsXML types without a TPT counterpart in this converter's CIC mapping
+        "CP": "2",
+        "RT": "3",
+        "RI": "3",
+        "CM": "7",
+        "WA": "B",
+        "CO": "0",
+        "FE": "0",
     }.get(v.strip())
     return f"XT{cat}9" if cat else None
 

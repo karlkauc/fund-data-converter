@@ -15,11 +15,24 @@ Rule contexts (the node a path is relative to):
 =================  ==========================================================
 ``tpt_portfolio``  TripartiteTemplateSolvencyII_V7/Portfolio
 ``tpt_position``   …/Portfolio/Positions/Position
+``shareclass``     Fund/SingleFund/ShareClasses/ShareClass
+``sc_nav``         …/ShareClass/TotalAssetValues/TotalAssetValue
+``sc_price``       …/ShareClass/Prices/Price
 ``fund``           Funds/Fund
+``fund_info``      Funds/Fund – static data shared by all its share classes
 ``nav``            Fund/FundDynamicData/TotalAssetValues/TotalAssetValue
-``position``       Fund/FundDynamicData/Portfolios/Portfolio/Positions/Position
+``control``        ControlData
+``position``       …/Portfolios/Portfolio/Positions/Position
 ``asset``          AssetMasterData/Asset
 =================  ==========================================================
+
+A TPT portfolio is a share class (field 1 = its ISIN). Its positions come from
+``ShareClass/Portfolios``, else from the fund portfolio in ``FundDynamicData``.
+``fund`` and ``nav`` are only read for a fund without share classes; written
+are just the mandatory fund name and currency.
+
+``read_only`` rules only apply to FundsXML → TPT: alternative places other
+producers use for a value (``AssetDetails/*/Issuer``, ``CommercialPaper``, …).
 
 Paths may contain ``{key}`` placeholders that are replaced with the value of
 another TPT field of the same row (e.g. the currency in ``Amount[@ccy={4}]``).
@@ -28,14 +41,23 @@ another TPT field of the same row (e.g. the currency in ``Amount[@ccy={4}]``).
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.mapping import transforms as t
 from app.mapping.transforms import Transform, asset_type, cic_category
 
 Condition = Callable[[dict[str, str]], bool]
 
-PORTFOLIO_CONTEXTS = ("tpt_portfolio", "fund", "nav")
+PORTFOLIO_CONTEXTS = (
+    "tpt_portfolio",
+    "shareclass",
+    "sc_nav",
+    "sc_price",
+    "fund",
+    "fund_info",
+    "nav",
+    "control",
+)
 POSITION_CONTEXTS = ("tpt_position", "position", "asset")
 
 
@@ -51,6 +73,7 @@ class Rule:
     # (defaults to ``when``) and further fields to fill when this rule matches.
     reverse_when: Condition | None = None
     reverse_sets: tuple[tuple[str, str], ...] = ()
+    read_only: bool = False  # FundsXML → TPT only
 
     @property
     def is_block(self) -> bool:
@@ -83,8 +106,25 @@ def _r(
     transform: Transform = t.IDENTITY,
     when: Condition | None = None,
     when_text: str = "",
+    **kw,
 ) -> Rule:
-    return Rule(field, ctx, path, transform, when, when_text)
+    return Rule(field, ctx, path, transform, when, when_text, **kw)
+
+
+def _ro(field: str, ctx: str, path: str, transform: Transform = t.IDENTITY, **kw) -> Rule:
+    return Rule(field, ctx, path, transform, when_text=kw.pop("when_text", "read only"), read_only=True, **kw)
+
+
+def _lei(code: str, kind: str, ctx: str, path: str) -> Rule:
+    """A read-only LEI source that also sets the code type (1 = LEI)."""
+    return _ro(
+        code,
+        ctx,
+        path,
+        reverse_when=field_is(kind, "", "1"),
+        reverse_sets=((kind, "1"),),
+        when_text=f"read only, sets {kind} = 1",
+    )
 
 
 def field_is(key: str, *values: str) -> Condition:
@@ -282,7 +322,7 @@ IDENTIFIER_ELEMENTS = {
 }
 
 
-def _identifier_rules(code: str, kind: str, ctx: str, base: str) -> list[Rule]:
+def _identifier_rules(code: str, kind: str, ctx: str, base: str, note: str = "") -> list[Rule]:
     targets = [(type_code, f"{base}/{element}") for type_code, element in IDENTIFIER_ELEMENTS.items()]
     targets += [(tc, f"{base}/OtherID[@FreeType=TPT code type {tc}]") for tc in ("9", "99")]
     return [
@@ -291,7 +331,7 @@ def _identifier_rules(code: str, kind: str, ctx: str, base: str) -> list[Rule]:
             ctx,
             path,
             when=field_is(kind, type_code),
-            when_text=f"{kind} = {type_code}",
+            when_text=f"{kind} = {type_code}{note}",
             reverse_when=field_is(kind, "", type_code),
             reverse_sets=((kind, type_code),),
         )
@@ -299,20 +339,120 @@ def _identifier_rules(code: str, kind: str, ctx: str, base: str) -> list[Rule]:
     ]
 
 
+_NO_CLASSES = ", fund without share classes"
+
+# Instrument types with an issuer resp. a counterparty in AssetDetails (beyond the bidirectional rules).
+_ISSUED = (
+    "Bond",
+    "Equity",
+    "ShareClass",
+    "Certificate",
+    "CommercialPaper",
+    "REIT",
+    "Right",
+    "Warrant",
+    "PrivateEquity",
+)
+_COUNTERPARTY = (
+    "Account",
+    "CallMoney",
+    "FixedTimeDeposit",
+    "Loan",
+    "FXForward",
+    "Swap",
+    "Future",
+    "Option",
+    "Repo",
+)
+
+
+def _internal_id(ctx: str, code: str = "14", kind: str = "15", path: str = "Identifiers/OtherID") -> Rule:
+    """Any other identifier, e.g. an internal code, as type 99 (code attributed by the undertaking)."""
+    return _ro(
+        code,
+        ctx,
+        path,
+        reverse_when=field_is(kind, ""),
+        reverse_sets=((kind, "99"),),
+        when_text=f"read only, no other identifier; sets {kind} = 99",
+    )
+
+
+def _position_fallbacks() -> list[Rule]:
+    out = [_ro("18", "position", f"{kind}/Units") for kind in ("REIT", "Right", "Warrant")]
+    out.append(_ro("19", "position", "CommercialPaper/Nominal"))
+    # clean value and accrued interest: TotalValue = MarketValue + interest
+    for kind, interest in (
+        ("Bond", "InterestClaimGross"),
+        ("CommercialPaper", "InterestClaimGross"),
+        ("Account", "Interests"),
+        ("CallMoney", "Interests"),
+        ("FixedTimeDeposit", "Interests"),
+        ("Loan", "InterestAccruals"),
+    ):
+        if kind != "Bond":  # the bond rules for 25/126 are bidirectional
+            out.append(_ro("25", "position", f"{kind}/MarketValue/Amount[@ccy={{4}}]"))
+            out.append(_ro("126", "position", f"{kind}/{interest}/Amount[@ccy={{4}}]"))
+        out.append(_ro("23", "position", f"{kind}/MarketValue/Amount[@ccy={{21}}]"))
+        out.append(_ro("125", "position", f"{kind}/{interest}/Amount[@ccy={{21}}]"))
+    return out
+
+
+def _asset_fallbacks() -> list[Rule]:
+    out = []
+    for role, kinds in (("Issuer", _ISSUED), ("Counterparty", _COUNTERPARTY)):
+        for kind in kinds:
+            base = f"AssetDetails/{kind}/{role}"
+            out += [
+                _ro("46", "asset", f"{base}/Name"),
+                _lei("47", "48", "asset", f"{base}/Identifiers/LEI"),
+                _ro("52", "asset", f"{base}/Address/Country"),
+            ]
+    out.append(_ro("39", "asset", "AssetDetails/*/MaturityDate"))
+    # reference rate of a floater
+    for rule in _identifier_rules("34", "35", "asset", "AssetDetails/Bond/Coupon/BaseIndex"):
+        out.append(replace(rule, read_only=True, when_text=f"read only, {rule.when_text}"))
+    out.append(_internal_id("asset", "34", "35", "AssetDetails/Bond/Coupon/BaseIndex/OtherID"))
+    out.append(_ro("148", "asset", "Classifications/Classification[UnlistedGroup=NACE Rev 2.1]/Value"))
+    return out
+
+
 _BOND = asset_types("BO")
 _EQ_LIKE = asset_types("EQ", "PE")
 
 CORE_RULES: list[Rule] = [
-    # Fund
-    *_identifier_rules("1", "2", "fund", "Identifiers"),
+    # Share class: the TPT portfolio
+    *_identifier_rules("1", "2", "shareclass", "Identifiers"),
+    _r("3", "shareclass", "Names/OfficialName"),
+    _r("4", "shareclass", "Currency"),
+    # NAV and price of the share class on the valuation date
+    _r("6", "sc_nav", "NavDate"),
+    _r("5", "sc_nav", "TotalNetAssetValue/Amount[@ccy={4}]"),
+    _r("8b", "sc_nav", "SharesOutstanding"),
+    _r("6", "sc_price", "NavDate"),
+    _r("4", "sc_price", "PriceCurrency"),
+    _r("8", "sc_price", "NavPrice"),
+    # Fund without share classes (read only); name and currency are written as well
+    *_identifier_rules("1", "2", "fund", "Identifiers", _NO_CLASSES),
     _r("3", "fund", "Names/OfficialName"),
     _r("4", "fund", "Currency"),
-    # NAV of the fund on the valuation date
-    _r("6", "nav", "NavDate"),
-    _r("5", "nav", "TotalNetAssetValue/Amount[@ccy={4}]"),
-    _r("8b", "nav", "SharesOutstanding"),
+    _r("6", "nav", "NavDate", when_text=_NO_CLASSES[2:]),
+    _r("5", "nav", "TotalNetAssetValue/Amount[@ccy={4}]", when_text=_NO_CLASSES[2:]),
+    _r("8b", "nav", "SharesOutstanding", when_text=_NO_CLASSES[2:]),
+    # Fund static data, shared by the share classes
+    _r("123", "fund_info", "FundStaticData/Classifications/Classification[ListedGroup=CIC]/Value"),
+    _ro("117", "fund_info", "FundStaticData/InvestmentCompany/Name"),
+    _lei("115", "116", "fund_info", "FundStaticData/InvestmentCompany/Identifiers/LEI"),
+    _ro("122", "fund_info", "FundStaticData/InvestmentCompany/Address/Country"),
+    _ro("133", "fund_info", "FundStaticData/Custodian/Name"),
+    _lei("140", "141", "fund_info", "FundStaticData/Custodian/Identifiers/LEI"),
+    _ro("123a", "fund_info", "FundStaticData/Custodian/Address/Country"),
+    _ro("7", "control", "ContentDate"),
     # Position
     *_identifier_rules("14", "15", "position", "Identifiers"),
+    _internal_id("position"),
+    # Last resort, e.g. cash and fees with an empty OtherID: the sender's own key of the asset.
+    _internal_id("position", path="UniqueID"),
     _r("21", "position", "Currency"),
     _r("22", "position", "TotalValue/Amount[@ccy={21}]"),
     _r("24", "position", "TotalValue/Amount[@ccy={4}]"),
@@ -322,6 +462,7 @@ CORE_RULES: list[Rule] = [
         "18",
         "position",
         "Bond/Nominal",
+        t.STAND_IN,
         when=lambda r: _BOND(r) and not r.get("19"),
         when_text="bond without nominal amount (19)",
     ),
@@ -361,10 +502,12 @@ CORE_RULES: list[Rule] = [
         when=asset_types("RE"),
         when_text="property (CIC x9)",
     ),
+    *_position_fallbacks(),
     _r("12", "position", "Swap", t.const(""), when=asset_types("SW"), when_text="swap (CIC xD, xF)"),
     _r("12", "position", "FXForward", t.const(""), when=asset_types("FX"), when_text="FX forward (CIC xE2)"),
     # Asset master data
     *_identifier_rules("14", "15", "asset", "Identifiers"),
+    _internal_id("asset"),
     _r("21", "asset", "Currency"),
     _r("52", "asset", "Country"),
     _r("17", "asset", "Name"),
@@ -390,6 +533,7 @@ CORE_RULES: list[Rule] = [
         when=_BOND,
         when_text="bond",
     ),
+    _r("32", "asset", "AssetDetails/Bond/Coupon/Type", t.RATE_TYPE, when=_BOND, when_text="bond"),
     _r("33", "asset", "AssetDetails/Bond/Coupon/InterestRate", t.PCT100, when=_BOND, when_text="bond"),
     _r("37", "asset", "AssetDetails/Bond/Coupon/OffsetBPS", t.BPS, when=_BOND, when_text="bond"),
     _r("41", "asset", "AssetDetails/Bond/RedemptionRate", t.PCT100, when=_BOND, when_text="bond"),
@@ -492,6 +636,7 @@ CORE_RULES: list[Rule] = [
         when=lambda r: asset_types("SW")(r) and r.get("48") == "1",
         when_text="swap, 48 = 1 (LEI)",
     ),
+    *_asset_fallbacks(),
 ]
 
 ALL_RULES = BLOCK_RULES + CORE_RULES

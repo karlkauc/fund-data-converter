@@ -1,9 +1,13 @@
-"""TPT → FundsXML → TPT must give back every value (numbers and dates compared by value)."""
+"""TPT → FundsXML → TPT must give back every value (numbers and dates compared by value).
+
+Fields the source leaves empty may come back filled when FundsXML implies them (``DERIVED_FIELDS``).
+"""
 
 from __future__ import annotations
 
 import pytest
 
+from app.convert.derive import DERIVED_FIELDS
 from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
@@ -40,6 +44,8 @@ def _diffs(doc, rows):
         for key in set(orig.values) | set(back):
             if key == "1000" and doc.version == "V7":
                 continue  # the label is normalised to the official one
+            if key in DERIVED_FIELDS and not orig.values.get(key):
+                continue
             if not _same(orig.values.get(key, ""), back.get(key, "")):
                 out.append((orig.source_row, key, orig.values.get(key), back.get(key)))
     return out
@@ -86,6 +92,21 @@ def test_v8_specifics_survive(fixture_bytes):
     assert rows[0]["1000"].startswith("V8.0")
 
 
+def test_portfolio_is_written_under_the_share_class(fixture_bytes):
+    from lxml import etree
+
+    doc = read_tpt(fixture_bytes("12_multi_fund_clean.xlsx"), "multi.xlsx")
+    root = etree.fromstring(convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=False)).xml)
+    funds = root.findall("Funds/Fund")
+    assert len(funds) == len({(r.get("1"), r.get("6")) for r in doc.rows})
+    for fund in funds:
+        assert fund.find("FundDynamicData") is None
+        assert fund.find("Identifiers/ISIN") is None
+        (share_class,) = fund.findall("SingleFund/ShareClasses/ShareClass")
+        assert share_class.find("Portfolios/Portfolio/Positions/Position") is not None
+        assert share_class.findtext("Identifiers/ISIN")
+
+
 def test_output_version_can_be_chosen(fixture_bytes):
     doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
     xml = convert_tpt_to_fundsxml(doc).xml
@@ -107,3 +128,19 @@ def test_core_only_fundsxml_without_custom_attributes(fixture_bytes):
     first = rows[0]
     for key in ("1", "2", "3", "4", "5", "6", "12", "14", "15", "17", "21", "24", "26"):
         assert first.get(key), key
+
+
+@pytest.mark.parametrize("block", [True, False])
+def test_values_real_files_carry_survive(fixture_bytes, block):
+    """Cases from real TPT files that a schema-shaped FundsXML cannot hold as they are."""
+    doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
+    rows = [r.values for r in doc.rows]
+    rows[0]["56"] = "A"  # the schema code list is lower case
+    rows[1]["131"] = "l"
+    rows[2]["22"] = "9599000.00"  # one currency, yet two different market values
+    rows[3]["19"] = ""  # a bond's quantity without nominal: it stands in for Bond/Nominal
+    # two holdings of one instrument (one master data entry) in different currencies
+    rows[5].update({k: rows[4][k] for k in ("12", "14", "15", "17")})
+    rows[5]["21"] = "USD"
+    result = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=block))
+    assert _diffs(doc, extract_tpt(parse_fundsxml(result.xml)).rows) == []

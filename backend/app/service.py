@@ -99,6 +99,11 @@ def _fundsxml_to_tpt(req: Request) -> dict:
     _check_size(
         max(
             int(root.xpath("count(Funds/Fund/FundDynamicData/Portfolios/Portfolio/Positions/Position)")),
+            int(
+                root.xpath(
+                    "count(Funds/Fund/SingleFund/ShareClasses/ShareClass/Portfolios/Portfolio/Positions/Position)"
+                )
+            ),
             int(root.xpath("count(RegulatoryReportings/IndirectReporting/*/Portfolio/Positions/Position)")),
         )
     )

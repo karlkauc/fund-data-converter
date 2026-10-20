@@ -193,6 +193,12 @@ const ISSUES: Record<Lang, Record<string, string>> = {
     core_mismatch:
       "Portfolio {portfolio}: the core portfolio has {core} positions, the TPT block {block}; core data is not merged.",
     mandatory_missing: "Mandatory field {name} is empty in {n} row(s).",
+    shareclass_no_portfolio: "Share class {shareclass} has no portfolio (neither its own nor the fund's); skipped.",
+    shareclass_inactive: "Share class {shareclass} has no net assets on {date}; skipped.",
+    fx_derived:
+      "Portfolio {portfolio}: market values in {ccy} (24) of {n} position(s) converted from {fund_ccy} at the rate of the share class NAV.",
+    fx_missing:
+      "Portfolio {portfolio}: {n} position(s) have no market value in {ccy} (24), and the share class NAV gives no rate from {fund_ccy}.",
     more_messages: "… {n} more message(s) of this kind",
   },
   de: {
@@ -212,6 +218,12 @@ const ISSUES: Record<Lang, Record<string, string>> = {
     core_mismatch:
       "Portfolio {portfolio}: Das Core-Portfolio hat {core} Positionen, der TPT-Block {block}; Core-Daten werden nicht übernommen.",
     mandatory_missing: "Pflichtfeld {name} ist in {n} Zeile(n) leer.",
+    shareclass_no_portfolio: "Anteilsklasse {shareclass} hat kein Portfolio (weder ein eigenes noch das des Fonds); übersprungen.",
+    shareclass_inactive: "Anteilsklasse {shareclass} hat am {date} kein Nettovermögen; übersprungen.",
+    fx_derived:
+      "Portfolio {portfolio}: Marktwerte in {ccy} (24) von {n} Position(en) aus {fund_ccy} zum Kurs des Anteilsklassen-NAV umgerechnet.",
+    fx_missing:
+      "Portfolio {portfolio}: {n} Position(en) haben keinen Marktwert in {ccy} (24), und der Anteilsklassen-NAV liefert keinen Kurs aus {fund_ccy}.",
     more_messages: "… {n} weitere Hinweis(e) dieser Art",
   },
 };

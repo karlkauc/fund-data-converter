@@ -19,7 +19,7 @@ Path syntax (``/``-separated segments)::
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from functools import lru_cache
@@ -316,6 +316,7 @@ class Serializer:
         self.model = model
         self.dropped: list[Dropped] = []
         self.invalid: list[Dropped] = []
+        self.changed: list[Dropped] = []  # written, but in another spelling (enumeration codes)
         self.sealed = 0  # invalid entries already contained by a list item
 
     def element(
@@ -464,6 +465,8 @@ class Serializer:
         except ValueError as exc:
             el.text = node.text
             return el, [str(exc)]
+        if simple.enums and el.text != node.text.strip():
+            self.changed.append(Dropped(path, node.text, f"written as {el.text}", node.origins()))
         return el, []
 
     def _drop(self, path: str, value: str, reason: str, origin: str | None) -> None:
@@ -480,6 +483,7 @@ class SerializeResult:
     element: etree._Element | None
     dropped: list[Dropped]
     invalid: list[Dropped]
+    changed: list[Dropped] = field(default_factory=list)
 
 
 def serialize_at(model: SchemaModel, node: Node, path: list[str]) -> SerializeResult:
@@ -489,4 +493,4 @@ def serialize_at(model: SchemaModel, node: Node, path: list[str]) -> SerializeRe
     if decl is None:
         raise ValueError(f"unknown schema path {'/'.join(path)}")
     el, _bad = ser.element(node, decl, "/".join([model.root_element, *path]), required=True)
-    return SerializeResult(el, ser.dropped, ser.invalid)
+    return SerializeResult(el, ser.dropped, ser.invalid, ser.changed)

@@ -8,16 +8,23 @@ Sources, in order of precedence for every field:
 2. the TPT block ``TripartiteTemplateSolvencyII_V7``;
 3. the core structures (fund, NAV, position, referenced asset).
 
-Without a TPT block, every ``Fund/…/Portfolio`` becomes a TPT portfolio and
-its positions are read from the core structures alone.
+Without a TPT block, every share class becomes a TPT portfolio (field 1 = its
+ISIN). Its positions come from ``ShareClass/Portfolios``, else from the fund
+portfolio ``FundDynamicData/Portfolios``, which is then repeated for each share
+class; the fund portfolio is never a TPT portfolio of its own. Only a fund
+without share classes is reported on fund level. Values FundsXML only implies
+are completed by ``app.convert.derive``.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from decimal import Decimal
+from functools import lru_cache
 
 from lxml import etree
 
+from app.convert.derive import amount, complete_portfolio, complete_position, dec
 from app.mapping.rules import Rule, rules_for
 from app.model.issues import Issue
 from app.spec.catalog import VERSIONS, load_catalog
@@ -32,6 +39,22 @@ OLDER_BLOCKS = (
 
 
 @dataclass
+class CorePortfolio:
+    """A TPT portfolio in the core structures: a share class (or a fund without any) and its holdings."""
+
+    fund: etree._Element
+    share_class: etree._Element | None
+    nav: etree._Element | None
+    price: etree._Element | None
+    portfolio: etree._Element
+    control: etree._Element | None = None
+
+    @property
+    def holder(self) -> etree._Element:
+        return self.share_class if self.share_class is not None else self.fund
+
+
+@dataclass
 class TptExtract:
     version: str
     rows: list[dict[str, str]]
@@ -43,7 +66,7 @@ class TptExtract:
 def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
     issues: list[Issue] = []
     block = root.find(BLOCK_PATH)
-    core_portfolios = _core_portfolios(root)
+    core_portfolios = _core_portfolios(root, issues)
     assets = {a.findtext("UniqueID"): a for a in root.iterfind("AssetMasterData/Asset")}
     for older in OLDER_BLOCKS:
         if root.find(f"RegulatoryReportings/IndirectReporting/{older}") is not None:
@@ -64,7 +87,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
             pf_values: dict[str, str] = {}
             _read(pf, rules_for("tpt_portfolio"), pf_values)
             core = _match_core(pf_values, core_portfolios, used_core)
-            core_positions = core[2].findall("Positions/Position") if core is not None else []
+            core_positions = core.portfolio.findall("Positions/Position") if core is not None else []
             block_positions = pf.findall("Positions/Position")
             if core is not None and len(core_positions) != len(block_positions):
                 issues.append(
@@ -95,17 +118,24 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
                 rows.append(values)
     else:
         source = "core"
-        for fund, nav, portfolio in core_portfolios:
+        for core in core_portfolios:
             base: dict[str, str] = {}
-            _read(fund, rules_for("fund"), base)
-            if nav is not None:
-                _read(nav, rules_for("nav"), base)
-            if not base.get("6") and portfolio.findtext("NavDate"):
-                base["6"] = portfolio.findtext("NavDate")
-            for pos in portfolio.iterfind("Positions/Position"):
+            _read_portfolio(core, base)
+            if not base.get("6") and core.portfolio.findtext("NavDate"):
+                base["6"] = core.portfolio.findtext("NavDate")
+            fx = _PortfolioCurrency(core, base)
+            rates = _PortfolioRates(core.portfolio)
+            pf_rows = []
+            for pos in core.portfolio.iterfind("Positions/Position"):
                 values = dict(base)
-                _merge_core(values, (fund, nav, portfolio), pos, assets)
-                rows.append(values)
+                _merge_core(values, core, pos, assets)
+                fx.fill(values, pos)
+                _qc_value(values, pos, _pc_per_qc(values, pos, rates))
+                complete_position(values, fx.exposure(pos), _pc_per_qc(values, pos, rates))
+                pf_rows.append(values)
+            complete_portfolio(pf_rows)
+            rows += pf_rows
+            fx.report(base, issues)
 
     detected = _detect_version(rows)
     out_version = (version or detected).upper()
@@ -137,6 +167,11 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
 
 
 # ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=4096)
+def _compiled(path: str) -> etree.XPath:
+    return etree.XPath(_xpath(path))
 
 
 def _xpath(path: str) -> str:
@@ -182,7 +217,7 @@ def _read(el: etree._Element, rules: list[Rule], values: dict[str, str]) -> None
         path = rule.resolve(values)
         if path is None:
             continue
-        found = el.xpath(_xpath(path))
+        found = _compiled(path)(el)
         if not found:
             continue
         node = found[0]
@@ -217,38 +252,290 @@ def _custom_values(el: etree._Element) -> dict[str, str]:
     return out
 
 
-def _merge_core(values: dict[str, str], core, position: etree._Element, assets: dict) -> None:
+def _read_portfolio(core: CorePortfolio, values: dict[str, str]) -> None:
+    if core.share_class is None:
+        _read(core.fund, rules_for("fund"), values)
+        if core.nav is not None:
+            _read(core.nav, rules_for("nav"), values)
+    else:
+        _read(core.share_class, rules_for("shareclass"), values)
+        if core.nav is not None:
+            _read(core.nav, rules_for("sc_nav"), values)
+        if core.price is not None:
+            _read(core.price, rules_for("sc_price"), values)
+    _read(core.fund, rules_for("fund_info"), values)
+    if core.control is not None and not values.get("7"):
+        reported: dict[str, str] = {}
+        _read(core.control, rules_for("control"), reported)
+        # The document date may precede a share class valued later; the reporting date may not.
+        if reported.get("7") and values.get("6", "") > reported["7"]:
+            reported["7"] = values["6"]
+        values.update(reported)
+
+
+def _merge_core(values: dict[str, str], core: CorePortfolio, position: etree._Element, assets: dict) -> None:
     """Custom attributes override; core rules only fill fields that are still empty."""
-    fund, nav, _portfolio = core
     custom = _custom_values(position)
     values.update(custom)
-    _read(fund, rules_for("fund"), values)
-    if nav is not None:
-        _read(nav, rules_for("nav"), values)
+    _read_portfolio(core, values)
+    # The holding's currency wins over the instrument's: positions may share one master data entry.
+    _read(position, [r for r in rules_for("position") if r.field == "21"], values)
     asset = assets.get(position.findtext("UniqueID"))
     if asset is not None:
         _read(asset, rules_for("asset"), values)
     _read(position, rules_for("position"), values)
 
 
-def _core_portfolios(root: etree._Element) -> list[tuple]:
+def _core_portfolios(root: etree._Element, issues: list[Issue]) -> list[CorePortfolio]:
     out = []
+    control = root.find("ControlData")
     for fund in root.iterfind("Funds/Fund"):
-        navs = fund.findall("FundDynamicData/TotalAssetValues/TotalAssetValue")
-        for portfolio in fund.iterfind("FundDynamicData/Portfolios/Portfolio"):
-            date = portfolio.findtext("NavDate")
-            nav = next((n for n in navs if n.findtext("NavDate") == date), navs[0] if navs else None)
-            out.append((fund, nav, portfolio))
+        fund_portfolios = fund.findall("FundDynamicData/Portfolios/Portfolio")
+        classes = fund.findall("SingleFund/ShareClasses/ShareClass")
+        if not classes:
+            navs = fund.findall("FundDynamicData/TotalAssetValues/TotalAssetValue")
+            for portfolio in fund_portfolios:
+                out.append(CorePortfolio(fund, None, _on_date(navs, portfolio), None, portfolio, control))
+            continue
+        for sc in classes:
+            own = sc.findall("Portfolios/Portfolio")
+            portfolios = own or fund_portfolios
+            if not portfolios:
+                isin = _first_id(sc)
+                issues.append(
+                    Issue(
+                        "info",
+                        "shareclass_no_portfolio",
+                        f"Share class {isin} has no portfolio (neither its own nor the fund's); skipped.",
+                        params={"shareclass": isin},
+                    )
+                )
+                continue
+            navs = sc.findall("TotalAssetValues/TotalAssetValue")
+            prices = sc.findall("Prices/Price")
+            for portfolio in portfolios:
+                nav = _on_date(navs, portfolio)
+                if not own and _no_assets(nav):
+                    isin, date = _first_id(sc), portfolio.findtext("NavDate") or ""
+                    issues.append(
+                        Issue(
+                            "info",
+                            "shareclass_inactive",
+                            f"Share class {isin} has no net assets on {date}; skipped.",
+                            params={"shareclass": isin, "date": date},
+                        )
+                    )
+                    continue
+                out.append(CorePortfolio(fund, sc, nav, _on_date(prices, portfolio), portfolio, control))
     return out
 
 
-def _match_core(pf_values: dict[str, str], core: list[tuple], used: set[int]):
-    """The core portfolio for a block portfolio: same fund identifier and date, else the next unused."""
-    code, date = pf_values.get("1", ""), pf_values.get("6", "")
-    for idx, (fund, _nav, portfolio) in enumerate(core):
-        if idx in used or (portfolio.findtext("NavDate") or "") != date:
+def _no_assets(nav: etree._Element | None) -> bool:
+    """A share class NAV of zero: not (or no longer) invested, so it has no share of the fund portfolio."""
+    if nav is None:
+        return False
+    amounts = [dec(a.text) for a in nav.iterfind("TotalNetAssetValue/Amount")]
+    return bool(amounts) and all(a == 0 for a in amounts)
+
+
+def _on_date(candidates: list[etree._Element], portfolio: etree._Element) -> etree._Element | None:
+    """The NAV/price of the portfolio's date (official first), else the first one."""
+    date = portfolio.findtext("NavDate")
+    same = [c for c in candidates if c.findtext("NavDate") == date]
+    official = [
+        c
+        for c in same
+        if (c.findtext("TotalAssetNature") or c.findtext("PriceNature") or "OFFICIAL") == "OFFICIAL"
+    ]
+    return next(iter(official or same or candidates), None)
+
+
+def _first_id(el: etree._Element) -> str:
+    return next(((e.text or "").strip() for e in el.iterfind("Identifiers/*") if (e.text or "").strip()), "?")
+
+
+# Exposure types that give the commitment value of a derivative, by preference.
+COMMITMENT_TYPES = ("commitment approach", "commitment", "derivate meldeverordnung cesr", "exposure")
+# Position amounts in portfolio currency that a fund portfolio may only carry in the fund currency.
+PC_AMOUNTS = ("24", "25", "126")
+
+
+class _PortfolioCurrency:
+    """Amounts in portfolio currency for a fund portfolio reported for a share class in another currency.
+
+    Positions of a fund portfolio usually carry amounts in the fund currency only. The rate comes
+    from the share class NAV in both currencies, else from the portfolio's positions (FX rates, or
+    an amount given in both currencies).
+    """
+
+    def __init__(self, core: CorePortfolio, base: dict[str, str]):
+        self.ccy = base.get("4", "")
+        self.fund_ccy = (core.fund.findtext("Currency") or "").strip()
+        self.rate: Decimal | None = None
+        self.derived = self.missing = 0
+        if core.share_class is None or not self.ccy or not self.fund_ccy or self.ccy == self.fund_ccy:
+            self.fund_ccy = ""
+            return
+        if core.nav is not None:
+            pc = _amount(core.nav, "TotalNetAssetValue", self.ccy)
+            fc = _amount(core.nav, "TotalNetAssetValue", self.fund_ccy)
+            if pc and fc:
+                self.rate = pc / fc
+        if self.rate is None:
+            self.rate = _portfolio_rate(core.portfolio, self.fund_ccy, self.ccy)
+
+    def fill(self, values: dict[str, str], position: etree._Element) -> None:
+        if not self.fund_ccy or values.get("24"):
+            return
+        in_fund_ccy = {k: v for k, v in values.items() if k not in PC_AMOUNTS}
+        in_fund_ccy["4"] = self.fund_ccy
+        _read(position, rules_for("position"), in_fund_ccy)
+        if not in_fund_ccy.get("24"):
+            return
+        if self.rate is None:
+            self.missing += 1
+            return
+        for key in PC_AMOUNTS:
+            if not values.get(key) and (d := dec(in_fund_ccy.get(key))) is not None:
+                values[key] = amount(d * self.rate)
+        self.derived += 1
+
+    def exposure(self, position: etree._Element) -> Decimal | None:
+        """Commitment value of the position in portfolio currency."""
+        by_type = {
+            (e.findtext("Type") or "").strip().lower(): e for e in position.iterfind("Exposures/Exposure")
+        }
+        exposure = next((by_type[t] for t in COMMITMENT_TYPES if t in by_type), None)
+        if exposure is None:
+            return None
+        value = _amount(exposure, "Value", self.ccy)
+        if value is None and self.fund_ccy and self.rate is not None:
+            fc = _amount(exposure, "Value", self.fund_ccy)
+            value = fc * self.rate if fc is not None else None
+        return value
+
+    def report(self, base: dict[str, str], issues: list[Issue]) -> None:
+        params = {"portfolio": base.get("1", "?"), "ccy": self.ccy, "fund_ccy": self.fund_ccy}
+        if self.derived:
+            issues.append(
+                Issue(
+                    "info",
+                    "fx_derived",
+                    f"Portfolio {params['portfolio']}: market values in {self.ccy} (24) of {self.derived} "
+                    f"position(s) converted from {self.fund_ccy} at the rate of the share class NAV.",
+                    field="24",
+                    params={**params, "n": self.derived},
+                )
+            )
+        if self.missing:
+            issues.append(
+                Issue(
+                    "warning",
+                    "fx_missing",
+                    f"Portfolio {params['portfolio']}: {self.missing} position(s) have no market value in "
+                    f"{self.ccy} (24), and the share class NAV gives no rate from {self.fund_ccy}.",
+                    field="24",
+                    params={**params, "n": self.missing},
+                )
+            )
+
+
+def _portfolio_rate(portfolio: etree._Element, src: str, dst: str) -> Decimal | None:
+    """Rate src → dst as the portfolio's positions state it on the valuation date."""
+    for pos in portfolio.iterfind("Positions/Position"):
+        if (rate := _position_rate(pos, src, dst)) is not None:
+            return rate
+    return None
+
+
+def _position_rate(position: etree._Element, src: str, dst: str) -> Decimal | None:
+    for fx in position.iterfind("FXRates/FXRate"):
+        rate = dec(fx.text)
+        if not rate:
             continue
-        ids = {(e.text or "").strip() for e in fund.iterfind("Identifiers//*")}
+        mul = fx.get("mulDiv", "M").upper() != "D"
+        if (fx.get("fromCcy"), fx.get("toCcy")) == (src, dst):
+            return rate if mul else 1 / rate
+        if (fx.get("fromCcy"), fx.get("toCcy")) == (dst, src):
+            return 1 / rate if mul else rate
+    for holder in position.xpath(".//*[Amount]"):
+        amounts = {a.get("ccy"): dec(a.text) for a in holder.iterfind("Amount")}
+        if amounts.get(src) and amounts.get(dst):
+            return amounts[dst] / amounts[src]
+    return None
+
+
+class _PortfolioRates:
+    """Exchange rates the positions of a portfolio state, looked up once per currency pair."""
+
+    def __init__(self, portfolio: etree._Element):
+        self.portfolio = portfolio
+        self.cache: dict[tuple[str, str], Decimal | None] = {}
+
+    def get(self, src: str, dst: str) -> Decimal | None:
+        if (src, dst) not in self.cache:
+            self.cache[(src, dst)] = _portfolio_rate(self.portfolio, src, dst)
+        return self.cache[(src, dst)]
+
+
+def _pc_per_qc(
+    values: dict[str, str], position: etree._Element, rates: _PortfolioRates | None = None
+) -> Decimal | None:
+    """Rate quotation → portfolio currency.
+
+    From the two market values, else from the position's FX rates, else from any amount the
+    position gives in both currencies (e.g. an exposure), else from the other positions.
+    """
+    qc, pc = dec(values.get("22")), dec(values.get("24"))
+    if qc and pc:
+        return pc / qc
+    src, dst = values.get("21", ""), values.get("4", "")
+    if src and src == dst:
+        return Decimal(1)
+    if not src or not dst:
+        return None
+    rate = _position_rate(position, src, dst)
+    if rate is None and rates is not None:
+        rate = rates.get(src, dst)
+    return rate
+
+
+# Position elements priced per unit: market value in quotation currency = units × price.
+UNIT_PRICED = ("Equity", "REIT", "Right", "Warrant", "Certificate", "ShareClass")
+
+
+def _qc_value(values: dict[str, str], position: etree._Element, pc_per_qc: Decimal | None) -> None:
+    """Market value in quotation currency (22) when the position only gives it in other currencies."""
+    if values.get("22"):
+        return
+    if pc_per_qc and (pc := dec(values.get("24"))) is not None:
+        values["22"] = amount(pc / pc_per_qc)
+        return
+    for kind in UNIT_PRICED:
+        el = position.find(kind)
+        if el is None:
+            continue
+        units = dec(el.findtext("Units") or el.findtext("Shares"))
+        price = _amount(el, "Price", values.get("21", ""))
+        if units is not None and price is not None:
+            values["22"] = amount(units * price)
+        return
+
+
+def _amount(el: etree._Element, path: str, ccy: str) -> Decimal | None:
+    for a in el.iterfind(f"{path}/Amount"):
+        if a.get("ccy") == ccy and (d := dec((a.text or "").strip())) is not None:
+            return d
+    return None
+
+
+def _match_core(pf_values: dict[str, str], core: list[CorePortfolio], used: set[int]):
+    """The core portfolio for a block portfolio: same identifier and date, else the next unused."""
+    code, date = pf_values.get("1", ""), pf_values.get("6", "")
+    for idx, c in enumerate(core):
+        if idx in used or (c.portfolio.findtext("NavDate") or "") != date:
+            continue
+        ids = {(e.text or "").strip() for e in c.holder.iterfind("Identifiers//*")}
         if code in ids:
             used.add(idx)
             return core[idx]

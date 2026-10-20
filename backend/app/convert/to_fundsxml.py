@@ -4,8 +4,10 @@ Rows are grouped into portfolios by portfolio id (field 1) and valuation
 date (field 6). Each portfolio becomes
 
 * one ``Portfolio`` in the TPT block (lossless 1:1 store, optional), and
-* one ``Funds/Fund`` with NAV and a ``Portfolio`` of ``Position`` elements
-  that reference ``AssetMasterData/Asset`` entries (core, optional).
+* one ``Funds/Fund`` with a single share class (core, optional): the share
+  class carries the portfolio id (field 1), price, NAV and a ``Portfolio`` of
+  ``Position`` elements that reference ``AssetMasterData/Asset`` entries. The
+  fund itself only gets the mandatory name and currency.
 
 Values that end up nowhere – fields without a block element (17b, 114,
 V8 fields 150/151), values the schema rejects, values a transform cannot
@@ -28,7 +30,7 @@ from app.ingest.tpt_reader import TptDocument, TptRow
 from app.mapping.rules import ASSET_FIELDS, BLOCK_RULES, PORTFOLIO_FIELDS, Rule, rules_for
 from app.mapping.transforms import POSITION_ELEMENT, asset_type
 from app.model.issues import Issue
-from app.model.xmltree import Dropped, Node, serialize_at
+from app.model.xmltree import Dropped, Node, parse_decimal, serialize_at
 from app.schema.model import fundsxml_model, fundsxml_schema_url, fundsxml_version
 from app.spec.catalog import load_catalog
 from app.validate.xsd import validate_fundsxml
@@ -116,7 +118,7 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
         res = serialize_at(model, block, TPT_BLOCK)
         del block  # the loose tree is no longer needed; large files need the memory
         block_el = res.element
-        _unkeep(kept, res.dropped)
+        _unkeep(kept, res.dropped + res.changed)
         _portfolio_fields_kept(groups, kept, issues)
         all_dropped += res.dropped
         invalid += res.invalid
@@ -131,7 +133,7 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
             # Dry run: learn which values the core structures reject, so they get a fallback too.
             dry_f = serialize_at(model, funds, ["Funds"])
             dry_a = serialize_at(model, assets, ["AssetMasterData"])
-            _unkeep(core_kept, dry_f.dropped + dry_a.dropped)
+            _unkeep(core_kept, dry_f.dropped + dry_a.dropped + dry_f.changed + dry_a.changed)
             _portfolio_fields_kept(groups, core_kept, [])
         reached_by_row = kept if opts.include_block else core_kept
         shared = _shared_values(groups, position_nodes, opts.include_block)
@@ -243,9 +245,10 @@ def _coverage(doc: TptDocument, block_kept, core_kept, custom_keys: set[str]) ->
 def _apply(
     node: Node, row: TptRow, rules: list[Rule], ctx: dict[str, str], kept: dict[int, set[str]]
 ) -> None:
+    conflicts: set[str] = set()
     for rule in rules:
         value = row.get(rule.field)
-        if not value or not rule.applies(ctx):
+        if not value or rule.read_only or not rule.applies(ctx):
             continue
         path = rule.resolve(ctx)
         if path is None:
@@ -256,9 +259,25 @@ def _apply(
         if xml_value == "":
             node.ensure(path)
         else:
+            held = node.find(path)
+            if held is not None and held.text is not None and not _same_value(held.text, xml_value):
+                # Another field already holds a different value here (e.g. 22 and 24 in one
+                # currency); keep that one, this value stays a custom attribute.
+                conflicts.add(rule.field)
+                continue
             node.set(path, xml_value, _Origins.tag(row, rule.field))
         if lossless:
             kept[row.source_row].add(rule.field)
+    kept[row.source_row] -= conflicts
+
+
+def _same_value(a: str, b: str) -> bool:
+    if a == b:
+        return True
+    try:
+        return parse_decimal(a) == parse_decimal(b)
+    except ValueError:
+        return False
 
 
 def _unkeep(kept: dict[int, set[str]], dropped: list[Dropped]) -> None:
@@ -313,6 +332,10 @@ def _shared_values(groups: list[PortfolioGroup], position_nodes, block: bool) ->
             empty = {k for k in PORTFOLIO_FIELDS if first.get(k) and not row.get(k)}
             if empty:
                 out.setdefault(row.source_row, set()).update(empty)
+        for row in group.rows:
+            # A bond's quantity stands in for the missing nominal (Bond/Nominal) and reads back as 19.
+            if row.get("18") and not row.get("19") and asset_type(row.get("12")) == "BO":
+                out.setdefault(row.source_row, set()).add("19")
     if not block:
         # Core only: asset master data is written once per instrument.
         asset_first: dict[str, TptRow] = {}
@@ -335,15 +358,26 @@ def _build_core(groups: list[PortfolioGroup], ctx_values, core_kept: dict[int, s
     position_nodes: list[tuple[TptRow, Node]] = []
     for group in groups:
         first = group.rows[0]
+        ctx = ctx_values(first)
         fund = funds.add("Fund")
-        _apply(fund, first, rules_for("fund"), ctx_values(first), core_kept)
+        # The portfolio id is the share class's; the fund (whose id TPT does not carry) keeps
+        # its mandatory elements only.
+        fund.ensure("Identifiers")
+        _apply(fund, first, [r for r in rules_for("fund") if r.field not in ("1", "2")], ctx, core_kept)
+        _apply(fund, first, rules_for("fund_info"), ctx, core_kept)
         fund.set("SingleFundFlag", "true")
-        fund.ensure("SingleFund")
-        dyn = fund.ensure("FundDynamicData")
-        nav = dyn.ensure("TotalAssetValues").add("TotalAssetValue")
-        _apply(nav, first, rules_for("nav"), ctx_values(first), core_kept)
+        share_class = fund.ensure("SingleFund").ensure("ShareClasses").add("ShareClass")
+        _apply(share_class, first, rules_for("shareclass"), ctx, core_kept)
+        share_class.ensure("Identifiers")
+        if first.get("8"):
+            price = share_class.ensure("Prices").add("Price")
+            price.set("ActionCode", "C")
+            price.set("PriceNature", "OFFICIAL")
+            _apply(price, first, rules_for("sc_price"), ctx, core_kept)
+        nav = share_class.ensure("TotalAssetValues").add("TotalAssetValue")
+        _apply(nav, first, rules_for("sc_nav"), ctx, core_kept)
         nav.set("TotalAssetNature", "OFFICIAL")
-        portfolio = dyn.ensure("Portfolios").add("Portfolio")
+        portfolio = share_class.ensure("Portfolios").add("Portfolio")
         portfolio.set("NavDate", first.get("6"), _Origins.tag(first, "6"))
         positions = portfolio.ensure("Positions")
         for row in group.rows:

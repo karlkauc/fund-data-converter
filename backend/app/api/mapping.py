@@ -14,7 +14,12 @@ router = APIRouter()
 _CTX_PREFIX = {
     "tpt_portfolio": "…/TripartiteTemplateSolvencyII_V7/Portfolio/",
     "tpt_position": "…/TripartiteTemplateSolvencyII_V7/Portfolio/Positions/Position/",
+    "shareclass": "Fund/SingleFund/ShareClasses/ShareClass/",
+    "sc_nav": "…/ShareClass/TotalAssetValues/TotalAssetValue/",
+    "sc_price": "…/ShareClass/Prices/Price/",
     "fund": "Funds/Fund/",
+    "fund_info": "Funds/Fund/",
+    "control": "ControlData/",
     "nav": "Fund/FundDynamicData/TotalAssetValues/TotalAssetValue/",
     "position": "Fund/…/Portfolio/Positions/Position/",
     "asset": "AssetMasterData/Asset/",
