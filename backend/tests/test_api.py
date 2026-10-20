@@ -23,6 +23,10 @@ def test_tpt_to_fundsxml(client, fixture_bytes):
     assert body["summary"]["positions"] == 20
     xml = base64.b64decode(body["output"]["base64"])
     assert xml.startswith(b"<?xml") and b"<FundsXML4" in xml
+    assert (
+        b'xsi:noNamespaceSchemaLocation="https://github.com/fundsxml/schema/releases/download/4.2.11/FundsXML.xsd"'
+        in xml
+    )
     assert r.headers["cache-control"] == "no-store"
 
 

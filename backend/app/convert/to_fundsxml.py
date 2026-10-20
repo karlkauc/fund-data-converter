@@ -29,11 +29,10 @@ from app.mapping.rules import ASSET_FIELDS, BLOCK_RULES, PORTFOLIO_FIELDS, Rule,
 from app.mapping.transforms import POSITION_ELEMENT, asset_type
 from app.model.issues import Issue
 from app.model.xmltree import Dropped, Node, serialize_at
-from app.schema.model import fundsxml_model
+from app.schema.model import fundsxml_model, fundsxml_schema_url, fundsxml_version
 from app.spec.catalog import load_catalog
 from app.validate.xsd import validate_fundsxml
 
-FUNDSXML_VERSION = "4.2.11"
 TPT_BLOCK = ["RegulatoryReportings", "IndirectReporting", "TripartiteTemplateSolvencyII_V7"]
 CUSTOM_PREFIX = "TPT_"
 MAX_ISSUES_PER_CODE = 25
@@ -174,7 +173,7 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
 
     # -- assemble -----------------------------------------------------------
     root = etree.Element("FundsXML4", nsmap={"xsi": "http://www.w3.org/2001/XMLSchema-instance"})
-    root.set("{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation", "FundsXML4.xsd")
+    root.set("{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation", fundsxml_schema_url())
     control, ctrl_issues = _control_data(model, doc, groups, opts)
     root.append(control)
     issues += ctrl_issues
@@ -394,7 +393,7 @@ def _control_data(model, doc: TptDocument, groups: list[PortfolioGroup], opts: C
     node = Node("ControlData")
     node.set("UniqueDocumentID", f"TPT-{uuid.uuid4().hex[:20]}")
     node.set("DocumentGenerated", datetime.now(UTC).replace(microsecond=0, tzinfo=None).isoformat())
-    node.set("Version", FUNDSXML_VERSION)
+    node.set("Version", fundsxml_version())
     node.set("ContentDate", first.get("7") or first.get("6"))
     supplier_name = opts.data_supplier_name or first.get("117") or "TPT to FundsXML Converter"
     node.set("DataSupplier/SystemCountry", (opts.data_supplier_country or first.get("122") or "XX").upper())

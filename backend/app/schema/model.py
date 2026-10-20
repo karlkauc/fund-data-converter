@@ -24,6 +24,7 @@ SCHEMA_DIR = Path(__file__).resolve().parent
 FUNDSXML_XSD = SCHEMA_DIR / "FundsXML4.xsd"
 
 UNBOUNDED = -1
+SCHEMA_RELEASE_URL = "https://github.com/fundsxml/schema/releases/download/{version}/FundsXML.xsd"
 
 
 @dataclass(frozen=True)
@@ -297,6 +298,25 @@ class _Builder:
 
 def _shallow_copy(node: etree._Element) -> etree._Element:
     return etree.fromstring(etree.tostring(node))
+
+
+@lru_cache(maxsize=1)
+def fundsxml_version() -> str:
+    """Release of the bundled XSD, read from the root element's documentation.
+
+    The documentation says "Root element of FundsXML 4.2.11".
+    """
+    with FUNDSXML_XSD.open("rb") as f:
+        head = f.read(8192).decode("utf-8", errors="ignore")
+    m = re.search(r"Root element of FundsXML (\d+\.\d+\.\d+)", head)
+    if not m:
+        raise RuntimeError(f"cannot read the FundsXML release from {FUNDSXML_XSD.name}")
+    return m.group(1)
+
+
+def fundsxml_schema_url() -> str:
+    """Remote location of the bundled schema release, used as xsi:noNamespaceSchemaLocation."""
+    return SCHEMA_RELEASE_URL.format(version=fundsxml_version())
 
 
 @lru_cache(maxsize=1)
