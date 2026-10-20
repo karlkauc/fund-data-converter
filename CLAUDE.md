@@ -1,0 +1,22 @@
+# TPT ⇄ FundsXML Converter – notes for Claude
+
+See README.md for layout, commands and deployment.
+
+## Conventions
+- **Deploy**: always via `GCP_PROJECT=<id> scripts/deploy.sh`. The project is passed explicitly; never rely
+  on the gcloud default.
+- **API types**: the JSON in `backend/app/service.py` is mirrored by hand in `frontend/src/types.ts`; keep
+  them in sync.
+- **SPA routes** live in both `backend/app/spa.py` (`ROUTE_META`) and `frontend/src/lib/router.ts` (`ROUTES`).
+- **Issue codes** (`Issue.code`) have DE/EN texts in `frontend/src/lib/i18n.tsx` (`ISSUES`). A new code needs
+  both texts; `params` fills the `{placeholders}`.
+- **Mapping changes** go in `backend/app/mapping/rules.py`. A rule needs:
+  - a path relative to its context,
+  - optionally `when` (condition on the TPT row) plus `when_text` (shown on /mapping),
+  - optionally a transform with an inverse.
+
+  Run `pytest tests/test_roundtrip.py` afterwards; it must stay lossless.
+- **XML is never built by hand**: use `Node.set/ensure` and `serialize_at`. The schema model orders children,
+  normalises values, drops invalid optional subtrees and reports what was lost.
+- **Dev venv**: Python 3.14 in `.venv`; Docker and CI use 3.12. Code must run on 3.12.
+- `frontend/.npmrc` sets `legacy-peer-deps` (vitest 4 and vite 6 peer ranges).

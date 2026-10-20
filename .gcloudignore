@@ -1,0 +1,7 @@
+# Upload set for `gcloud run deploy --source .` (Cloud Build); mirrors .gitignore.
+#!include:.gitignore
+.git
+node_modules
+e2e
+docs
+backend/tests

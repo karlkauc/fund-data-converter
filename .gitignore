@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+.vite/
+*.tsbuildinfo
+frontend/src/**/*.js
+frontend/tests/**/*.js
+
+# Playwright
+playwright-report/
+test-results/
+.playwright-mcp/
+
+# Coverage
+.coverage
+htmlcov/
+coverage/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+._*
+.DAV/
+
+# Local config
+.env
+.env.local
+
+/*.png

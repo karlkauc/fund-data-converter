@@ -1,0 +1,4731 @@
+{
+ "source": "TPT_V7_20241125.catalog.json",
+ "fingerprint": "aed0c169c14e4c07dc5549403a1aeaa1644af43ad7d3270e38ef1a9d8a6368c4",
+ "fields": [
+  {
+   "numData": "1_Portfolio_identifying_data",
+   "name": "1_Portfolio_identifying_data",
+   "fundXmlPath": "Portfolio / PortfolioID / Code",
+   "definition": "Identification of the fund or share class",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "1"
+  },
+  {
+   "numData": "2_Type_of_identification_code_for_the_fund_share_or_portfolio",
+   "name": "2_Type_of_identification_code_for_the_fund_share_or_portfolio",
+   "fundXmlPath": "Portfolio / PortfolioID / CodificationSystem",
+   "definition": "Codification chosen to identify the share of the CIS",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "ISO 6166 for ISIN code"
+     },
+     {
+      "code": "2",
+      "label": "CUSIP (The Committee on Uniform Securities Identification Procedures number assigned by the CUSIP Service Bureau for U.S. and Canadian companies)"
+     },
+     {
+      "code": "3",
+      "label": "SEDOL (Stock Exchange Daily Official List for the London Stock Exchange)"
+     },
+     {
+      "code": "4",
+      "label": "WKN (Wertpapier Kenn-Nummer, the alphanumeric German identification number)"
+     },
+     {
+      "code": "5",
+      "label": "Bloomberg Ticker (Bloomberg letters code that identify a company's securities)"
+     },
+     {
+      "code": "6",
+      "label": "BBGID (The Bloomberg Global ID)"
+     },
+     {
+      "code": "7",
+      "label": "Reuters RIC (Reuters instrument code)"
+     },
+     {
+      "code": "8",
+      "label": "FIGI (Financial Instrument Global Identifier)"
+     },
+     {
+      "code": "9",
+      "label": "Other code by members of the Association of National Numbering Agencies"
+     },
+     {
+      "code": "99",
+      "label": "Code attributed by the undertaking"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "2"
+  },
+  {
+   "numData": "3_Portfolio_name",
+   "name": "3_Portfolio_name",
+   "fundXmlPath": "Portfolio / PorfolioName",
+   "definition": "Name of the Portfolio or name of the CIS",
+   "codification": {
+    "kind": "ALPHANUMERIC",
+    "maxLength": 255,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "3"
+  },
+  {
+   "numData": "4_Portfolio_currency_(B)",
+   "name": "4_Portfolio_currency_(B)",
+   "fundXmlPath": "Portfolio / PortfolioCurrency",
+   "definition": "Valuation currency of the portfolio",
+   "codification": {
+    "kind": "ISO_4217",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "4"
+  },
+  {
+   "numData": "5_Net_asset_valuation_of_the_portfolio_or_the_share_class_in_portfolio_currency",
+   "name": "5_Net_asset_valuation_of_the_portfolio_or_the_share_class_in_portfolio_currency",
+   "fundXmlPath": "Portfolio / TotalNetAssets",
+   "definition": "Portfolio valuation",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "5"
+  },
+  {
+   "numData": "6_Valuation_date",
+   "name": "6_Valuation_date",
+   "fundXmlPath": "Portfolio / ValuationDate",
+   "definition": "Date of valuation (date positions valid for)",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "6"
+  },
+  {
+   "numData": "7_Reporting_date",
+   "name": "7_Reporting_date",
+   "fundXmlPath": "Portfolio / ReportingDate",
+   "definition": "Date of reference for the reporting",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "7"
+  },
+  {
+   "numData": "8_Share_price",
+   "name": "8_Share_price",
+   "fundXmlPath": "Portfolio / ShareClass / SharePrice",
+   "definition": "Share price of the fund/share class",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "8"
+  },
+  {
+   "numData": "8b_Total_number_of_shares",
+   "name": "8b_Total_number_of_shares",
+   "fundXmlPath": "Portfolio / ShareClass / TotalNumberOfShares",
+   "definition": "Total number of shares (per share class, if applicable)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "8b"
+  },
+  {
+   "numData": "9_Cash_ratio",
+   "name": "9_Cash_ratio",
+   "fundXmlPath": "Portfolio / CashPercentage",
+   "definition": "Amount of cash of the fund / total net asset value of the fund, in %",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [],
+   "numKey": "9"
+  },
+  {
+   "numData": "10_Portfolio_modified_duration",
+   "name": "10_Portfolio_modified_duration",
+   "fundXmlPath": "Portfolio / PortfolioModifiedDuration",
+   "definition": "Weighted average modified duration of portfolio positions",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [],
+   "numKey": "10"
+  },
+  {
+   "numData": "11_Complete_SCR_delivery",
+   "name": "11_Complete_SCR_delivery",
+   "fundXmlPath": "Portfolio / CompleteSCRDelivery",
+   "definition": "Y/N",
+   "codification": {
+    "kind": "ALPHA",
+    "maxLength": 1,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "11"
+  },
+  {
+   "numData": "12_CIC_code_of_the_instrument",
+   "name": "12_CIC_code_of_the_instrument",
+   "fundXmlPath": "Position / InstrumentCIC",
+   "definition": "CIC Code (Complementary Identification Code).",
+   "codification": {
+    "kind": "CIC",
+    "maxLength": 4,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "12"
+  },
+  {
+   "numData": "13_Economic_zone_of_the_quotation_place",
+   "name": "13_Economic_zone_of_the_quotation_place",
+   "fundXmlPath": "Position / EconomicArea",
+   "definition": "Indication of the economic zone of the quotation place",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC3"
+   ],
+   "numKey": "13"
+  },
+  {
+   "numData": "14_Identification_code_of_the_instrument",
+   "name": "14_Identification_code_of_the_instrument",
+   "fundXmlPath": "Position / InstrumentCode / Code",
+   "definition": "Identification code of the financial instrument - including identifier for leg of instrument if required",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "14"
+  },
+  {
+   "numData": "15_Type_of_identification_code_for_the_instrument",
+   "name": "15_Type_of_identification_code_for_the_instrument",
+   "fundXmlPath": "Position / InstrumentCode / CodificationSystem",
+   "definition": "Codification chosen to identify the instrument",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "ISO 6166 for ISIN code"
+     },
+     {
+      "code": "2",
+      "label": "CUSIP (The Committee on Uniform Securities Identification Procedures number assigned by the CUSIP Service Bureau for U.S. and Canadian companies)"
+     },
+     {
+      "code": "3",
+      "label": "SEDOL (Stock Exchange Daily Official List for the London Stock Exchange)"
+     },
+     {
+      "code": "4",
+      "label": "WKN (Wertpapier Kenn-Nummer, the alphanumeric German identification number)"
+     },
+     {
+      "code": "5",
+      "label": "Bloomberg Ticker (Bloomberg letters code that identify a company's securities)"
+     },
+     {
+      "code": "6",
+      "label": "BBGID (The Bloomberg Global ID)"
+     },
+     {
+      "code": "7",
+      "label": "Reuters RIC (Reuters instrument code)"
+     },
+     {
+      "code": "8",
+      "label": "FIGI (Financial Instrument Global Identifier)"
+     },
+     {
+      "code": "9",
+      "label": "Other code by members of the Association of National Numbering Agencies"
+     },
+     {
+      "code": "99",
+      "label": "Code attributed by the undertaking"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "15"
+  },
+  {
+   "numData": "16_Grouping_code_for_multiple_leg_instruments",
+   "name": "16_Grouping_code_for_multiple_leg_instruments",
+   "fundXmlPath": "Position / GroupID",
+   "definition": "grouping code for operations on multi leg instruments",
+   "codification": {
+    "kind": "ALPHANUMERIC",
+    "maxLength": 255,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE"
+   ],
+   "numKey": "16"
+  },
+  {
+   "numData": "17_Instrument_name",
+   "name": "17_Instrument_name",
+   "fundXmlPath": "Position / InstrumentName",
+   "definition": "instrument name",
+   "codification": {
+    "kind": "ALPHANUMERIC",
+    "maxLength": 255,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "17"
+  },
+  {
+   "numData": "17b_Asset_liability",
+   "name": "17b_Asset_liability",
+   "fundXmlPath": "Position / Valuation / AssetOrLiability",
+   "definition": "Asset/Liability identification if needed ",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "A",
+      "label": "A"
+     },
+     {
+      "code": "L",
+      "label": "L"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "NA",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [],
+   "numKey": "17b"
+  },
+  {
+   "numData": "18_Quantity",
+   "name": "18_Quantity",
+   "fundXmlPath": "Position / Valuation / Quantity",
+   "definition": "Number of instruments on position",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD"
+   ],
+   "numKey": "18"
+  },
+  {
+   "numData": "19_Nominal_amount",
+   "name": "19_Nominal_amount",
+   "fundXmlPath": "Position / Valuation / TotalNominalValueQC",
+   "definition": "Quantity * nominal unit amount ",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "19"
+  },
+  {
+   "numData": "20_Contract_size_for_derivatives",
+   "name": "20_Contract_size_for_derivatives",
+   "fundXmlPath": "Position / Valuation / ContractSize",
+   "definition": "Contract size",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CICA",
+    "CICB",
+    "CICC"
+   ],
+   "numKey": "20"
+  },
+  {
+   "numData": "21_Quotation_currency_(A)",
+   "name": "21_Quotation_currency_(A)",
+   "fundXmlPath": "Position / Valuation / QuotationCurrency",
+   "definition": "Currency of quotation for the instrument or denomination",
+   "codification": {
+    "kind": "ISO_4217",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "21"
+  },
+  {
+   "numData": "22_Market_valuation_in_quotation_currency_(A)",
+   "name": "22_Market_valuation_in_quotation_currency_(A)",
+   "fundXmlPath": "Position / Valuation / MarketValueQC",
+   "definition": "Market valuation of the position accrued interest included in quotation currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "22"
+  },
+  {
+   "numData": "23_Clean_market_valuation_in_quotation_currency_(A)",
+   "name": "23_Clean_market_valuation_in_quotation_currency_(A)",
+   "fundXmlPath": "Position / Valuation / CleanValueQC",
+   "definition": "Market valuation of the position accrued interest excluded in quotation currency ",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "23"
+  },
+  {
+   "numData": "24_Market_valuation_in_portfolio_currency_(B)",
+   "name": "24_Market_valuation_in_portfolio_currency_(B)",
+   "fundXmlPath": "Position / Valuation / MarketValuePC",
+   "definition": "Market valuation of the position accrued interest included in portfolio currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "24"
+  },
+  {
+   "numData": "25_Clean_market_valuation_in_portfolio_currency_(B)",
+   "name": "25_Clean_market_valuation_in_portfolio_currency_(B)",
+   "fundXmlPath": "Position / Valuation / CleanValuePC",
+   "definition": "Market valuation of the position accrued interest excluded in portfolio currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "25"
+  },
+  {
+   "numData": "26_Valuation_weight",
+   "name": "26_Valuation_weight",
+   "fundXmlPath": "Position / Valuation / PositionWeight",
+   "definition": "Market valuation in portfolio currency / portfolio net asset value in %",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "26"
+  },
+  {
+   "numData": "27_Market_exposure_amount_in_quotation_currency_(A)",
+   "name": "27_Market_exposure_amount_in_quotation_currency_(A)",
+   "fundXmlPath": "Position / Valuation / MarketExposureQC",
+   "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset)  ",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "27"
+  },
+  {
+   "numData": "28_Market_exposure_amount_in_portfolio_currency_(B)",
+   "name": "28_Market_exposure_amount_in_portfolio_currency_(B)",
+   "fundXmlPath": "Position / Valuation / MarketExposurePC",
+   "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset) in the quotation currency of the portfolio",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "28"
+  },
+  {
+   "numData": "29_Market_exposure_amount_for_the_3rd_quotation_currency_(C)",
+   "name": "29_Market_exposure_amount_for_the_3rd_quotation_currency_(C)",
+   "fundXmlPath": "Position / Valuation / MarketExposureLeg2",
+   "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset) in the quotation currency of the underlying asset",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "29"
+  },
+  {
+   "numData": "30_Market_exposure_in_weight",
+   "name": "30_Market_exposure_in_weight",
+   "fundXmlPath": "Position / Valuation / MarketExposureWeight",
+   "definition": "Exposure valuation in portfolio currency / total net asset value of the fund, in %",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "30"
+  },
+  {
+   "numData": "31_Market_exposure_for_the_3rd_currency_in_weight_over_NAV",
+   "name": "31_Market_exposure_for_the_3rd_currency_in_weight_over_NAV",
+   "fundXmlPath": "Position / Valuation / MarketExposureWeightLeg2",
+   "definition": "Exposure valuation for leg 2 in portfolio currency / total net asset value of the fund, in %",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CICE"
+   ],
+   "numKey": "31"
+  },
+  {
+   "numData": "32_Interest_rate_type",
+   "name": "32_Interest_rate_type",
+   "fundXmlPath": "Position / BondCharacteristics / RateType",
+   "definition": "* Fixed - plain vanilla fixed coupon rate\n* Floating - plain vanilla floating coupon rates (for all interest rates, which refer to a reference interest rate like EONIA or EURIBOR + margin in BP)\n* Variable - all other variable interest rates like step-up or step-down or fixed-to-float bonds. The variable feature is the (credit) margin or the change between fixed and float.\n* Infation_linked for inflation linked bonds in order to identify them.\n",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Fixed",
+      "label": "Fixed"
+     },
+     {
+      "code": "Floating",
+      "label": "Floating"
+     },
+     {
+      "code": "Variable",
+      "label": "Variable"
+     },
+     {
+      "code": "Inflation_linked",
+      "label": "Inflation_linked"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "32"
+  },
+  {
+   "numData": "33_Coupon_rate",
+   "name": "33_Coupon_rate",
+   "fundXmlPath": "Position / BondCharacteristics / CouponRate",
+   "definition": "Fixed rate: coupon rate as a percentage of nominal amount\nFloating rate: last fixing rate + margin as a percentage of nominal amount\nVariable rate: estimation of current rate over the period + margin as a percentage of nominal amount\nall rates are expressed on an annual basis",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "33"
+  },
+  {
+   "numData": "34_Interest_rate_reference_identification",
+   "name": "34_Interest_rate_reference_identification",
+   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexID / Code",
+   "definition": "identification code for interest rate index",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "34"
+  },
+  {
+   "numData": "35_Identification_type_for_interest_rate_index",
+   "name": "35_Identification_type_for_interest_rate_index",
+   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexID / CodificationSystem",
+   "definition": "Type of codification used for interest rate index",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "35"
+  },
+  {
+   "numData": "36_Interest_rate_index_name",
+   "name": "36_Interest_rate_index_name",
+   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexName",
+   "definition": "name of interest rate index",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "36"
+  },
+  {
+   "numData": "37_Interest_rate_margin",
+   "name": "37_Interest_rate_margin",
+   "fundXmlPath": "Position / BondCharacteristics / VariableRate / Margin",
+   "definition": "Facial margin as a percentage of nominal amount on an annual basis",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "37"
+  },
+  {
+   "numData": "38_Coupon_payment_frequency",
+   "name": "38_Coupon_payment_frequency",
+   "fundXmlPath": "Position / BondCharacteristics / CouponFrequency",
+   "definition": "number of coupon payment per year\n0 = other than below options:\n1= annual\n2= biannual\n4= quarterly\n12= monthly\n52= weekly",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "0"
+     },
+     {
+      "code": "1",
+      "label": "1"
+     },
+     {
+      "code": "2",
+      "label": "2"
+     },
+     {
+      "code": "4",
+      "label": "4"
+     },
+     {
+      "code": "12",
+      "label": "12"
+     },
+     {
+      "code": "52",
+      "label": "52"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "38"
+  },
+  {
+   "numData": "39_Maturity_date",
+   "name": "39_Maturity_date",
+   "fundXmlPath": "Position / BondCharacteristics / Redemption / MaturityDate",
+   "definition": "Last redemption date",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "39"
+  },
+  {
+   "numData": "40_Redemption_type",
+   "name": "40_Redemption_type",
+   "fundXmlPath": "Position / BondCharacteristics / Redemption /Type",
+   "definition": "Type of redemption payment schedule : bullet, constant annuity…",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Bullet",
+      "label": "Bullet"
+     },
+     {
+      "code": "Sinkable",
+      "label": "Sinkable"
+     },
+     {
+      "code": "defaulted",
+      "label": "defaulted"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE"
+   ],
+   "numKey": "40"
+  },
+  {
+   "numData": "41_Redemption_rate",
+   "name": "41_Redemption_rate",
+   "fundXmlPath": "Position / BondCharacteristics / Redemption / Rate",
+   "definition": "Redemption amount in % of nominal amount",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICE"
+   ],
+   "numKey": "41"
+  },
+  {
+   "numData": "42_Callable_putable",
+   "name": "42_Callable_putable",
+   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / CallPutType",
+   "definition": "Cal = Call\nPut = Put\nCap = Cap\nFlr= Floor\nempty if none",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Cal",
+      "label": "Cal"
+     },
+     {
+      "code": "Put",
+      "label": "Put"
+     },
+     {
+      "code": "Cap",
+      "label": "Cap"
+     },
+     {
+      "code": "Flr",
+      "label": "Flr"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8"
+   ],
+   "numKey": "42"
+  },
+  {
+   "numData": "43_Call_put_date",
+   "name": "43_Call_put_date",
+   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / CallPutDate",
+   "definition": "Next call/put date ",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8"
+   ],
+   "numKey": "43"
+  },
+  {
+   "numData": "44_Issuer_bearer_option_exercise",
+   "name": "44_Issuer_bearer_option_exercise",
+   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / OptionDirection",
+   "definition": "I : issuer\nB : bearer\nO : Both",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "I",
+      "label": "I"
+     },
+     {
+      "code": "B",
+      "label": "B"
+     },
+     {
+      "code": "O",
+      "label": "O"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8"
+   ],
+   "numKey": "44"
+  },
+  {
+   "numData": "45_Strike_price_for_embedded_(call_put)_options",
+   "name": "45_Strike_price_for_embedded_(call_put)_options",
+   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / StrikePrice",
+   "definition": "strike price, floor or cap rate for embedded options expressed as a percentage of the nominal amount. ",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8"
+   ],
+   "numKey": "45"
+  },
+  {
+   "numData": "46_Issuer_name",
+   "name": "46_Issuer_name",
+   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Name",
+   "definition": "name of the issuer",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "46"
+  },
+  {
+   "numData": "47_Issuer_identification_code",
+   "name": "47_Issuer_identification_code",
+   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Code / Code",
+   "definition": "LEI",
+   "codification": {
+    "kind": "ALPHANUMERIC",
+    "maxLength": 20,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "47"
+  },
+  {
+   "numData": "48_Type_of_identification_code_for_issuer",
+   "name": "48_Type_of_identification_code_for_issuer",
+   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Code / CodificationSystem",
+   "definition": "C0220   1- LEI 9 - None",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "48"
+  },
+  {
+   "numData": "49_Name_of_the_group_of_the_issuer",
+   "name": "49_Name_of_the_group_of_the_issuer",
+   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Name",
+   "definition": "Name of the highest parent company",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "49"
+  },
+  {
+   "numData": "50_Identification_of_the_group",
+   "name": "50_Identification_of_the_group",
+   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Code / Code",
+   "definition": "LEI",
+   "codification": {
+    "kind": "ALPHANUMERIC",
+    "maxLength": 20,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "50"
+  },
+  {
+   "numData": "51_Type_of_identification_code_for_issuer_group",
+   "name": "51_Type_of_identification_code_for_issuer_group",
+   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Code / CodificationSystem",
+   "definition": "C0260   1- LEI 9 - None",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "51"
+  },
+  {
+   "numData": "52_Issuer_country",
+   "name": "52_Issuer_country",
+   "fundXmlPath": "Position / CreditRiskData / IssuerCountry",
+   "definition": "Country of the issuer company",
+   "codification": {
+    "kind": "ISO_3166_A2",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "M",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "52"
+  },
+  {
+   "numData": "53_Issuer_economic_area",
+   "name": "53_Issuer_economic_area",
+   "fundXmlPath": "Position / CreditRiskData / EconomicArea",
+   "definition": "Economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "53"
+  },
+  {
+   "numData": "54_Economic_sector",
+   "name": "54_Economic_sector",
+   "fundXmlPath": "Position / CreditRiskData / EconomicSector",
+   "definition": "Economic sector",
+   "codification": {
+    "kind": "NACE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "54"
+  },
+  {
+   "numData": "55_Covered_not_covered",
+   "name": "55_Covered_not_covered",
+   "fundXmlPath": "Position / CreditRiskData / Covered",
+   "definition": "",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "C",
+      "label": "C"
+     },
+     {
+      "code": "NC",
+      "label": "NC"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2"
+   ],
+   "numKey": "55"
+  },
+  {
+   "numData": "56_Securitisation",
+   "name": "56_Securitisation",
+   "fundXmlPath": "Position / Securitisation / Securitised",
+   "definition": "Securitisation typology",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "a",
+      "label": "a"
+     },
+     {
+      "code": "b",
+      "label": "b"
+     },
+     {
+      "code": "c",
+      "label": "c"
+     },
+     {
+      "code": "d",
+      "label": "d"
+     },
+     {
+      "code": "e",
+      "label": "e"
+     },
+     {
+      "code": "f",
+      "label": "f"
+     },
+     {
+      "code": "g",
+      "label": "g"
+     },
+     {
+      "code": "h",
+      "label": "h"
+     },
+     {
+      "code": "i",
+      "label": "i"
+     },
+     {
+      "code": "j",
+      "label": "j"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC5",
+    "CIC6"
+   ],
+   "numKey": "56"
+  },
+  {
+   "numData": "57_Explicit_guarantee_by_the_country_of_issue",
+   "name": "57_Explicit_guarantee_by_the_country_of_issue",
+   "fundXmlPath": "Position / CreditRiskData / StateGuarantee",
+   "definition": "Y = guaranteed\nN = without guarantee",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Y",
+      "label": "Y"
+     },
+     {
+      "code": "N",
+      "label": "N"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6"
+   ],
+   "numKey": "57"
+  },
+  {
+   "numData": "58_Subordinated_debt",
+   "name": "58_Subordinated_debt",
+   "fundXmlPath": "Position / SubordinatedDebt",
+   "definition": "Subordinated or not ? ",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Y",
+      "label": "Y"
+     },
+     {
+      "code": "N",
+      "label": "N"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "58"
+  },
+  {
+   "numData": "58b_Nature_of_the_tranche",
+   "name": "58b_Nature_of_the_tranche",
+   "fundXmlPath": "Position / Securitisation / TrancheLevel",
+   "definition": "Tranche level (seniority)",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "58b"
+  },
+  {
+   "numData": "59_Credit_quality_step",
+   "name": "59_Credit_quality_step",
+   "fundXmlPath": "Position / CreditRiskData / CreditQualitStep",
+   "definition": "Credit quality step as defined by S2 regulation",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "I",
+    "NW_675": "I",
+    "SST": "I",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "59"
+  },
+  {
+   "numData": "60_Call_Put_Cap_Floor",
+   "name": "60_Call_Put_Cap_Floor",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / CallPutType",
+   "definition": "Cal = Call\nPut = Put\nCap = Cap\nFlr= Floor\nempty if none",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Cal",
+      "label": "Cal"
+     },
+     {
+      "code": "Put",
+      "label": "Put"
+     },
+     {
+      "code": "Cap",
+      "label": "Cap"
+     },
+     {
+      "code": "Flr",
+      "label": "Flr"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICB",
+    "CICC",
+    "CICE"
+   ],
+   "numKey": "60"
+  },
+  {
+   "numData": "61_Strike_price",
+   "name": "61_Strike_price",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / StrikePrice",
+   "definition": "Strike price expressed as the quotation of the underlying asset",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICB",
+    "CICC",
+    "CICE"
+   ],
+   "numKey": "61"
+  },
+  {
+   "numData": "62_Conversion_factor_(convertibles)_concordance_factor_parity_(options)",
+   "name": "62_Conversion_factor_(convertibles)_concordance_factor_parity_(options)",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / ConversionRatio",
+   "definition": "Conversion factor for convertible",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2"
+   ],
+   "numKey": "62"
+  },
+  {
+   "numData": "63_Effective_date_of_instrument",
+   "name": "63_Effective_date_of_instrument",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / Effective Date",
+   "definition": "Effective Date",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "63"
+  },
+  {
+   "numData": "64_Exercise_type",
+   "name": "64_Exercise_type",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / OptionStyle",
+   "definition": "AMerican, EUropean, ASiatic, BErmudian",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "AM",
+      "label": "AM"
+     },
+     {
+      "code": "EU",
+      "label": "EU"
+     },
+     {
+      "code": "AS",
+      "label": "AS"
+     },
+     {
+      "code": "BE",
+      "label": "BE"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CICB",
+    "CICC"
+   ],
+   "numKey": "64"
+  },
+  {
+   "numData": "65_Hedging_rolling",
+   "name": "65_Hedging_rolling",
+   "fundXmlPath": "Position / HedgingStrategy",
+   "definition": "Indication of existing Risk Mitigation program ( Y = used for Risk Mitigation purpose and the position is systematically rolled before maturity, N = used for hedging purpose but no systematic roll before maturity); EPM = Efficient Portfolio Management / not used for hedging purpose .",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Y",
+      "label": "Y"
+     },
+     {
+      "code": "N",
+      "label": "N"
+     },
+     {
+      "code": "EPM",
+      "label": "EPM"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "65"
+  },
+  {
+   "numData": "67_CIC_of_the_underlying_asset",
+   "name": "67_CIC_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentCIC",
+   "definition": "CIC Code (Complementary Identification Code).",
+   "codification": {
+    "kind": "CIC",
+    "maxLength": 4,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "67"
+  },
+  {
+   "numData": "68_Identification_code_of_the_underlying_asset",
+   "name": "68_Identification_code_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentCode / Code",
+   "definition": "identification code of underlying asset",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "68"
+  },
+  {
+   "numData": "69_Type_of_identification_code_for_the_underlying_asset",
+   "name": "69_Type_of_identification_code_for_the_underlying_asset",
+   "fundXmlPath": "Position / UnderlyingInstrument / InstrumentCode / CodificationSystem",
+   "definition": "name of the codification used for identification of the underlying asset",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "ISO 6166 for ISIN code"
+     },
+     {
+      "code": "2",
+      "label": "CUSIP (The Committee on Uniform Securities Identification Procedures number assigned by the CUSIP Service Bureau for U.S. and Canadian companies)"
+     },
+     {
+      "code": "3",
+      "label": "SEDOL (Stock Exchange Daily Official List for the London Stock Exchange)"
+     },
+     {
+      "code": "4",
+      "label": "WKN (Wertpapier Kenn-Nummer, the alphanumeric German identification number)"
+     },
+     {
+      "code": "5",
+      "label": "Bloomberg Ticker (Bloomberg letters code that identify a company's securities)"
+     },
+     {
+      "code": "6",
+      "label": "BBGID (The Bloomberg Global ID)"
+     },
+     {
+      "code": "7",
+      "label": "Reuters RIC (Reuters instrument code)"
+     },
+     {
+      "code": "8",
+      "label": "FIGI (Financial Instrument Global Identifier)"
+     },
+     {
+      "code": "9",
+      "label": "Other code by members of the Association of National Numbering Agencies"
+     },
+     {
+      "code": "99",
+      "label": "Code attributed by the undertaking"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "69"
+  },
+  {
+   "numData": "70_Name_of_the_underlying_asset",
+   "name": "70_Name_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentName",
+   "definition": "Name",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "70"
+  },
+  {
+   "numData": "71_Quotation_currency_of_the_underlying_asset_(C)",
+   "name": "71_Quotation_currency_of_the_underlying_asset_(C)",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / Currency",
+   "definition": "currency of quotation for the asset",
+   "codification": {
+    "kind": "ISO_4217",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "71"
+  },
+  {
+   "numData": "72_Last_valuation_price_of_the_underlying_asset",
+   "name": "72_Last_valuation_price_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / MarketPrice",
+   "definition": "Last valuation price of the underlying asset",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "72"
+  },
+  {
+   "numData": "73_Country_of_quotation_of_the_underlying_asset",
+   "name": "73_Country_of_quotation_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / Country",
+   "definition": "Country of quotation of the underlying asset",
+   "codification": {
+    "kind": "ISO_3166_A2",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "73"
+  },
+  {
+   "numData": "74_Economic_area_of_quotation_of_the_underlying_asset",
+   "name": "74_Economic_area_of_quotation_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / EconomicArea",
+   "definition": "economic area of quotation\n0= non listed, listed 1=EEA / 2=NON EEA / 3=NON OECD",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD"
+   ],
+   "numKey": "74"
+  },
+  {
+   "numData": "75_Coupon_rate_of_the_underlying_asset",
+   "name": "75_Coupon_rate_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / CouponRate",
+   "definition": "Fixed rate : coupon rate as a percentage of nominal amount\nall rates are expressed on an annual basis",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "75"
+  },
+  {
+   "numData": "76_Coupon_payment_frequency_of_the_underlying_asset",
+   "name": "76_Coupon_payment_frequency_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / CouponFrequency",
+   "definition": "number of coupon payment per year\n0 = other than below options:\n1= annual\n2= biannual\n4= quarterly\n12= monthly\n52= weekly",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "0"
+     },
+     {
+      "code": "1",
+      "label": "1"
+     },
+     {
+      "code": "2",
+      "label": "2"
+     },
+     {
+      "code": "4",
+      "label": "4"
+     },
+     {
+      "code": "12",
+      "label": "12"
+     },
+     {
+      "code": "52",
+      "label": "52"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "76"
+  },
+  {
+   "numData": "77_Maturity_date_of_the_underlying_asset",
+   "name": "77_Maturity_date_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / MaturityDate",
+   "definition": "Last redemption date",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "77"
+  },
+  {
+   "numData": "78_Redemption_profile_of_the_underlying_asset",
+   "name": "78_Redemption_profile_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / Type",
+   "definition": "Type of redemption payment schedule : bullet, constant annuity…",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Bullet",
+      "label": "Bullet"
+     },
+     {
+      "code": "Sinkable",
+      "label": "Sinkable"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "78"
+  },
+  {
+   "numData": "79_Redemption_rate_of_the_underlying_asset",
+   "name": "79_Redemption_rate_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / Rate",
+   "definition": "Redemption amount in % of nominal amount",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "79"
+  },
+  {
+   "numData": "80_Issuer_name_of_the_underlying_asset",
+   "name": "80_Issuer_name_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Name",
+   "definition": "name of the issuer",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "80"
+  },
+  {
+   "numData": "81_Issuer_identification_code_of_the_underlying_asset",
+   "name": "81_Issuer_identification_code_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Code / Code",
+   "definition": "identification code of the issuer",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "81"
+  },
+  {
+   "numData": "82_Type_of_issuer_identification_code_of_the_underlying_asset",
+   "name": "82_Type_of_issuer_identification_code_of_the_underlying_asset",
+   "fundXmlPath": "Position / UnderlyingInstrument / Issuer / InstrumentIssuer / Identification / Code",
+   "definition": "C0220   1- LEI 9 - None",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "82"
+  },
+  {
+   "numData": "83_Name_of_the_group_of_the_issuer_of_the_underlying_asset",
+   "name": "83_Name_of_the_group_of_the_issuer_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Name",
+   "definition": "Name of the highest parent company",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "83"
+  },
+  {
+   "numData": "84_Identification_of_the_group_of_the_underlying_asset",
+   "name": "84_Identification_of_the_group_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Code / Code",
+   "definition": "Identification code of the group",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "84"
+  },
+  {
+   "numData": "85_Type_of_the_group_identification_code_of_the_underlying_asset",
+   "name": "85_Type_of_the_group_identification_code_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Code / CodificationSystem",
+   "definition": "C0260   1- LEI 9 - None",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "85"
+  },
+  {
+   "numData": "86_Issuer_country_of_the_underlying_asset",
+   "name": "86_Issuer_country_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / Country",
+   "definition": "Country of the issuer company",
+   "codification": {
+    "kind": "ISO_3166_A2",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "86"
+  },
+  {
+   "numData": "87_Issuer_economic_area_of_the_underlying_asset",
+   "name": "87_Issuer_economic_area_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / EconomicArea",
+   "definition": "economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "87"
+  },
+  {
+   "numData": "88_Explicit_guarantee_by_the_country_of_issue_of_the_underlying_asset",
+   "name": "88_Explicit_guarantee_by_the_country_of_issue_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData  / StateGuarantee",
+   "definition": "Y = Guaranteed\nN = without guarantee",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "Y",
+      "label": "Y"
+     },
+     {
+      "code": "N",
+      "label": "N"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "88"
+  },
+  {
+   "numData": "89_Credit_quality_step_of_the_underlying_asset",
+   "name": "89_Credit_quality_step_of_the_underlying_asset",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData  / CreditQualityStep",
+   "definition": "Credit quality step as defined by S2 regulation",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "I",
+    "NW_675": "UNKNOWN",
+    "SST": "I",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICF"
+   ],
+   "numKey": "89"
+  },
+  {
+   "numData": "90_Modified_duration_to_maturity_date",
+   "name": "90_Modified_duration_to_maturity_date",
+   "fundXmlPath": "Position / Analytics / ModifiedDurationToMaturity",
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD"
+   ],
+   "numKey": "90"
+  },
+  {
+   "numData": "91_Modified_duration_to_next_option_exercise_date",
+   "name": "91_Modified_duration_to_next_option_exercise_date",
+   "fundXmlPath": "Position / Analytics / ModifiedDurationToCall",
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICB",
+    "CICC",
+    "CICD"
+   ],
+   "numKey": "91"
+  },
+  {
+   "numData": "92_Credit_sensitivity",
+   "name": "92_Credit_sensitivity",
+   "fundXmlPath": "Position / Analytics / CreditSensitivity",
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICD",
+    "CICF"
+   ],
+   "numKey": "92"
+  },
+  {
+   "numData": "93_Sensitivity_to_underlying_asset_price_(delta)",
+   "name": "93_Sensitivity_to_underlying_asset_price_(delta)",
+   "fundXmlPath": "Position / Analytics / Delta",
+   "definition": "Sensitivity to the underlying asset",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "93"
+  },
+  {
+   "numData": "94_Convexity_gamma_for_derivatives",
+   "name": "94_Convexity_gamma_for_derivatives",
+   "fundXmlPath": "Position / Analytics / Convexity",
+   "definition": "Convexity for interest rates instruments; or \ngamma for derivatives with optional components ",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "94"
+  },
+  {
+   "numData": "94b_Vega",
+   "name": "94b_Vega",
+   "fundXmlPath": "Position / Analytics / Vega",
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "94b"
+  },
+  {
+   "numData": "95_Identification_of_the_original_portfolio_for_positions_embedded_in_a_fund",
+   "name": "95_Identification_of_the_original_portfolio_for_positions_embedded_in_a_fund",
+   "fundXmlPath": "Position / LookThroughISIN",
+   "definition": "identification code of the investee funds",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "95"
+  },
+  {
+   "numData": "97_SCR_mrkt_IR_up_weight_over_NAV",
+   "name": "97_SCR_mrkt_IR_up_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktIntUp",
+   "definition": "Capital requirement for interest rate risk for the \"up\" shock    (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "97"
+  },
+  {
+   "numData": "98_SCR_mrkt_IR_down_weight_over_NAV",
+   "name": "98_SCR_mrkt_IR_down_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktintDown",
+   "definition": "Capital requirement for interest rate risk for the \"down\" shock  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "98"
+  },
+  {
+   "numData": "99_SCR_mrkt_eq_type1_weight_over_NAV",
+   "name": "99_SCR_mrkt_eq_type1_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktEqGlobal",
+   "definition": "Capital requirement for equity risk - Type 1 *)   (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "99"
+  },
+  {
+   "numData": "100_SCR_mrkt_eq_type2_weight_over_NAV",
+   "name": "100_SCR_mrkt_eq_type2_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktEqOther",
+   "definition": "Capital requirement for equity risk - Type 2 *)  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "100"
+  },
+  {
+   "numData": "101_SCR_mrkt_prop_weight_over_NAV",
+   "name": "101_SCR_mrkt_prop_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktProp",
+   "definition": "Capital requirement for property risk  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "101"
+  },
+  {
+   "numData": "102_SCR_mrkt_spread_bonds_weight_over_NAV",
+   "name": "102_SCR_mrkt_spread_bonds_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktSpread / Bonds",
+   "definition": "Capital requirement for spread risk on bonds  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "102"
+  },
+  {
+   "numData": "103_SCR_mrkt_spread_structured_weight_over_NAV",
+   "name": "103_SCR_mrkt_spread_structured_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktSpread / Structured",
+   "definition": "Capital requirement for spread risk on structured products   (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "103"
+  },
+  {
+   "numData": "104_SCR_mrkt_spread_derivatives_up_weight_over_NAV",
+   "name": "104_SCR_mrkt_spread_derivatives_up_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktSpread / DerivativesUp",
+   "definition": "Capital requirement for spread risk - credit derivatives (upward shock)   (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "104"
+  },
+  {
+   "numData": "105_SCR_mrkt_spread_derivatives_down_weight_over_NAV",
+   "name": "105_SCR_mrkt_spread_derivatives_down_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktSpread / DerivativesDown",
+   "definition": "Capital requirement for spread risk - credit derivatives (downward shock)  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "105"
+  },
+  {
+   "numData": "105a_SCR_mrkt_FX_up_weight_over_NAV",
+   "name": "105a_SCR_mrkt_FX_up_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktFXUp",
+   "definition": "Capital requirement for FX (upward shock)   (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "105a"
+  },
+  {
+   "numData": "105b_SCR_mrkt_FX_down_weight_over_NAV",
+   "name": "105b_SCR_mrkt_FX_down_weight_over_NAV",
+   "fundXmlPath": "Position / ContributionToSCR / MktFXDown",
+   "definition": "Capital requirement for FX (downward shock)  (Delta between Market value before and market value after stress)",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "105b"
+  },
+  {
+   "numData": "106_Asset_pledged_as_collateral",
+   "name": "106_Asset_pledged_as_collateral",
+   "fundXmlPath": "Position / QRTPositionInformation / CollateralisedAsset",
+   "definition": "Indicator used to identify the under-written instruments (Assets D1)",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Assets in the balance sheet that are collateral pledged"
+     },
+     {
+      "code": "2",
+      "label": "Collateral for reinsurance accepted"
+     },
+     {
+      "code": "3",
+      "label": "Collateral for securities borrowed"
+     },
+     {
+      "code": "4",
+      "label": "Repos"
+     },
+     {
+      "code": "9",
+      "label": "Not collateral"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "106"
+  },
+  {
+   "numData": "107_Place_of_deposit",
+   "name": "107_Place_of_deposit",
+   "fundXmlPath": "Position / QRTPositionInformation / PlaceOfDeposit",
+   "definition": "Instruments' place of deposit (S.06.02 - old: Assets D1)",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "107"
+  },
+  {
+   "numData": "108_Participation",
+   "name": "108_Participation",
+   "fundXmlPath": "Position / QRTPositionInformation / Participation",
+   "definition": "Indicator used to identify the guidelines of participation in accountancy terms",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "108"
+  },
+  {
+   "numData": "110_Valorisation_method",
+   "name": "110_Valorisation_method",
+   "fundXmlPath": "Position / QRTPositionInformation / ValorisationMethod",
+   "definition": "valuation method (cf specifications QRT) (S.06.02 - old: Assets D1)",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "quoted market price in active markets for the same assets"
+     },
+     {
+      "code": "2",
+      "label": "quoted market price in active markets for similar assets"
+     },
+     {
+      "code": "3",
+      "label": "alternative valuation methods"
+     },
+     {
+      "code": "4",
+      "label": "adjusted equity methods (applicable for the valuation of"
+     },
+     {
+      "code": "5",
+      "label": "IFRS equity methods (applicable for the valuation of"
+     },
+     {
+      "code": "6",
+      "label": "Market valuation according to Article 9(4) of Delegated"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [],
+   "numKey": "110"
+  },
+  {
+   "numData": "111_Value_of_acquisition",
+   "name": "111_Value_of_acquisition",
+   "fundXmlPath": "Position / QRTPositionInformation / AverageBuyPrice",
+   "definition": "Value of acquisition (S.06.02 - old: Assets D1)",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "111"
+  },
+  {
+   "numData": "112_Credit_rating",
+   "name": "112_Credit_rating",
+   "fundXmlPath": "Position / QRTPositionInformation / CounterpartyRating / RatingValue",
+   "definition": "Rating of the counterparty / issuer (cf specifications QRT) (S.06.02 - old: Assets D1)",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "112"
+  },
+  {
+   "numData": "113_Rating_agency",
+   "name": "113_Rating_agency",
+   "fundXmlPath": "Position / QRTPositionInformation / CounterpartyRating / RatingAgency",
+   "definition": "Name of the rating agency (cf specification QRT) (S.06.02 - old: Assets D1)",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "113"
+  },
+  {
+   "numData": "114_Issuer_economic_area",
+   "name": "114_Issuer_economic_area",
+   "fundXmlPath": "Position / QRTPositionInformation / IssuerEconomicArea",
+   "definition": "economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "NA",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "114"
+  },
+  {
+   "numData": "115_Fund_issuer_code",
+   "name": "115_Fund_issuer_code",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Code / Code",
+   "definition": "LEI when available, otherwise not reported",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "115"
+  },
+  {
+   "numData": "116_Fund_issuer_code_type",
+   "name": "116_Fund_issuer_code_type",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Code / CodificationSystem",
+   "definition": "C0220   1- LEI 9 - None",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "116"
+  },
+  {
+   "numData": "117_Fund_issuer_name",
+   "name": "117_Fund_issuer_name",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Name",
+   "definition": "Name of Issuer of Fund  or Share Class",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "117"
+  },
+  {
+   "numData": "118_Fund_issuer_sector",
+   "name": "118_Fund_issuer_sector",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / EconomicSector",
+   "definition": "NACE code of Issuer of Fund  or Share Class",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "118"
+  },
+  {
+   "numData": "119_Fund_issuer_group_code",
+   "name": "119_Fund_issuer_group_code",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Code / Code",
+   "definition": "LEI of ultimate parent when available, otherwise not reported    ",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "119"
+  },
+  {
+   "numData": "120_Fund_issuer_group_code_type",
+   "name": "120_Fund_issuer_group_code_type",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Code / CodificationSystem",
+   "definition": "C0260   1- LEI 9 - None",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "120"
+  },
+  {
+   "numData": "121_Fund_issuer_group_name",
+   "name": "121_Fund_issuer_group_name",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Name",
+   "definition": "Name of Ultimate parent of issuer of Fund or Share Class",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "121"
+  },
+  {
+   "numData": "122_Fund_issuer_country",
+   "name": "122_Fund_issuer_country",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Country",
+   "definition": "Country ISO of Issuer of Fund  or Share Class",
+   "codification": {
+    "kind": "ISO_3166_A2",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "122"
+  },
+  {
+   "numData": "123_Fund_CIC",
+   "name": "123_Fund_CIC",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / PortfolioCIC",
+   "definition": "CIC code - Fund  or Share Class (4 digits)",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "123"
+  },
+  {
+   "numData": "123a_Fund_custodian_country",
+   "name": "123a_Fund_custodian_country",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundCustodianCountry",
+   "definition": "First level of Custody - Fund or seggregated account Custodian",
+   "codification": {
+    "kind": "ISO_3166_A2",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "123a"
+  },
+  {
+   "numData": "124_Duration",
+   "name": "124_Duration",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / PortfolioModifiedDuration",
+   "definition": "For funds or portfolios mainly invested in debt instruments (>50%) - Fund modified Duration (Residual modified duration)",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [],
+   "numKey": "124"
+  },
+  {
+   "numData": "125_Accrued_income_(Security Denominated Currency)",
+   "name": "125_Accrued_income_(Security Denominated Currency)",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation /  AccruedIncomeQC ????",
+   "definition": "Amount of accrued income in security denomination currency at report date",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "O"
+   },
+   "applicableCic": [],
+   "numKey": "125"
+  },
+  {
+   "numData": "126_Accrued_income_(Portfolio Denominated Currency)",
+   "name": "126_Accrued_income_(Portfolio Denominated Currency)",
+   "fundXmlPath": "Portfolio / QRTPortfolioInformation / AccruedIncomePC",
+   "definition": "Amount of accrued income in portfolio denomination currency at report date",
+   "codification": {
+    "kind": "UNKNOWN",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [],
+   "numKey": "126"
+  },
+  {
+   "numData": "127_Bond_floor_(convertible_instrument_only)",
+   "name": "127_Bond_floor_(convertible_instrument_only)",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / Convertible / BondFloor",
+   "definition": "Lowest value of a convertible bond expressed in quotation currency, at current issuer spread",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "127"
+  },
+  {
+   "numData": "128_Option_premium_(convertible_instrument_only)",
+   "name": "128_Option_premium_(convertible_instrument_only)",
+   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / Convertible / OptionPremium",
+   "definition": "Premium of the embedded option of a convertible bond in quotation currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "128"
+  },
+  {
+   "numData": "129_Valuation_yield",
+   "name": "129_Valuation_yield",
+   "fundXmlPath": "Position / BondCharacteristics / ValuationYieldCurve /  Yield",
+   "definition": "Valuation Yield of the interest rate instrument",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "129"
+  },
+  {
+   "numData": "130_Valuation_z_spread",
+   "name": "130_Valuation_z_spread",
+   "fundXmlPath": "Position / BondCharacteristics / ValuationYieldCurve /  Spread",
+   "definition": "Issuer spread calculated from Z coupon IRS curve of quotation currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "130"
+  },
+  {
+   "numData": "131_Underlying_asset_category",
+   "name": "131_Underlying_asset_category",
+   "fundXmlPath": "Position / Instrument/ UAC",
+   "definition": "SII definition as per QRT S.06.03",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Government bonds"
+     },
+     {
+      "code": "2",
+      "label": "Corporate bonds"
+     },
+     {
+      "code": "3L",
+      "label": "Listed equity"
+     },
+     {
+      "code": "3X",
+      "label": "Unlisted equity"
+     },
+     {
+      "code": "4",
+      "label": "Collective Investment Undertakings"
+     },
+     {
+      "code": "5",
+      "label": "Structured notes"
+     },
+     {
+      "code": "6",
+      "label": "Collateralised securities"
+     },
+     {
+      "code": "7",
+      "label": "Cash and deposits"
+     },
+     {
+      "code": "8",
+      "label": "Mortgages and loans"
+     },
+     {
+      "code": "9",
+      "label": "Properties"
+     },
+     {
+      "code": "0",
+      "label": "Other investments (including receivables)"
+     },
+     {
+      "code": "A",
+      "label": "Futures"
+     },
+     {
+      "code": "B",
+      "label": "Call Options"
+     },
+     {
+      "code": "C",
+      "label": "Put Options"
+     },
+     {
+      "code": "D",
+      "label": "Swaps"
+     },
+     {
+      "code": "E",
+      "label": "Forwards"
+     },
+     {
+      "code": "F",
+      "label": "Credit derivatives"
+     },
+     {
+      "code": "L",
+      "label": "Liabilities"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "O",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "131"
+  },
+  {
+   "numData": "132_Infrastructure_investment",
+   "name": "132_Infrastructure_investment",
+   "fundXmlPath": "To be defined with Fundxml",
+   "definition": "Type of infrastructure investment according to Type of infrastructure investment according to \nCOMMISSION DELEGATED REGULATION (EU) 2016/467 of 30 September 2015 amending Commission Delegated Regulation (EU) 2015/35 concerning the calculation of regulatory capital requirements for several categories of assets held by insurance and reinsurance undertakings and COMMISSION DELEGATED REGULATION (EU) 2017/1542 as of 8 June 2017 amending Delegated Regulation (EU) 2015/35 concerning the calculation of regulatory capital requirements for certain categories of assets held by insurance and reinsurance undertakings (infrastructure corporates).",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "Not assessed"
+     },
+     {
+      "code": "1",
+      "label": "Debt on eligible Infrastructure project"
+     },
+     {
+      "code": "2",
+      "label": "Equity on  eligible infrastructure project"
+     },
+     {
+      "code": "3",
+      "label": "Debt on eligible Infrastructure corporate"
+     },
+     {
+      "code": "4",
+      "label": "Equity on eligible infrastructure corporate"
+     },
+     {
+      "code": "5",
+      "label": "Non eligible"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "I",
+    "NW_675": "I",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC5",
+    "CIC6",
+    "CIC8",
+    "CIC9"
+   ],
+   "numKey": "132"
+  },
+  {
+   "numData": "133_custodian_name",
+   "name": "133_custodian_name",
+   "fundXmlPath": "To be defined with Fundxml",
+   "definition": "Name of the custodian of the seggregated account",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "M",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [],
+   "numKey": "133"
+  },
+  {
+   "numData": "134_type1_private_equity_portfolio_eligibility",
+   "name": "134_type1_private_equity_portfolio_eligibility",
+   "fundXmlPath": null,
+   "definition": "Eligibility of the investment to art 168a of the regulation UE DR 2019/981",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "0"
+     },
+     {
+      "code": "1",
+      "label": "1"
+     },
+     {
+      "code": "2",
+      "label": "2"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "I",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC3",
+    "CIC4"
+   ],
+   "numKey": "134"
+  },
+  {
+   "numData": "135_type1_private_equity_issuer_beta",
+   "name": "135_type1_private_equity_issuer_beta",
+   "fundXmlPath": null,
+   "definition": "Beta of the issuer of the private equity calculated according to art 168a of the regulation UE DR 2019/981",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "I",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC3",
+    "CIC4"
+   ],
+   "numKey": "135"
+  },
+  {
+   "numData": "137_Counterparty_sector",
+   "name": "137_Counterparty_sector",
+   "fundXmlPath": null,
+   "definition": "Classification of the issuer or counterparty according to IORP II regulation based on FINREP breakdown ( ESA 2010) and EIOPA specifications",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "central bank (ESA 2010 sector S.121)"
+     },
+     {
+      "code": "2",
+      "label": "deposit-taking corporations except the central bank (ESA 2010 sector S.122)"
+     },
+     {
+      "code": "3",
+      "label": "money market funds (ESA 2010 sector S.123)"
+     },
+     {
+      "code": "4",
+      "label": "investment funds other than money market funds (ESA 2010 sector S.124)"
+     },
+     {
+      "code": "5",
+      "label": "other financial intermediaries, except insurance corporations and pension funds (excluding financial vehicle corporations engaged in securitisation transactions) + financial auxiliaries + captive financial institutions and money lenders (ESA 2010 sector S.125 excluding FVCs + ESA 2010 sector S.126 + ESA 2010 sector S.127)"
+     },
+     {
+      "code": "6",
+      "label": "financial vehicle corporations engaged in securitisation transactions (a subdivision of ESA 2010 sector S.125)"
+     },
+     {
+      "code": "7",
+      "label": "insurance corporations (ESA 2010 sector S.128)"
+     },
+     {
+      "code": "8",
+      "label": "pension funds (ESA 2010 sector S.129)"
+     },
+     {
+      "code": "9",
+      "label": "non-financial corporations (ESA 2010 sector S.11)"
+     },
+     {
+      "code": "10",
+      "label": "general government (ESA 2010 sector S.13)"
+     },
+     {
+      "code": "11",
+      "label": "households and non-profit institutions serving households (ESA 2010 sector S.14 + ESA 2010 sector S.15)"
+     },
+     {
+      "code": "12",
+      "label": "for cash & deposit only (CIC xx7x) : central bank (ESA 2010 sector S.121), deposit-taking corporations except the central bank (ESA 2010 sector S.122) and money market funds (ESA 2010 sector S.123)"
+     },
+     {
+      "code": "13",
+      "label": "for cash & deposit only (CIC xx7x) : non-MFIs, not included under 12"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "M"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "137"
+  },
+  {
+   "numData": "138_Collateral_eligibility",
+   "name": "138_Collateral_eligibility",
+   "fundXmlPath": null,
+   "definition": "Eligibility of the collateral according to solvency regulation (RD UE 2015/35 art 176.5 and related art197, art214)",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "Not assessed or no collateral"
+     },
+     {
+      "code": "1",
+      "label": "Compliant with art 214 and art 197.1a and art 197 1b"
+     },
+     {
+      "code": "2",
+      "label": "Compliant with art 214 and art 197.1a"
+     },
+     {
+      "code": "3",
+      "label": "Compliant with art 214."
+     },
+     {
+      "code": "4",
+      "label": "Not elligible"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CIC5",
+    "CIC6",
+    "CIC8"
+   ],
+   "numKey": "138"
+  },
+  {
+   "numData": "139_Collateral_Market_valuation_in_portfolio_currency",
+   "name": "139_Collateral_Market_valuation_in_portfolio_currency",
+   "fundXmlPath": null,
+   "definition": "Market valuation of the collateral in portfolio currency",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CIC5",
+    "CIC8"
+   ],
+   "numKey": "139"
+  },
+  {
+   "numData": "140_Custodian_identification_code",
+   "name": "140_Custodian_identification_code",
+   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Code / Code",
+   "definition": "identification code of the custodian",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "140"
+  },
+  {
+   "numData": "141_Type_of_custodian_identification_code",
+   "name": "141_Type_of_custodian_identification_code",
+   "fundXmlPath": "Position / UnderlyingInstrument / Issuer / InstrumentIssuer / Identification / Code",
+   "definition": "C0220   1-LEI,  9-None or internal",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "1"
+     },
+     {
+      "code": "9",
+      "label": "9"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "141"
+  },
+  {
+   "numData": "142_Bail-in_Rule",
+   "name": "142_Bail-in_Rule",
+   "fundXmlPath": null,
+   "definition": "Indicate if there is a \"Bail-in\" Rule applicable for debt instrument",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "Not assessed"
+     },
+     {
+      "code": "1",
+      "label": "Yes"
+     },
+     {
+      "code": "2",
+      "label": "No"
+     },
+     {
+      "code": "9",
+      "label": "Not Aplicable"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC2",
+    "CIC5"
+   ],
+   "numKey": "142"
+  },
+  {
+   "numData": "143_Maturity_date_expected",
+   "name": "143_Maturity_date_expected",
+   "fundXmlPath": "Expected redemption date after considering an expected prepayment / extension of the contractual terms based on the options in the instrument",
+   "definition": "Expected redemption date after considering an expected prepayment / extension of the contractual terms based on the options in the instrument",
+   "codification": {
+    "kind": "DATE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "143"
+  },
+  {
+   "numData": "144_Modified_duration_to_maturity_date_expected",
+   "name": "144_Modified_duration_to_maturity_date_expected",
+   "fundXmlPath": null,
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "144"
+  },
+  {
+   "numData": "145_Credit_sensitivity_expected",
+   "name": "145_Credit_sensitivity_expected",
+   "fundXmlPath": null,
+   "definition": "",
+   "codification": {
+    "kind": "NUMERIC",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "145"
+  },
+  {
+   "numData": "146_PIK",
+   "name": "146_PIK",
+   "fundXmlPath": null,
+   "definition": "",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "0",
+      "label": "No PIK"
+     },
+     {
+      "code": "1",
+      "label": "No cash coupon. Existing PIK is included in the redemption rate (41) and described in the coupon data points (32-38). The period indicated for \"38_Coupon_payment_frequency\" is the period for PIK accrual."
+     },
+     {
+      "code": "2",
+      "label": "Existing PIK is included in the redemption rate (41) but not described in the coupon fields (32-38)."
+     },
+     {
+      "code": "3",
+      "label": "Existing PIK is a regular payment and is included in coupon fields (32-38). No impact on the redemption rate (41)."
+     },
+     {
+      "code": "4",
+      "label": "Existing PIK is not described in the TPT"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "146"
+  },
+  {
+   "numData": "147_Infrastructure_investment_additional_QRT",
+   "name": "147_Infrastructure_investment_additional_QRT",
+   "fundXmlPath": "To be defined with Fundxml",
+   "definition": "(for mandate or segregated account especially)\n\nIdentify if the asset is an infrastructure investment as defined in Article 1(55a) and (55b) of Delegated Regulation (EU) 2015/35. One of the options in the following closed list shall be used:",
+   "codification": {
+    "kind": "CLOSED_LIST",
+    "maxLength": null,
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Not an infrastructure investment;"
+     },
+     {
+      "code": "2",
+      "label": "Infrastructure non-qualifying: Government Guarantee (Government, Central bank, Regional government or local authority);"
+     },
+     {
+      "code": "3",
+      "label": "Infrastructure non-qualifying: Government Supported including Public Finance initiative (Government, Central bank, Regional government or local authority);"
+     },
+     {
+      "code": "4",
+      "label": "Infrastructure non-qualifying: Supranational Guarantee/Supported (ECB, Multilateral development bank, International organisation);"
+     },
+     {
+      "code": "9",
+      "label": "Infrastructure non-qualifying: Other non-qualifying infrastructure loans or investments, not classified under the above categories;"
+     },
+     {
+      "code": "12",
+      "label": "Infrastructure qualifying: Government Guarantee (Government, Central bank, Regional government or local authority);"
+     },
+     {
+      "code": "13",
+      "label": "Infrastructure qualifying: Government Supported including Public Finance initiative (Government, Central bank, Regional government or local authority);"
+     },
+     {
+      "code": "14",
+      "label": "Infrastructure qualifying: Supranational Guarantee/Supported (ECB, Multilateral development bank, International organisation);"
+     },
+     {
+      "code": "19",
+      "label": "Infrastructure qualifying: Other qualifying infrastructure investments, not classified in the above categories;"
+     },
+     {
+      "code": "20",
+      "label": "European Long-Term Investment Fund (ELTIF investing in infrastructure assets and ELTIF investing in other – non infrastructure – assets)"
+     }
+    ]
+   },
+   "flags": {
+    "SOLVENCY_II": "O",
+    "NW_675": "I",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [],
+   "numKey": "147"
+  },
+  {
+   "numData": "148_Economic_sector_NACE2.1",
+   "name": "148_Economic_sector_NACE2.1",
+   "fundXmlPath": "Position / CreditRiskData / EconomicSector",
+   "definition": "Economic sector",
+   "codification": {
+    "kind": "NACE",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "C",
+    "NW_675": "C",
+    "SST": "C",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "148"
+  },
+  {
+   "numData": "1000_TPT_Version",
+   "name": "1000_TPT_Version",
+   "fundXmlPath": null,
+   "definition": "TPT Published Version",
+   "codification": {
+    "kind": "FREE_TEXT",
+    "maxLength": null,
+    "closedList": []
+   },
+   "flags": {
+    "SOLVENCY_II": "M",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
+   },
+   "applicableCic": [
+    "CIC0",
+    "CIC1",
+    "CIC2",
+    "CIC3",
+    "CIC4",
+    "CIC5",
+    "CIC6",
+    "CIC7",
+    "CIC8",
+    "CIC9",
+    "CICA",
+    "CICB",
+    "CICC",
+    "CICD",
+    "CICE",
+    "CICF"
+   ],
+   "numKey": "1000"
+  }
+ ]
+}

@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800;
+  }
+
+  .panel-title {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 touch:py-2.5 rounded-md text-sm font-medium
+           whitespace-nowrap border border-slate-300 dark:border-slate-700
+           bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-accent
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white border-accent hover:bg-blue-600
+           dark:bg-accent-dark dark:border-accent-dark dark:text-slate-950 dark:hover:bg-blue-400;
+  }
+
+  .chip {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded text-[0.7rem] font-medium uppercase tracking-wide;
+  }
+
+  .pill {
+    @apply px-3 py-1.5 touch:py-2.5 rounded-full text-sm font-medium transition-colors
+           text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800;
+  }
+
+  .pill-active {
+    @apply bg-accent text-white hover:bg-accent dark:bg-accent-dark dark:text-slate-950 dark:hover:bg-accent-dark;
+  }
+
+  .field-label {
+    @apply text-sm font-medium text-slate-700 dark:text-slate-300;
+  }
+}

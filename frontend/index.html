@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Title and description are rewritten per route by backend/app/spa.py (render_shell). -->
+    <title>TPT ⇄ FundsXML Converter</title>
+    <meta name="description" content="Convert FinDatEx TPT (V7/V8) files to FundsXML 4 and back." />
+    <script src="/theme-init.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div id="root">
+      <noscript>
+        <main style="max-width: 40rem; margin: 3rem auto; font-family: sans-serif">
+          <h1>TPT ⇄ FundsXML Converter</h1>
+          <p>Convert FinDatEx Tripartite Template (TPT V7 and V8) files to FundsXML 4 and back. This
+            tool needs JavaScript.</p>
+        </main>
+      </noscript>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
