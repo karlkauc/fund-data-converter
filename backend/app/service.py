@@ -85,7 +85,8 @@ def _tpt_to_fundsxml(req: Request) -> dict:
         "issues": [i.to_dict() for i in result.issues],
         "validation": {"valid": result.valid, "errors": result.validation_errors},
         "preview": _preview([r.values for r in doc.rows], catalog),
-        "xmlPreview": result.xml[:XML_PREVIEW_BYTES].decode("utf-8", errors="ignore"),
+        "xmlPreview": _xml_preview(result.xml),
+        "xmlPreviewTruncated": len(result.xml) > XML_PREVIEW_BYTES,
         "output": _file(name, "application/xml", result.xml),
     }
 
@@ -141,6 +142,15 @@ def _fundsxml_to_tpt(req: Request) -> dict:
 def _stem(filename: str) -> str:
     stem = PurePath(filename or "upload").stem
     return re.sub(r"[^A-Za-z0-9._-]+", "_", stem)[:80] or "upload"
+
+
+def _xml_preview(xml: bytes) -> str:
+    """The start of the document, cut at a line end so no tag is split."""
+    if len(xml) <= XML_PREVIEW_BYTES:
+        return xml.decode("utf-8")
+    head = xml[:XML_PREVIEW_BYTES]
+    cut = head.rfind(b"\n")
+    return head[: cut + 1 if cut > 0 else len(head)].decode("utf-8", errors="ignore")
 
 
 def _check_size(positions: int) -> None:

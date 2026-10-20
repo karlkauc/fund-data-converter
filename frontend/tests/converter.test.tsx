@@ -11,7 +11,7 @@ const RESULT = {
   issues: [{ level: "warning", code: "mandatory_missing", message: "m", params: { name: "5_NAV", n: 1 } }],
   validation: { valid: true, errors: [] },
   preview: { columns: [{ key: "1", name: "1_Portfolio" }], rows: [["FR1"], ["FR1"]], total: 2 },
-  xmlPreview: "<FundsXML4/>",
+  xmlPreview: '<FundsXML4 a="1"/>',
   output: { filename: "a_FundsXML.xml", mimeType: "application/xml", size: 12, base64: "PEZ1bmRzWE1MNC8+" },
 };
 
@@ -27,6 +27,9 @@ test("uploading a file converts it and shows the result", async () => {
   fireEvent.change(screen.getByTestId("file-input"), { target: { files: [file] } });
   await waitFor(() => expect(screen.getByText(/valid against FundsXML/)).toBeInTheDocument());
   expect(screen.getByText("Mandatory field 5_NAV is empty in 1 row(s).")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "XML" }));
+  const tag = screen.getByTestId("xml-preview").querySelector("span.text-blue-700");
+  expect(tag).not.toBeNull();
   const [url, init] = fetchMock.mock.calls[0];
   expect(url).toBe("/api/convert");
   expect((init.body as FormData).get("include_core")).toBe("true");

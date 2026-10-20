@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { downloadBase64, formatBytes } from "../lib/download";
 import { issueText, useI18n, type MessageKey } from "../lib/i18n";
 import type { ConvertResult, CoverageField, Issue } from "../types";
+import { XmlCode } from "./XmlCode";
 
 export function ResultView({ result }: { result: ConvertResult }) {
   return (
@@ -342,9 +343,7 @@ function PreviewPanel({ result }: { result: ConvertResult }) {
           </p>
         </>
       ) : (
-        <pre className="mt-3 max-h-[28rem] overflow-auto rounded border border-slate-200 bg-slate-50 p-3 font-mono text-xs dark:border-slate-800 dark:bg-slate-950">
-          {result.xmlPreview}
-        </pre>
+        <XmlCode xml={result.xmlPreview} truncated={result.xmlPreviewTruncated} />
       )}
     </details>
   );

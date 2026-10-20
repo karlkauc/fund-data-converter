@@ -64,6 +64,7 @@ export interface ConvertResult {
   validation: { valid: boolean | null; errors: string[] } | null;
   preview: { columns: { key: string; name: string }[]; rows: string[][]; total: number };
   xmlPreview: string | null;
+  xmlPreviewTruncated?: boolean;
   output: { filename: string; mimeType: string; size: number; base64: string };
 }
 

@@ -96,3 +96,15 @@ def test_rate_limit(client, fixture_bytes, monkeypatch):
 def test_unknown_routes_404(client):
     assert client.get("/wp-login.php").status_code == 404
     assert client.get("/api/nope").status_code == 404
+
+
+def test_xml_preview_is_cut_at_a_line_end(client, fixture_bytes, monkeypatch):
+    from app import service
+
+    monkeypatch.setattr(service, "XML_PREVIEW_BYTES", 5000)
+    body = client.post(
+        "/api/convert", files={"file": ("v7.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))}
+    ).json()
+    assert body["xmlPreviewTruncated"] is True
+    assert body["xmlPreview"].endswith("\n")
+    assert len(body["xmlPreview"].encode()) <= 5000
