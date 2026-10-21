@@ -27,7 +27,15 @@ from datetime import UTC, datetime
 from lxml import etree
 
 from app.ingest.tpt_reader import TptDocument, TptRow
-from app.mapping.rules import ASSET_FIELDS, BLOCK_RULES, PORTFOLIO_FIELDS, Rule, rules_for
+from app.mapping.rules import (
+    ASSET_FIELDS,
+    BLOCK_RULES,
+    PLACEHOLDER_COUNTRY,
+    PLACEHOLDER_SUPPLIER,
+    PORTFOLIO_FIELDS,
+    Rule,
+    rules_for,
+)
 from app.mapping.transforms import POSITION_ELEMENT, asset_type
 from app.model.issues import Issue
 from app.model.xmltree import Dropped, Node, parse_decimal, serialize_at
@@ -429,8 +437,9 @@ def _control_data(model, doc: TptDocument, groups: list[PortfolioGroup], opts: C
     node.set("DocumentGenerated", datetime.now(UTC).replace(microsecond=0, tzinfo=None).isoformat())
     node.set("Version", fundsxml_version())
     node.set("ContentDate", first.get("7") or first.get("6"))
-    supplier_name = opts.data_supplier_name or first.get("117") or "TPT to FundsXML Converter"
-    node.set("DataSupplier/SystemCountry", (opts.data_supplier_country or first.get("122") or "XX").upper())
+    supplier_name = opts.data_supplier_name or first.get("117") or PLACEHOLDER_SUPPLIER
+    country = opts.data_supplier_country or first.get("122") or PLACEHOLDER_COUNTRY
+    node.set("DataSupplier/SystemCountry", country.upper())
     node.set("DataSupplier/Short", opts.data_supplier_short or _short(supplier_name))
     node.set("DataSupplier/Name", supplier_name)
     node.set("DataSupplier/Type", "IC")

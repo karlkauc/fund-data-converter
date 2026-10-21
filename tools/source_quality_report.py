@@ -385,8 +385,12 @@ RULE_TEXT: dict[str, dict[str, str]] = {
         "fix": "Ausübungspreis der eingebetteten Option liefern.",
     },
     "XF-05/CASH_PERCENTAGE": {
-        "was": "Die gemeldete Kassaquote (Feld 9) passt nicht zur Summe der Kassapositionen (CIC xx7x).",
-        "fix": "Kassaquote als Anteil (0–1) aus den Kassapositionen berechnen.",
+        "was": "Die gemeldete Kassaquote (Feld 9) passt nicht zur Summe der Kassapositionen (CIC xx7x) "
+        "geteilt durch das Nettovermögen (Feld 5). Bei FundsXML-Lieferungen, deren Fondsportfolio für "
+        "mehrere Anteilsklassen wiederholt wird, ist das kein Fehler: Feld 9 ist der Kassenanteil des "
+        "Fonds, der Validator teilt aber durch das Vermögen der einzelnen Anteilsklasse.",
+        "fix": "TPT: Kassaquote als Anteil (0–1) liefern, nicht in Prozent. "
+        "FundsXML mit wiederholtem Fondsportfolio: keine Korrektur nötig.",
     },
     "XF-06/NAV_PRICE_SHARES": {
         "was": "Nettovermögen (Feld 5) weicht von Anteilspreis × Anteile (Felder 8 × 8b) ab.",

@@ -25,7 +25,7 @@ from functools import lru_cache
 from lxml import etree
 
 from app.convert.derive import amount, complete_portfolio, complete_position, dec
-from app.mapping.rules import Rule, rules_for
+from app.mapping.rules import PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIER, Rule, rules_for
 from app.model.issues import Issue
 from app.spec.catalog import VERSIONS, load_catalog
 
@@ -264,13 +264,20 @@ def _read_portfolio(core: CorePortfolio, values: dict[str, str]) -> None:
         if core.price is not None:
             _read(core.price, rules_for("sc_price"), values)
     _read(core.fund, rules_for("fund_info"), values)
-    if core.control is not None and not values.get("7"):
+    if core.control is not None:
         reported: dict[str, str] = {}
         _read(core.control, rules_for("control"), reported)
         # The document date may precede a share class valued later; the reporting date may not.
         if reported.get("7") and values.get("6", "") > reported["7"]:
             reported["7"] = values["6"]
-        values.update(reported)
+        # Our own TPT → FundsXML output names no real fund issuer.
+        if reported.get("117") == PLACEHOLDER_SUPPLIER:
+            del reported["117"]
+        if reported.get("122", "").upper() == PLACEHOLDER_COUNTRY:
+            del reported["122"]
+        for key, value in reported.items():
+            if not values.get(key):
+                values[key] = value
 
 
 def _merge_core(values: dict[str, str], core: CorePortfolio, position: etree._Element, assets: dict) -> None:

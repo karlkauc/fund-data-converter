@@ -13,7 +13,14 @@ it is). Every rule here fills an empty field and never overrides a value:
   definition only distinguishes the two for derivatives;
 * underlying asset category (131) from the CIC (S.06.03 categories);
 * code types 48/51/116/120 = 9 ("none") when no LEI is given;
-* complete SCR delivery (11) = N when no SCR contribution (97–105b) is given.
+* issuer name (46) = instrument name (17), issuer group name (49) = issuer
+  name, as a last resort;
+* complete SCR delivery (11) = N when no SCR contribution (97–105b) is given;
+* shares outstanding (8b) = net assets (5) / share price (8);
+* cash ratio (9) = the weights (26) of the cash positions (CIC xx7x) – a
+  fund portfolio repeated for a share class holds the whole fund's cash, so
+  the share class net assets (5) are no measure; without weights market
+  value (24) / net assets. A fraction, like the validator's check XF-05.
 """
 
 from __future__ import annotations
@@ -25,8 +32,8 @@ from app.model.xmltree import format_decimal, parse_decimal
 
 # Fields this module (or a read-only rule) may fill although the source leaves them empty.
 DERIVED_FIELDS = frozenset(
-    {"7", "11", "116", "120", "12", "14", "15", "18", "19", "22", "23", "25", "27", "28", "30", "32", "34"}
-    | {"35", "39", "46", "47", "48", "51", "52", "125", "126", "131", "148"}
+    {"7", "8b", "9", "11", "116", "117", "120", "122", "12", "14", "15", "18", "19", "22", "23", "25", "27"}
+    | {"28", "30", "32", "34", "35", "39", "46", "47", "48", "49", "51", "52", "125", "126", "131", "148"}
 )
 
 SCR_FIELDS = ("97", "98", "99", "100", "101", "102", "103", "104", "105", "105a", "105b")
@@ -36,6 +43,7 @@ INTEREST_BEARING = frozenset("12568")
 
 _CENT = Decimal("0.01")
 _WEIGHT = Decimal("1E-12")
+_SHARES = Decimal("1E-6")
 
 
 def dec(value: str | None) -> Decimal | None:
@@ -99,6 +107,10 @@ def complete_position(values: dict[str, str], exposure_pc: Decimal | None, pc_pe
         values["48"] = "9"
     if not values.get("50") and not values.get("51"):
         values["51"] = "9"
+    if not values.get("46") and values.get("17"):
+        values["46"] = values["17"]
+    if not values.get("49") and values.get("46"):
+        values["49"] = values["46"]
 
 
 def complete_portfolio(rows: list[dict[str, str]]) -> None:
@@ -107,7 +119,14 @@ def complete_portfolio(rows: list[dict[str, str]]) -> None:
         return
     total = sum((d for r in rows if (d := dec(r.get("24"))) is not None), Decimal(0))
     no_scr = not any(r.get(k) for r in rows for k in SCR_FIELDS)
+    nav, price = dec(rows[0].get("5")), dec(rows[0].get("8"))
+    shares = format_decimal((nav / price).quantize(_SHARES, ROUND_HALF_UP)) if nav and price else ""
+    cash_ratio = _cash_ratio(rows, nav)
     for r in rows:
+        if shares and not r.get("8b"):
+            r["8b"] = shares
+        if cash_ratio and not r.get("9"):
+            r["9"] = cash_ratio
         if no_scr and not r.get("11"):
             r["11"] = "N"
         if not r.get("115") and not r.get("116"):
@@ -116,6 +135,18 @@ def complete_portfolio(rows: list[dict[str, str]]) -> None:
             r["120"] = "9"
         if not r.get("30") and total and (exposure := dec(r.get("28"))) is not None:
             r["30"] = format_decimal((exposure / total).quantize(_WEIGHT, ROUND_HALF_UP))
+
+
+def _cash_ratio(rows: list[dict[str, str]], nav: Decimal | None) -> str:
+    cash = [r for r in rows if cic_category(r.get("12", "")) == "7"]
+    weights = [dec(r.get("26")) for r in cash]
+    if all(w is not None for w in weights):
+        ratio = sum(weights, Decimal(0))
+    elif nav:
+        ratio = sum((d for r in cash if (d := dec(r.get("24"))) is not None), Decimal(0)) / nav
+    else:
+        return ""
+    return format_decimal(ratio.quantize(_WEIGHT, ROUND_HALF_UP))
 
 
 def underlying_asset_category(cic: str) -> str:

@@ -341,6 +341,10 @@ def _identifier_rules(code: str, kind: str, ctx: str, base: str, note: str = "")
 
 _NO_CLASSES = ", fund without share classes"
 
+# ControlData written by TPT → FundsXML when the TPT names no fund issuer; never read back as one.
+PLACEHOLDER_SUPPLIER = "TPT to FundsXML Converter"
+PLACEHOLDER_COUNTRY = "XX"
+
 # Instrument types with an issuer resp. a counterparty in AssetDetails (beyond the bidirectional rules).
 _ISSUED = (
     "Bond",
@@ -448,6 +452,9 @@ CORE_RULES: list[Rule] = [
     _lei("140", "141", "fund_info", "FundStaticData/Custodian/Identifiers/LEI"),
     _ro("123a", "fund_info", "FundStaticData/Custodian/Address/Country"),
     _ro("7", "control", "ContentDate"),
+    # Last resort for the fund issuer: the sender of the document (see PLACEHOLDER_SUPPLIER).
+    _ro("117", "control", "DataSupplier/Name"),
+    _ro("122", "control", "DataSupplier/SystemCountry"),
     # Position
     *_identifier_rules("14", "15", "position", "Identifiers"),
     _internal_id("position"),

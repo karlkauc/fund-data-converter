@@ -69,3 +69,45 @@ def test_clean_value_in_quotation_currency_gives_the_portfolio_currency_one():
     row = _row(f12="XT21", f21="EUR", f4="CZK", f22="100", f23="98", f24="2435")
     complete_position(row, None, Decimal("24.35"))
     assert row["25"] == "2386.3"
+
+
+def test_shares_and_cash_ratio_of_the_portfolio():
+    rows = [
+        _row(f5="1000", f8="12.5", f12="XT72", f24="50"),
+        _row(f5="1000", f8="12.5", f12="XT73", f24="-10"),
+        _row(f5="1000", f8="12.5", f12="XT31", f24="960"),
+    ]
+    complete_portfolio(rows)
+    assert {r["8b"] for r in rows} == {"80"}
+    assert {r["9"] for r in rows} == {"0.04"}
+
+
+def test_cash_ratio_from_the_weights_of_a_repeated_fund_portfolio():
+    # Share class net assets 100 of a fund of 1000: the weights still give the fund's cash ratio.
+    rows = [
+        _row(f5="100", f12="XT72", f24="50", f26="0.05"),
+        _row(f5="100", f12="XT31", f24="950", f26="0.95"),
+    ]
+    complete_portfolio(rows)
+    assert {r["9"] for r in rows} == {"0.05"}
+
+
+def test_cash_ratio_without_cash_and_existing_values_kept():
+    rows = [_row(f5="1000", f8="3", f12="XT31", f24="1000")]
+    complete_portfolio(rows)
+    assert (rows[0]["8b"], rows[0]["9"]) == ("333.333333", "0")
+    kept = [_row(f5="1000", f8="3", f8b="300", f9="0.1", f12="XT72", f24="500")]
+    complete_portfolio(kept)
+    assert (kept[0]["8b"], kept[0]["9"]) == ("300", "0.1")
+
+
+def test_issuer_names_from_the_instrument_name():
+    row = _row(f12="XT72", f17="Konto EUR", f24="10")
+    complete_position(row, None, None)
+    assert (row["46"], row["49"]) == ("Konto EUR", "Konto EUR")
+    issued = _row(f12="DE21", f17="Bund 2030", f46="Bundesrepublik", f24="10")
+    complete_position(issued, None, None)
+    assert (issued["46"], issued["49"]) == ("Bundesrepublik", "Bundesrepublik")
+    grouped = _row(f12="DE21", f17="Bund 2030", f46="KfW", f49="Bundesrepublik", f24="10")
+    complete_position(grouped, None, None)
+    assert (grouped["46"], grouped["49"]) == ("KfW", "Bundesrepublik")

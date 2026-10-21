@@ -38,16 +38,23 @@ def _share_class(isin: str, ccy: str, price: str, nav: dict[str, str], portfolio
     )
 
 
-def _doc(share_classes: list[str], fund_portfolio: str = "", fund_ccy: str = "EUR") -> bytes:
+def _doc(
+    share_classes: list[str],
+    fund_portfolio: str = "",
+    fund_ccy: str = "EUR",
+    control: str = "",
+    static: str = "",
+) -> bytes:
     dynamic = (
         "<FundDynamicData><TotalAssetValues><TotalAssetValue><NavDate>2026-09-30</NavDate>"
         '<TotalAssetNature>OFFICIAL</TotalAssetNature><TotalNetAssetValue><Amount ccy="EUR">9999</Amount>'
         f"</TotalNetAssetValue></TotalAssetValue></TotalAssetValues>{fund_portfolio}</FundDynamicData>"
     )
     return (
-        "<FundsXML4><ControlData/><Funds><Fund><Identifiers><ISIN>LU0000000FND</ISIN><LEI>FUNDLEI</LEI></Identifiers>"
+        f"<FundsXML4><ControlData>{control}</ControlData><Funds><Fund>"
+        "<Identifiers><ISIN>LU0000000FND</ISIN><LEI>FUNDLEI</LEI></Identifiers>"
         f"<Names><OfficialName>Umbrella</OfficialName></Names><Currency>{fund_ccy}</Currency>"
-        f"<SingleFundFlag>true</SingleFundFlag>{dynamic}"
+        f"<SingleFundFlag>true</SingleFundFlag>{static}{dynamic}"
         f"<SingleFund><ShareClasses>{''.join(share_classes)}</ShareClasses></SingleFund></Fund></Funds>"
         "</FundsXML4>"
     ).encode()
@@ -184,11 +191,9 @@ def test_rate_from_the_positions_when_the_share_class_nav_has_one_currency():
 
 
 def test_reporting_date_is_not_before_the_valuation_date():
-    xml = _doc([_share_class("AT0000000AA1", "EUR", "101.5", {"EUR": "5000"})], FUND_PF)
-    early = xml.replace(
-        b"<ControlData/>", b"<ControlData><ContentDate>2026-09-01</ContentDate></ControlData>"
-    )
-    late = xml.replace(b"<ControlData/>", b"<ControlData><ContentDate>2026-10-02</ContentDate></ControlData>")
+    sc = [_share_class("AT0000000AA1", "EUR", "101.5", {"EUR": "5000"})]
+    early = _doc(sc, FUND_PF, control="<ContentDate>2026-09-01</ContentDate>")
+    late = _doc(sc, FUND_PF, control="<ContentDate>2026-10-02</ContentDate>")
     assert extract_tpt(parse_fundsxml(early), "V7").rows[0]["7"] == "2026-09-30"
     assert extract_tpt(parse_fundsxml(late), "V7").rows[0]["7"] == "2026-10-02"
 
@@ -207,3 +212,31 @@ def test_unique_id_when_the_asset_has_no_identifier():
     xml = _doc([_share_class("AT0000000AA1", "EUR", "1", {"EUR": "1000"})], _wrap(positions))
     rows = extract_tpt(parse_fundsxml(xml), "V7").rows
     assert [(r["14"], r["15"]) for r in rows] == [("OT51304", "99"), ("DE0001102580", "1")]
+
+
+def _supplier(name: str, country: str) -> str:
+    return f"<DataSupplier><SystemCountry>{country}</SystemCountry><Name>{name}</Name></DataSupplier>"
+
+
+def test_fund_issuer_from_the_data_supplier():
+    sc = [_share_class("AT0000000AA1", "EUR", "10", {"EUR": "1000"})]
+    rows = extract_tpt(
+        parse_fundsxml(_doc(sc, FUND_PF, control=_supplier("Erste AM d.o.o.", "HR"))), "V7"
+    ).rows
+    assert {(r["117"], r["122"]) for r in rows} == {("Erste AM d.o.o.", "HR")}
+    assert {(r["8b"], r["9"]) for r in rows} == {("1000", "0")}
+
+    static = (
+        "<FundStaticData><InvestmentCompany><Name>KAG GmbH</Name><Address><Country>AT</Country></Address>"
+        "</InvestmentCompany></FundStaticData>"
+    )
+    xml = _doc(sc, FUND_PF, control=_supplier("Erste AM d.o.o.", "HR"), static=static)
+    rows = extract_tpt(parse_fundsxml(xml), "V7").rows
+    assert {(r["117"], r["122"]) for r in rows} == {("KAG GmbH", "AT")}
+
+
+def test_converter_placeholder_is_no_fund_issuer():
+    sc = [_share_class("AT0000000AA1", "EUR", "10", {"EUR": "1000"})]
+    xml = _doc(sc, FUND_PF, control=_supplier("TPT to FundsXML Converter", "XX"))
+    rows = extract_tpt(parse_fundsxml(xml), "V7").rows
+    assert not any(r.get("117") or r.get("122") for r in rows)
