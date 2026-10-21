@@ -32,12 +32,11 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
 import httpx  # noqa: E402
+from validator_client import ValidatorError, post  # noqa: E402
 
 from app.convert.to_tpt import extract_tpt  # noqa: E402
 from app.ingest.fundsxml_reader import parse_fundsxml  # noqa: E402
 from app.writers.tpt_writer import write_xlsx  # noqa: E402
-
-XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def main() -> None:
@@ -152,53 +151,33 @@ def _check_share_classes(classes: dict[str, bool], extract) -> list[str]:
 
 
 def _validate(client: httpx.Client, args, path: Path, version: str, res: dict) -> None:
-    data = {
-        "templateId": "TPT",
-        "templateVersion": f"{version}.0",
-        "externalEnabled": "false",
-        "profiles": args.profiles,
-    }
-    # Generous retries: a crashed validator needs a while to come back.
-    for attempt in range(8):
-        try:
-            with path.open("rb") as fh:
-                r = client.post(
-                    f"{args.validator}/api/validate", data=data, files={"file": (path.name, fh, XLSX)}
-                )
-        except httpx.HTTPError as exc:
-            res["validation"] = {"error": f"{type(exc).__name__}: {exc}"}
-            time.sleep(5 * (attempt + 1))
-            continue
-        if r.status_code in (429, 503):
-            time.sleep(5 * (attempt + 1))
-            continue
-        if r.status_code != 200:
-            res["validation"] = {"error": f"HTTP {r.status_code}: {r.text[:300]}"}
-            return
-        body = r.json()
-        rules: dict[str, dict] = {}
-        for f in body.get("findings", []):
-            key = f"{f.get('severity')}|{f.get('ruleId')}"
-            agg = rules.setdefault(
-                key, {"count": 0, "field": f.get("fieldNum"), "fieldName": f.get("fieldName"), "sample": None}
-            )
-            agg["count"] += 1
-            if agg["sample"] is None:
-                agg["sample"] = {
-                    "message": f.get("message"),
-                    "value": f.get("value"),
-                    "row": f.get("rowIndex"),
-                    "instrument": f.get("instrumentCode"),
-                }
-        s = body.get("summary", {})
-        res["validation"] = {
-            "errors": s.get("errorCount", 0),
-            "warnings": s.get("warningCount", 0),
-            "infos": s.get("infoCount", 0),
-            "scores": {x["dimension"]: x["percentage"] for x in body.get("scores", [])},
-            "rules": rules,
-        }
+    try:
+        body = post(client, args.validator, path, version, args.profiles)
+    except ValidatorError as exc:
+        res["validation"] = {"error": str(exc)}
         return
+    rules: dict[str, dict] = {}
+    for f in body.get("findings", []):
+        key = f"{f.get('severity')}|{f.get('ruleId')}"
+        agg = rules.setdefault(
+            key, {"count": 0, "field": f.get("fieldNum"), "fieldName": f.get("fieldName"), "sample": None}
+        )
+        agg["count"] += 1
+        if agg["sample"] is None:
+            agg["sample"] = {
+                "message": f.get("message"),
+                "value": f.get("value"),
+                "row": f.get("rowIndex"),
+                "instrument": f.get("instrumentCode"),
+            }
+    s = body.get("summary", {})
+    res["validation"] = {
+        "errors": s.get("errorCount", 0),
+        "warnings": s.get("warningCount", 0),
+        "infos": s.get("infoCount", 0),
+        "scores": {x["dimension"]: x["percentage"] for x in body.get("scores", [])},
+        "rules": rules,
+    }
 
 
 def _summary(report: dict[str, dict], versions: list[str]) -> dict:

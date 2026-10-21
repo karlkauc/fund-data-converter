@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quelldatenqualität TPT · FundsXML</title>
+<style>
+/* Layout: sticky header with tabs; each tab is a single column of tables, a dialog shows one file. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --sunken: #eef1f5;
+  --fg: #0f172a;
+  --muted: #5b6577;
+  --line: #dde2ea;
+  --accent: #2f6fdf;
+  --accent-soft: #e5eefc;
+  --bad: #c2312f;
+  --bad-soft: #fbe7e6;
+  --warn: #a8670a;
+  --warn-soft: #fbf0dc;
+  --good: #1d7a4a;
+  --good-soft: #e1f3e9;
+  --font-body: "Inter var", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --surface: #151b24; --sunken: #1b2330; --fg: #e5e9f0; --muted: #98a2b3; --line: #2a3442;
+    --accent: #6ea2f7; --accent-soft: #1b2a44; --bad: #f2827f; --bad-soft: #3a1d1e; --warn: #e3ad55;
+    --warn-soft: #3a2d16; --good: #6fcf97; --good-soft: #17301f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --surface: #151b24; --sunken: #1b2330; --fg: #e5e9f0; --muted: #98a2b3; --line: #2a3442;
+  --accent: #6ea2f7; --accent-soft: #1b2a44; --bad: #f2827f; --bad-soft: #3a1d1e; --warn: #e3ad55;
+  --warn-soft: #3a2d16; --good: #6fcf97; --good-soft: #17301f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header.top {
+  position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 14px max(16px, env(safe-area-inset-left, 0px)) 0;
+}
+.wrap { max-width: 1280px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 16px; margin: 28px 0 10px; text-wrap: balance; }
+h3 { font-size: 14px; margin: 0; }
+.sub { color: var(--muted); font-size: 13px; margin: 2px 0 10px; }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; }
+nav.tabs button {
+  border: 0; background: none; color: var(--muted); font: inherit; font-weight: 600; padding: 8px 12px;
+  border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+main { padding-block: 8px 48px; }
+p { max-width: 75ch; }
+.muted { color: var(--muted); }
+.mono, code { font-family: var(--font-mono); font-size: 12.5px; }
+code { background: var(--sunken); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.kpi .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi .l { color: var(--muted); font-size: 12px; }
+.dir { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.dir > section { min-width: 0; }
+.dir h3 { margin-bottom: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.note { background: var(--good-soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.note ul { margin: 6px 0 0; padding-left: 18px; }
+.tablebox { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; background: var(--sunken); position: sticky; top: 0; white-space: nowrap; }
+th.sort { cursor: pointer; user-select: none; }
+th.sort[data-dir="asc"]::after { content: " ▲"; }
+th.sort[data-dir="desc"]::after { content: " ▼"; }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover td { background: var(--accent-soft); }
+.pill { display: inline-block; border-radius: 999px; padding: 0 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.ERROR { background: var(--bad-soft); color: var(--bad); }
+.pill.WARNING { background: var(--warn-soft); color: var(--warn); }
+.pill.INFO, .pill.neutral { background: var(--sunken); color: var(--muted); }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; }
+.dot.r { background: var(--bad); } .dot.y { background: var(--warn); } .dot.g { background: var(--good); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-family: var(--font-mono); font-size: 11.5px; background: var(--sunken); border-radius: 4px; padding: 0 5px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.filters input[type="search"] { flex: 1 1 260px; min-width: 0; }
+.filters select { max-width: 100%; min-width: 0; text-overflow: ellipsis; }
+input, select, button.btn {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px;
+}
+button.btn { cursor: pointer; }
+button.btn:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.active-filter { background: var(--accent-soft); color: var(--fg); border-radius: 6px; padding: 4px 8px; font-size: 13px; }
+.active-filter button { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; font-weight: 700; }
+.pager { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+a, .link { color: var(--accent); cursor: pointer; }
+dialog {
+  width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0; background: var(--bg); color: var(--fg);
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+.dlg-head { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 12px; align-items: start; z-index: 1; }
+.dlg-head > div { flex: 1; min-width: 0; }
+.dlg-head h3 { font-size: 15px; overflow-wrap: anywhere; }
+.dlg-body { padding: 4px 16px 20px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; }
+.rule > summary { list-style: none; cursor: pointer; padding: 9px 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.rule > summary::-webkit-details-marker { display: none; }
+.rule > summary::before { content: "▸"; color: var(--muted); }
+.rule[open] > summary::before { content: "▾"; }
+.rule .count { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+.rule .inner { padding: 0 12px 12px; display: grid; gap: 8px; }
+.rule .inner > * { min-width: 0; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; font-size: 13px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.loading { padding: 40px 0; color: var(--muted); }
+@media (max-width: 640px) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: 6px; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1>Quelldatenqualität TPT · FundsXML</h1>
+  <div class="sub" id="subtitle">Wird geladen …</div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="uebersicht" aria-selected="true">Übersicht</button>
+    <button role="tab" data-tab="lieferanten" aria-selected="false">Lieferanten</button>
+    <button role="tab" data-tab="regeln" aria-selected="false">Regeln</button>
+    <button role="tab" data-tab="dateien" aria-selected="false">Dateien</button>
+  </nav>
+</div></header>
+<main class="wrap">
+  <div id="loading" class="loading">Daten werden entpackt …</div>
+  <section id="tab-uebersicht" hidden></section>
+  <section id="tab-lieferanten" hidden></section>
+  <section id="tab-regeln" hidden></section>
+  <section id="tab-dateien" hidden></section>
+</main>
+<dialog id="detail" aria-labelledby="detail-title"></dialog>
+<script id="payload" type="application/octet-stream">__DATA__</script>
+<script>
+"use strict";
+const KIND = { fundsxml: "FundsXML → TPT", tpt: "TPT" };
+const SEV = { ERROR: "Fehler", WARNING: "Warnung", INFO: "Hinweis" };
+const fmt = new Intl.NumberFormat("de-AT");
+const n = (x) => fmt.format(x || 0);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = (sel, el = document) => el.querySelector(sel);
+let D, RULES = {};
+const state = { q: "", kind: "", supplier: "", rule: "", onlyErrors: false, sort: ["errors", "desc"], page: 0 };
+
+async function load() {
+  const b64 = $("#payload").textContent.trim();
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return JSON.parse(await new Response(stream).text());
+}
+
+function fieldLabel(field, name) {
+  if (!field) return "–";
+  return `<span class="mono">${esc(field)}</span>${name ? ` <span class="muted">${esc(name)}</span>` : ""}`;
+}
+function sevPill(sev) { return `<span class="pill ${esc(sev)}">${esc(SEV[sev] || sev)}</span>`; }
+function errs(f) { const v = f.versions[f.main] || {}; return v.errors || 0; }
+function warns(f) { const v = f.versions[f.main] || {}; return v.warnings || 0; }
+function light(f) {
+  if (f.error || errs(f) || (f.xsd && f.xsd.valid === false)) return "r";
+  return warns(f) ? "y" : "g";
+}
+function ruleInfo(kind, sev, rule, field) { return RULES[`${kind}|${sev}|${rule}|${field}`] || {}; }
+
+// ---------------------------------------------------------------- Übersicht
+function renderOverview() {
+  const el = $("#tab-uebersicht");
+  const byKind = (k) => D.files.filter((f) => f.kind === k);
+  const kpis = (k) => {
+    const fs = byKind(k);
+    const withErr = fs.filter((f) => errs(f) > 0).length;
+    const e = fs.reduce((s, f) => s + errs(f), 0);
+    const w = fs.reduce((s, f) => s + warns(f), 0);
+    const rawE = fs.reduce((s, f) => s + ((f.versions[f.main] || {}).raw?.errorCount || 0), 0);
+    const xsdBad = fs.filter((f) => f.xsd && f.xsd.valid === false).length;
+    const failed = fs.filter((f) => f.error || Object.values(f.versions).some((v) => v.validationError)).length;
+    const xsdLabel = k === "fundsxml" ? "Quelle nicht XSD-gültig" : "ergibt kein gültiges FundsXML";
+    return `<div class="kpis">
+      <div class="kpi"><div class="v">${n(fs.length)}</div><div class="l">Dateien</div></div>
+      <div class="kpi"><div class="v">${n(withErr)}</div><div class="l">mit Fehlern</div></div>
+      <div class="kpi"><div class="v">${n(e)}</div><div class="l">Fehler (je Instrument, ${n(rawE)} Validator-Meldungen)</div></div>
+      <div class="kpi"><div class="v">${n(w)}</div><div class="l">Warnungen (je Instrument)</div></div>
+      <div class="kpi"><div class="v">${n(xsdBad)}</div><div class="l">${xsdLabel}</div></div>
+      ${failed ? `<div class="kpi"><div class="v">${n(failed)}</div><div class="l">nicht prüfbar</div></div>` : ""}
+    </div>`;
+  };
+  const rt = D.roundtrip || {};
+  const measures = D.measures.slice(0, 20).map((m) => {
+    const info = ruleInfo(m.kind, "ERROR", m.rules[0], m.field);
+    const name = info.fieldName || "";
+    const fix = m.kind === "fundsxml" && info.paths?.length ? `<div class="mono muted">${info.paths.slice(0, 2).map(esc).join("<br>")}</div>` : "";
+    return `<tr class="click" data-supplier="${esc(m.supplier)}" data-kind="${m.kind}" data-rule="${esc(m.rules.length === 1 ? m.rules[0] : "")}">
+      <td>${esc(KIND[m.kind])}</td><td>${esc(m.supplier)}</td>
+      <td>${fieldLabel(m.field, name)}${fix}</td>
+      <td><div class="chips">${m.rules.map((r) => `<span class="chip">${esc(r)}</span>`).join("")}</div></td>
+      <td class="num">${n(m.files)}</td><td class="num">${n(m.distinct)}</td></tr>`;
+  }).join("");
+  el.innerHTML = `
+    <h2>Worum es geht</h2>
+    <p>Dieser Bericht zeigt, welche Mängel in den <strong>Quelldateien</strong> stecken. Geprüft wurden FundsXML-4-Lieferungen
+      (umgewandelt in TPT V7 und V8) und TPT-Dateien mit dem FinDatEx-Validator im Profil Solvency II. Die Umwandlung selbst ist
+      bereinigt; was hier steht, muss beim Lieferanten der Daten behoben werden.</p>
+    <div class="note"><strong>Konvertierung geprüft und bereinigt</strong>
+      <ul>
+        <li>TPT → FundsXML → TPT: ${n(rt.losslessCore)} von ${n(rt.files)} Dateien (${n(rt.rows)} Zeilen) kommen ohne Verlust zurück, mit und ohne TPT-Block.</li>
+        <li>Validator-Vergleich Original gegen Roundtrip (${n(rt.validated)} Dateien): ${rt.newRules ? n(rt.newRules) + " neue Regeln" : "keine neuen Befunde"}.</li>
+        <li>FundsXML → TPT liefert nur Anteilsklassen (Feld 1 = ISIN der Anteilsklasse); Fondsportfolios werden je Anteilsklasse übernommen.</li>
+      </ul>
+    </div>
+    <div class="dir">
+      <section><h2>FundsXML-Lieferungen</h2>${kpis("fundsxml")}</section>
+      <section><h2>TPT-Dateien</h2>${kpis("tpt")}</section>
+    </div>
+    <h2>Wirksamste Korrekturen</h2>
+    <p class="muted">Ein Feld je Lieferant und Richtung, sortiert nach der Zahl betroffener Dateien. Klick öffnet die betroffenen Dateien.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Richtung</th><th>Lieferant</th><th>Feld und Quelle</th><th>Regeln</th><th class="num">Dateien</th><th class="num">Befunde</th></tr></thead>
+      <tbody>${measures}</tbody></table></div>
+    <h2>Methodik</h2>
+    <dl class="kv">
+      <dt>Stand</dt><dd>${esc(D.generated)}</dd>
+      <dt>Validator</dt><dd>findatex-validator (lokal), Profil SOLVENCY_II, externe Prüfungen (GLEIF/OpenFIGI) aus</dd>
+      <dt>FundsXML</dt><dd>Quelle gegen das FundsXML-4-Schema geprüft, in TPT V7 und V8 umgewandelt und beide validiert. Hauptansicht ist V7; V8 bringt nur zusätzliche Befunde zu den neuen Feldern.</dd>
+      <dt>TPT</dt><dd>Quelldatei direkt validiert. Zusätzlich: was der Datei für ein gültiges FundsXML fehlt (Regeln <code>FUNDSXML/…</code>).</dd>
+      <dt>Zählweise</dt><dd>Ein Befund zählt einmal je Datei, Regel und Instrument. Ein Fondsportfolio, das für mehrere Anteilsklassen gemeldet wird, zählt also einmal; die Zahl der betroffenen Anteilsklassen steht dabei. Felder auf Portfolio-Ebene (z. B. 117–123a) zählen einmal je Datei.</dd>
+      <dt>Vollständige Listen</dt><dd><code>befunde_uebersicht.csv</code>: eine Zeile je Datei und Regel. Ordner <code>befunde/</code>: je Quelldatei eine CSV mit allen Fehlern je Instrument und den Warnungen je Regel (Trennzeichen <code>;</code>, für Excel). Hier werden je Regel und Datei höchstens 25 Fehler- bzw. 10 Warnungsbeispiele gezeigt.</dd>
+    </dl>`;
+  el.querySelectorAll("tbody tr.click").forEach((tr) => tr.addEventListener("click", () => {
+    Object.assign(state, { kind: tr.dataset.kind, supplier: tr.dataset.supplier, rule: tr.dataset.rule, q: "", page: 0 });
+    show("dateien");
+  }));
+}
+
+// ---------------------------------------------------------------- Lieferanten
+function renderSuppliers() {
+  const el = $("#tab-lieferanten");
+  const agg = new Map();
+  for (const f of D.files) {
+    const k = `${f.kind}|${f.supplier}`;
+    let a = agg.get(k);
+    if (!a) agg.set(k, (a = { kind: f.kind, supplier: f.supplier, files: 0, clean: 0, e: 0, w: 0, xsd: 0, rules: new Map() }));
+    a.files++; a.e += errs(f); a.w += warns(f);
+    if (!errs(f)) a.clean++;
+    if (f.xsd && f.xsd.valid === false) a.xsd++;
+    for (const r of f.rules) if (r.sev === "ERROR") a.rules.set(r.rule, (a.rules.get(r.rule) || 0) + r.distinct);
+  }
+  const rows = [...agg.values()].sort((a, b) => b.files - a.files).map((a) => {
+    const top = [...a.rules.entries()].sort((x, y) => y[1] - x[1]).slice(0, 4);
+    return `<tr class="click" data-kind="${a.kind}" data-supplier="${esc(a.supplier)}">
+      <td>${esc(a.supplier)}</td><td>${esc(KIND[a.kind])}</td><td class="num">${n(a.files)}</td>
+      <td class="num">${Math.round((100 * a.clean) / a.files)} %</td><td class="num">${n(a.e)}</td><td class="num">${n(a.w)}</td>
+      <td class="num">${n(a.xsd)}</td>
+      <td><div class="chips">${top.map(([r, c]) => `<span class="chip">${esc(r)} · ${n(c)}</span>`).join("")}</div></td></tr>`;
+  }).join("");
+  el.innerHTML = `<h2>Lieferanten</h2>
+    <p class="muted">Lieferant laut FundsXML <code>ControlData/DataSupplier/Name</code> bzw. TPT-Feld 117 (Fondsemittent). Klick zeigt die Dateien.</p>
+    <div class="tablebox"><table><thead><tr><th>Lieferant</th><th>Richtung</th><th class="num">Dateien</th><th class="num">ohne Fehler</th>
+    <th class="num">Fehler</th><th class="num">Warnungen</th><th class="num">XSD</th><th>Häufigste Fehlerregeln</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+  el.querySelectorAll("tbody tr.click").forEach((tr) => tr.addEventListener("click", () => {
+    Object.assign(state, { kind: tr.dataset.kind, supplier: tr.dataset.supplier, rule: "", q: "", page: 0 });
+    show("dateien");
+  }));
+}
+
+// ---------------------------------------------------------------- Regeln
+const ruleState = { kind: "", sev: "ERROR" };
+function renderRules() {
+  const el = $("#tab-regeln");
+  const list = D.rules.filter((r) => (!ruleState.kind || r.kind === ruleState.kind) && (!ruleState.sev || r.sev === ruleState.sev));
+  const rows = list.map((r) => `<tr class="click" data-kind="${r.kind}" data-rule="${esc(r.rule)}">
+    <td>${sevPill(r.sev)}</td><td>${esc(KIND[r.kind])}</td><td class="mono">${esc(r.rule)}</td><td>${fieldLabel(r.field, r.fieldName)}</td>
+    <td>${esc(r.was || r.message)}${r.fix ? `<div class="muted">Korrektur: ${esc(r.fix)}</div>` : ""}
+      ${r.kind === "fundsxml" && r.paths?.length ? `<div class="mono muted">${r.paths.map(esc).join("<br>")}</div>` : ""}</td>
+    <td class="num">${n(r.files)}</td><td class="num">${n(r.distinct)}</td><td class="num">${n(r.raw)}</td></tr>`).join("");
+  el.innerHTML = `<h2>Regelkatalog</h2>
+    <p class="muted">Alle aufgetretenen Validator-Regeln mit Bedeutung und Korrektur. Bei FundsXML-Lieferungen steht darunter die Stelle im FundsXML, aus der das TPT-Feld gelesen wird. „Befunde“ zählt je Instrument, „Meldungen“ die rohen Validator-Zeilen.</p>
+    <div class="filters">
+      <select id="rk" aria-label="Richtung"><option value="">Alle Richtungen</option><option value="fundsxml">FundsXML → TPT</option><option value="tpt">TPT</option></select>
+      <select id="rs" aria-label="Schwere"><option value="ERROR">Fehler</option><option value="WARNING">Warnungen</option><option value="INFO">Hinweise</option><option value="">Alle</option></select>
+      <span class="muted">${n(list.length)} Regeln</span>
+    </div>
+    <div class="tablebox"><table><thead><tr><th>Schwere</th><th>Richtung</th><th>Regel</th><th>Feld</th><th>Bedeutung und Korrektur</th>
+    <th class="num">Dateien</th><th class="num">Befunde</th><th class="num">Meldungen</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  $("#rk", el).value = ruleState.kind; $("#rs", el).value = ruleState.sev;
+  $("#rk", el).addEventListener("change", (e) => { ruleState.kind = e.target.value; renderRules(); });
+  $("#rs", el).addEventListener("change", (e) => { ruleState.sev = e.target.value; renderRules(); });
+  el.querySelectorAll("tbody tr.click").forEach((tr) => tr.addEventListener("click", () => {
+    Object.assign(state, { kind: tr.dataset.kind, rule: tr.dataset.rule, supplier: "", q: "", page: 0 });
+    show("dateien");
+  }));
+}
+
+// ---------------------------------------------------------------- Dateien
+const PAGE = 100;
+function matches(f) {
+  if (state.kind && f.kind !== state.kind) return false;
+  if (state.supplier && f.supplier !== state.supplier) return false;
+  if (state.onlyErrors && !errs(f)) return false;
+  if (state.rule && !f.rules.some((r) => r.rule === state.rule)) return false;
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    if (!f._text) f._text = [f.rel, f.supplier, ...(f.funds || []), ...f.rules.flatMap((r) => [r.rule, ...r.examples.map((x) => x[0])])].join("\n").toLowerCase();
+    if (!f._text.includes(q)) return false;
+  }
+  return true;
+}
+const SORTS = {
+  light: (f) => ({ r: 0, y: 1, g: 2 })[light(f)], kind: (f) => f.kind, supplier: (f) => f.supplier, rel: (f) => f.rel,
+  date: (f) => f.date || "", errors: errs, warnings: warns, xsd: (f) => (f.xsd ? (f.xsd.valid ? 1 : 0) : 2),
+};
+function renderFiles() {
+  const el = $("#tab-dateien");
+  const suppliers = [...new Set(D.files.filter((f) => !state.kind || f.kind === state.kind).map((f) => f.supplier))].sort();
+  const [key, dir] = state.sort;
+  const list = D.files.filter(matches).sort((a, b) => {
+    const x = SORTS[key](a), y = SORTS[key](b);
+    return (x < y ? -1 : x > y ? 1 : 0) * (dir === "asc" ? 1 : -1) || a.rel.localeCompare(b.rel);
+  });
+  const pages = Math.max(1, Math.ceil(list.length / PAGE));
+  state.page = Math.min(state.page, pages - 1);
+  const rows = list.slice(state.page * PAGE, (state.page + 1) * PAGE).map((f) => {
+    const v = f.versions[f.main] || {};
+    const xsd = !f.xsd ? "–" : f.xsd.valid ? '<span class="pill ok">gültig</span>' : `<span class="pill ERROR">${n(f.xsd.errors)} Fehler</span>`;
+    const hit = state.rule ? f.rules.find((r) => r.rule === state.rule) : null;
+    return `<tr class="click" data-i="${D.files.indexOf(f)}">
+      <td><span class="dot ${light(f)}" title="${{ r: "Fehler", y: "nur Warnungen", g: "ohne Befund" }[light(f)]}"></span></td>
+      <td>${esc(KIND[f.kind])}</td><td>${esc(f.supplier)}</td>
+      <td class="mono" style="overflow-wrap:anywhere">${esc(f.rel)}${f.error || v.validationError ? ' <span class="pill ERROR">nicht prüfbar</span>' : ""}</td>
+      <td class="mono">${esc(f.date)}</td>
+      <td class="num">${n(errs(f))}${hit ? `<div class="muted">${n(hit.distinct)} × ${esc(state.rule)}</div>` : ""}</td>
+      <td class="num">${n(warns(f))}</td><td>${xsd}</td></tr>`;
+  }).join("");
+  const head = (k, label, cls = "") => `<th class="sort ${cls}" data-k="${k}" ${key === k ? `data-dir="${dir}"` : ""}>${label}</th>`;
+  el.innerHTML = `<h2>Dateien</h2>
+    <div class="filters">
+      <input type="search" id="fq" placeholder="Datei, Fonds, ISIN/Instrument oder Regel suchen" value="${esc(state.q)}" aria-label="Suche">
+      <select id="fk" aria-label="Richtung"><option value="">Alle Richtungen</option><option value="fundsxml">FundsXML → TPT</option><option value="tpt">TPT</option></select>
+      <select id="fs" aria-label="Lieferant"><option value="">Alle Lieferanten</option>${suppliers.map((s) => `<option>${esc(s)}</option>`).join("")}</select>
+      <label><input type="checkbox" id="fe" ${state.onlyErrors ? "checked" : ""}> nur mit Fehlern</label>
+      ${state.rule ? `<span class="active-filter">Regel <span class="mono">${esc(state.rule)}</span> <button id="fr" aria-label="Regelfilter entfernen">×</button></span>` : ""}
+      <span class="muted">${n(list.length)} Dateien</span>
+    </div>
+    <p class="muted">Die Suche nach ISIN/Instrument findet die angezeigten Beispiele; die vollständige Liste steht in den CSV-Dateien.</p>
+    <div class="tablebox"><table><thead><tr>${head("light", "", "")}${head("kind", "Richtung")}${head("supplier", "Lieferant")}${head("rel", "Datei")}
+      ${head("date", "Stichtag")}${head("errors", "Fehler", "num")}${head("warnings", "Warnungen", "num")}${head("xsd", "XSD")}</tr></thead>
+      <tbody>${rows || '<tr><td colspan="8" class="muted">Keine Datei passt zum Filter.</td></tr>'}</tbody></table></div>
+    <div class="pager">${pages > 1 ? `<button class="btn" id="pp" ${state.page ? "" : "disabled"}>Zurück</button>
+      <span>Seite ${state.page + 1} von ${pages}</span><button class="btn" id="pn" ${state.page < pages - 1 ? "" : "disabled"}>Weiter</button>` : ""}</div>`;
+  $("#fk", el).value = state.kind;
+  $("#fs", el).value = state.supplier;
+  let t;
+  $("#fq", el).addEventListener("input", (e) => {
+    clearTimeout(t);
+    t = setTimeout(() => { state.q = e.target.value.trim(); state.page = 0; renderFiles(); const i = $("#fq"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 250);
+  });
+  $("#fk", el).addEventListener("change", (e) => { state.kind = e.target.value; state.supplier = ""; state.page = 0; renderFiles(); });
+  $("#fs", el).addEventListener("change", (e) => { state.supplier = e.target.value; state.page = 0; renderFiles(); });
+  $("#fe", el).addEventListener("change", (e) => { state.onlyErrors = e.target.checked; state.page = 0; renderFiles(); });
+  $("#fr", el)?.addEventListener("click", () => { state.rule = ""; renderFiles(); });
+  $("#pp", el)?.addEventListener("click", () => { state.page--; renderFiles(); });
+  $("#pn", el)?.addEventListener("click", () => { state.page++; renderFiles(); });
+  el.querySelectorAll("th.sort").forEach((th) => th.addEventListener("click", () => {
+    const k = th.dataset.k;
+    state.sort = [k, state.sort[0] === k && state.sort[1] === "desc" ? "asc" : "desc"];
+    renderFiles();
+  }));
+  el.querySelectorAll("tbody tr.click").forEach((tr) => tr.addEventListener("click", () => openFile(D.files[+tr.dataset.i])));
+}
+
+// ---------------------------------------------------------------- Datei-Detail
+function openFile(f) {
+  const dlg = $("#detail");
+  const vs = Object.entries(f.versions).map(([v, x]) => `<dt>TPT ${esc(v)}</dt><dd>${n(x.rows)} Zeilen · ${n(x.errors)} Fehler und ${n(x.warnings)} Warnungen je Instrument
+      ${x.raw ? `<span class="muted">(Validator: ${n(x.raw.errorCount)} Fehler, ${n(x.raw.warningCount)} Warnungen)</span>` : ""}
+      ${x.validationError ? `<span class="pill ERROR">Validierung fehlgeschlagen: ${esc(x.validationError)}</span>` : ""}</dd>`).join("");
+  const xsd = !f.xsd ? "" : `<dt>${f.kind === "fundsxml" ? "FundsXML-Schema" : "als FundsXML"}</dt><dd>${f.xsd.valid ? '<span class="pill ok">gültig</span>' : `<span class="pill ERROR">${n(f.xsd.errors)} Schemafehler</span>`}
+      ${f.xsd.sample?.length ? `<div class="mono muted">${f.xsd.sample.slice(0, 5).map(esc).join("<br>")}</div>` : ""}</dd>`;
+  const issues = (f.issues || []).map((i) => `<li>${sevPill(i.level.toUpperCase())} ${esc(i.text)} <span class="muted">(${n(i.n)})</span>
+      ${i.examples?.length ? `<div class="mono muted">${i.examples.slice(0, 5).map((p) => esc(Object.values(p).join(" · "))).join("<br>")}</div>` : ""}</li>`).join("");
+  const v8 = f.v8Only && Object.keys(f.v8Only).length ? `<dt>nur in V8</dt><dd>${Object.entries(f.v8Only).map(([k, c]) => `${esc(k)} (${n(c)})`).join(", ")}</dd>` : "";
+  const rules = f.rules.map((r) => {
+    const info = ruleInfo(f.kind, r.sev, r.rule, r.field);
+    const more = r.distinct - r.examples.length;
+    const paths = f.kind === "fundsxml" && info.paths?.length ? `<dt>FundsXML</dt><dd class="mono">${info.paths.map(esc).join("<br>")}</dd>` : "";
+    const ex = r.level === "portfolio" && r.examples.length === 1 && r.examples[0][0] === "Portfolio"
+      ? `<p class="muted">Betrifft das Portfolio${r.examples[0][3] > 1 ? ` (${n(r.examples[0][3])} Anteilsklassen)` : ""}${r.examples[0][1] ? `, Wert <code>${esc(r.examples[0][1])}</code>` : ""}.</p>`
+      : `<div class="tablebox"><table><thead><tr><th>Instrument (Feld 14)</th><th>Name</th><th>Wert</th><th class="num">Zeile</th><th class="num">Anteilsklassen</th></tr></thead><tbody>
+        ${r.examples.map(([inst, val, row, sc, name]) => `<tr><td class="mono">${esc(inst)}</td><td>${esc(name)}</td><td class="mono">${esc(val)}</td><td class="num">${row ?? "–"}</td><td class="num">${sc || "–"}</td></tr>`).join("")}
+        </tbody></table></div>${more > 0 ? `<p class="muted">… und ${n(more)} weitere, siehe <a href="${esc(f.csv)}">CSV der Datei</a>.</p>` : ""}`;
+    return `<details class="rule" ${r.sev === "ERROR" ? "open" : ""}><summary>${sevPill(r.sev)} <span class="mono">${esc(r.rule)}</span>
+        ${fieldLabel(r.field, info.fieldName)}<span class="count">${n(r.distinct)} ${r.level === "portfolio" ? "× Portfolio" : "Instrumente"} · ${n(r.raw)} Meldungen</span></summary>
+      <div class="inner"><dl class="kv"><dt>Bedeutung</dt><dd>${esc(info.was || r.message)}</dd>
+        ${info.fix ? `<dt>Korrektur</dt><dd>${esc(info.fix)}</dd>` : ""}${paths}
+        ${info.was && r.message ? `<dt>Validator</dt><dd class="muted">${esc(r.message)}</dd>` : ""}</dl>${ex}</div></details>`;
+  }).join("");
+  dlg.innerHTML = `<div class="dlg-head"><div><h3 id="detail-title" class="mono">${esc(f.rel)}</h3>
+      <div class="muted">${esc(KIND[f.kind])} · ${esc(f.supplier)}${f.date ? " · Stichtag " + esc(f.date) : ""}</div></div>
+      <button class="btn" id="close" autofocus>Schließen</button></div>
+    <div class="dlg-body">
+      ${f.error ? `<p><span class="pill ERROR">Datei nicht lesbar</span> <span class="mono">${esc(f.error)}</span></p>` : ""}
+      <dl class="kv" style="margin-top:12px">
+        ${f.funds?.length ? `<dt>Fonds</dt><dd>${f.funds.map(esc).join(" · ")}</dd>` : ""}
+        ${f.shareClasses != null ? `<dt>Anteilsklassen</dt><dd>${n(f.shareClasses)}</dd>` : ""}
+        ${vs}${xsd}${v8}
+      </dl>
+      ${issues ? `<h2>Hinweise aus der Umwandlung</h2><ul>${issues}</ul>` : ""}
+      <h2>Befunde (${esc(f.main || "")})</h2>
+      ${f.csv ? `<p class="muted">Vollständige Liste: <a href="${esc(f.csv)}">${esc(f.csv)}</a></p>` : ""}
+      ${rules || '<p class="muted">Keine Befunde.</p>'}
+    </div>`;
+  $("#close", dlg).addEventListener("click", () => dlg.close());
+  dlg.showModal();
+}
+
+// ---------------------------------------------------------------- Tabs
+const RENDER = { uebersicht: renderOverview, lieferanten: renderSuppliers, regeln: renderRules, dateien: renderFiles };
+function show(tab) {
+  if (!RENDER[tab]) tab = "uebersicht";
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  for (const t of Object.keys(RENDER)) $(`#tab-${t}`).hidden = t !== tab;
+  RENDER[tab]();
+  if (location.hash !== "#" + tab) history.replaceState(null, "", "#" + tab);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => show(b.dataset.tab)));
+
+load().then((data) => {
+  D = data;
+  for (const r of D.rules) RULES[`${r.kind}|${r.sev}|${r.rule}|${r.field}`] = r;
+  const k = (kind) => D.files.filter((f) => f.kind === kind).length;
+  $("#subtitle").textContent = `Stand ${D.generated} · ${n(k("fundsxml"))} FundsXML-Lieferungen · ${n(k("tpt"))} TPT-Dateien`;
+  $("#loading").hidden = true;
+  show(location.hash.slice(1));
+}).catch((err) => {
+  $("#loading").textContent = "Die Daten konnten nicht geladen werden (" + err + "). Bitte einen aktuellen Browser verwenden.";
+});
+</script>
+</body>
+</html>
