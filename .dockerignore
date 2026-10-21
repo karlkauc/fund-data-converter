@@ -21,3 +21,15 @@ docs
 .vscode
 .idea
 testfiles
+**/*.tsbuildinfo
+playwright-report
+test-results
+.playwright-mcp
+htmlcov
+.coverage
+coverage
+Dockerfile
+docker-compose.yml
+.dockerignore
+.gcloudignore
+samples
