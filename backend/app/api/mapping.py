@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from app.mapping.rules import BLOCK_RULES, CORE_RULES
 from app.spec.catalog import VERSIONS, load_catalog
+from app.usage.context import emit
 
 router = APIRouter()
 
@@ -63,4 +64,5 @@ async def mapping(version: str, response: Response) -> dict:
     if v not in VERSIONS:
         raise HTTPException(404, "unknown TPT version")
     response.headers["Cache-Control"] = "public, max-age=3600"
+    emit("mapping_view", tpt_version=v, status_code=200, status="ok")
     return mapping_table(v)

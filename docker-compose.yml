@@ -6,6 +6,12 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8095:8080"
+    # Usage statistics (docs/USAGE_STATS.md): USAGE_DB_URL, USAGE_DB_PASSWORD,
+    # USAGE_HASH_SECRET (same value as on Cloud Run) and MAXMIND_LICENSE_KEY.
+    # Without the file the container runs without statistics.
+    env_file:
+      - path: .env
+        required: false
     environment:
       LOG_LEVEL: INFO
       MAX_UPLOAD_MB: "25"
@@ -13,4 +19,5 @@ services:
       MAX_CONCURRENT_CONVERSIONS: "1"
       # Apache appends the client IP to X-Forwarded-For.
       TRUSTED_PROXY_HOPS: "1"
+      USAGE_INSTANCE: vps
     mem_limit: 1g

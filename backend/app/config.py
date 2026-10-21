@@ -18,6 +18,13 @@ class Settings:
     cors_allow_origins: tuple[str, ...]
     max_positions: int
     zip_threshold_mb: int
+    usage_db_url: str
+    usage_db_password: str
+    usage_hash_secret: str
+    usage_instance: str
+    usage_drain_seconds: float
+    geoip_db_path: str
+    maxmind_license_key: str
 
     @property
     def max_upload_bytes(self) -> int:
@@ -40,6 +47,16 @@ def load_settings() -> Settings:
         max_positions=int(os.getenv("MAX_POSITIONS", "10000")),
         # Larger outputs are delivered zipped (Cloud Run caps responses at 32 MiB).
         zip_threshold_mb=int(os.getenv("ZIP_THRESHOLD_MB", "8")),
+        # Anonymous usage statistics (docs/USAGE_STATS.md); off unless USAGE_DB_URL is set.
+        # The URL carries no password; it comes from USAGE_DB_PASSWORD (a secret).
+        usage_db_url=os.getenv("USAGE_DB_URL", ""),
+        usage_db_password=os.getenv("USAGE_DB_PASSWORD", ""),
+        usage_hash_secret=os.getenv("USAGE_HASH_SECRET", ""),
+        # Which deployment writes the rows: cloudrun | vps (both share one database).
+        usage_instance=os.getenv("USAGE_INSTANCE", ""),
+        usage_drain_seconds=float(os.getenv("USAGE_DRAIN_SECONDS", "2")),
+        geoip_db_path=os.getenv("GEOIP_DB_PATH", "/app/geoip/GeoLite2-Country.mmdb"),
+        maxmind_license_key=os.getenv("MAXMIND_LICENSE_KEY", ""),
         cors_allow_origins=tuple(
             o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()
         ),

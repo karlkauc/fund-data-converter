@@ -42,3 +42,6 @@ coverage/
 
 # Local test data (real fund files)
 testfiles/
+
+# GeoLite2 database, downloaded by scripts/deploy.sh (licensed, not redistributable)
+backend/geoip/*.mmdb

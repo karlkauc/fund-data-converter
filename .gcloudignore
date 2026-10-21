@@ -5,3 +5,5 @@ node_modules
 e2e
 docs
 backend/tests
+# The GeoLite2 database scripts/deploy.sh downloads is gitignored but must reach the build.
+!backend/geoip/*.mmdb

@@ -15,7 +15,9 @@ XLSX or CSV) to **FundsXML 4.2.11** and back. Runs as a single container on Goog
 - **Lossless round trip**: values that have no element in FundsXML, or that the schema rejects, are not
   dropped. They are stored as `Position/CustomAttributes/Attribute[Name=TPT_<field>]`. Examples: 17b, 114,
   V8 fields 150/151, V8 codes e1/e2/e3 in field 56.
-- **Privacy**: files are processed in memory and never stored. There is no database and no tracking.
+- **Privacy**: files are processed in memory and never stored. No cookies, no client-side tracking.
+  Anonymous usage statistics (counts, sizes, durations, issue codes – never file content, file names
+  or IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`.
 
 ## Layout
 
@@ -28,6 +30,8 @@ backend/   FastAPI app (Python 3.12, lxml, openpyxl)
   app/ingest/      TPT reader (XLSX/CSV, header + delimiter + version detection), hardened XML parser
   app/spec/        TPT V7/V8 field catalogs (from findatex-validator, tools/sync_specs.py)
   app/samples/     example files behind "Try an example" (tools/make_samples.py)
+  app/usage/       anonymous usage statistics + feedback store (docs/USAGE_STATS.md)
+  sql/             DDL of the usage-statistics database
 frontend/  React 18 + Vite + Tailwind SPA (DE/EN, dark mode), served by FastAPI in production
 e2e/       Playwright (desktop, phone, tablet)
 scripts/deploy.sh  Cloud Run deployment
@@ -67,6 +71,10 @@ The script runs `gcloud run deploy --source .`, using the `Dockerfile` via Cloud
 
 With `min-instances 0` the service costs nothing while idle. The script finishes with a smoke test against
 the service URL.
+
+Usage statistics switch on once the Secret Manager secrets from `docs/USAGE_STATS.md` exist; the script
+then also downloads GeoLite2 into `backend/geoip/` and mounts the secrets. The Docker copy
+(`docker-compose.yml`) reads the same settings from `.env` (see `.env.example`).
 
 ### Limits and abuse protection
 

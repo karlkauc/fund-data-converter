@@ -42,6 +42,25 @@ export async function fetchSample(name: "tpt-v7" | "tpt-v8" | "fundsxml"): Promi
   return new File([blob], filename, { type: blob.type });
 }
 
+export interface FeedbackPayload {
+  message: string;
+  email?: string;
+  page?: string;
+  direction?: string;
+  tpt_version?: string;
+  error_detail?: string;
+  website?: string; // honeypot
+}
+
+export async function sendFeedback(payload: FeedbackPayload): Promise<void> {
+  const res = await fetch("/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
 export async function fetchMapping(version: "V7" | "V8"): Promise<MappingField[]> {
   const res = await fetch(`/api/mapping/${version}`);
   if (!res.ok) throw await errorFrom(res);

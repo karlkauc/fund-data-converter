@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -16,11 +17,16 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app import __version__
 from app.api.convert import router as convert_router
+from app.api.feedback import router as feedback_router
 from app.api.mapping import router as mapping_router
 from app.api.samples import router as samples_router
 from app.config import settings
-from app.rate_limit import limiter
+from app.rate_limit import client_ip, limiter
 from app.spa import mount_spa
+from app.usage.context import RequestUsage, UsageTracker, bind, emit, unbind
+from app.usage.feedback import FeedbackStore
+from app.usage.geoip import GeoIp
+from app.usage.recorder import UsageRecorder
 
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("app")
@@ -76,8 +82,17 @@ class BufferRequestBodyMiddleware:
         await self.app(scope, replay, send)
 
 
+def build_usage_tracker() -> UsageTracker:
+    """Usage statistics – inert unless USAGE_DB_URL is set (docs/USAGE_STATS.md)."""
+    recorder = UsageRecorder(settings.usage_db_url, settings.usage_db_password)
+    geoip = GeoIp(settings.geoip_db_path, settings.maxmind_license_key) if recorder.enabled else None
+    if recorder.enabled and not settings.usage_hash_secret:
+        logger.warning("USAGE_HASH_SECRET is empty; visitor hashes are only date-salted")
+    return UsageTracker(recorder, geoip, settings.usage_hash_secret, settings.usage_instance)
+
+
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     # Build the schema model and compile the XSD while the instance starts (CPU boost),
     # not on the first visitor's request.
     from app.schema.model import fundsxml_model
@@ -85,7 +100,14 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     await anyio.to_thread.run_sync(fundsxml_model)
     await anyio.to_thread.run_sync(fundsxml_schema)
-    yield
+    tracker = build_usage_tracker()
+    application.state.usage = tracker
+    application.state.feedback = FeedbackStore(settings.usage_db_url, settings.usage_db_password)
+    await tracker.start()
+    try:
+        yield
+    finally:
+        await tracker.stop()
 
 
 app = FastAPI(
@@ -138,12 +160,48 @@ async def security_headers(request: Request, call_next):
     return response
 
 
+@app.middleware("http")
+async def usage_context(request: Request, call_next):
+    """Bind the visitor context for ``emit()``; outermost, so it also sees 413, 429 and 500."""
+    tracker: UsageTracker | None = getattr(request.app.state, "usage", None)
+    if tracker is None or not tracker.enabled:
+        return await call_next(request)
+    usage = RequestUsage(
+        tracker=tracker,
+        ip=client_ip(request),
+        user_agent=request.headers.get("user-agent"),
+        referrer=request.headers.get("referer"),
+    )
+    token = bind(usage)
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+        if request.url.path == "/api/convert" and request.method == "POST" and not usage.emitted:
+            # Turned away before the handler could report it: body too large, rate limit,
+            # malformed form, crash.
+            code = response.status_code
+            emit(
+                "convert",
+                status="error" if code >= 500 else "rejected",
+                status_code=code,
+                duration_ms=round((time.perf_counter() - start) * 1000),
+            )
+    finally:
+        unbind(token)
+    if usage.emitted:
+        # Cloud Run throttles CPU after the response; give the writer a bounded
+        # chance to finish while we still have it (see docs/USAGE_STATS.md).
+        await tracker.recorder.drain(timeout=settings.usage_drain_seconds)
+    return response
+
+
 @app.get("/api/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "version": __version__}
 
 
 app.include_router(convert_router, prefix="/api")
+app.include_router(feedback_router, prefix="/api")
 app.include_router(mapping_router, prefix="/api")
 app.include_router(samples_router, prefix="/api")
 

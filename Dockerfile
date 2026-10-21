@@ -19,6 +19,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     STATIC_DIR=/app/static \
+    GEOIP_DB_PATH=/app/geoip/GeoLite2-Country.mmdb \
     PORT=8080
 
 RUN addgroup --system --gid 1001 app \
@@ -32,6 +33,12 @@ COPY backend/app ./app
 RUN pip install --no-cache-dir . && rm -rf /root/.cache
 
 COPY --from=frontend /src/frontend/dist ./static
+
+# GeoLite2-Country for the usage statistics (optional). scripts/deploy.sh downloads it into
+# backend/geoip/ before the build, so no instance downloads it at runtime (MaxMind's daily
+# limit). Without the file the app downloads it at startup when MAXMIND_LICENSE_KEY is set;
+# the directory is app-owned so that fallback can write.
+COPY --chown=app:app backend/geoip ./geoip
 
 USER app
 

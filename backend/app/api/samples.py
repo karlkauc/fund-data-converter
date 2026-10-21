@@ -7,6 +7,8 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
+from app.usage.context import emit
+
 router = APIRouter()
 
 SAMPLE_DIR = Path(__file__).resolve().parent.parent / "samples"
@@ -23,6 +25,7 @@ async def sample(name: str) -> FileResponse:
     if entry is None:
         raise HTTPException(404, "unknown sample")
     filename, mime = entry
+    emit("sample_load", source=name, status_code=200, status="ok")
     return FileResponse(
         SAMPLE_DIR / filename,
         media_type=mime,

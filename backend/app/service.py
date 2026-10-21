@@ -27,6 +27,10 @@ class InputError(ValueError):
     """The upload cannot be converted (unreadable, wrong kind, …)."""
 
 
+class TooLargeError(InputError):
+    """The upload is readable but has more positions than the service converts."""
+
+
 @dataclass
 class Request:
     data: bytes
@@ -160,7 +164,7 @@ def _xml_preview(xml: bytes) -> str:
 
 def _check_size(positions: int) -> None:
     if positions > settings.max_positions:
-        raise InputError(
+        raise TooLargeError(
             f"the file has {positions} positions; this service converts up to {settings.max_positions} "
             "per file – split it by portfolio"
         )

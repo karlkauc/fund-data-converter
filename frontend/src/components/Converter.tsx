@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, convertFile, fetchSample } from "../lib/api";
+import { openFeedback, setFeedbackContext } from "../lib/feedback";
 import { useI18n } from "../lib/i18n";
 import { navigate } from "../lib/router";
 import type { ConvertOptions, ConvertResult, Direction } from "../types";
@@ -71,6 +72,12 @@ export function Converter({ direction }: { direction: Direction }) {
     setError(null);
     setBusy(false);
   };
+
+  // Feedback sent while a conversion is open says which direction and version it was about.
+  useEffect(() => {
+    setFeedbackContext(file ? { direction, tptVersion: result?.input.version || options.tptVersion || undefined } : {});
+    return () => setFeedbackContext({});
+  }, [file, direction, result, options.tptVersion]);
 
   // Switching tabs without a file in progress starts over.
   useEffect(() => {
@@ -166,11 +173,16 @@ export function Converter({ direction }: { direction: Direction }) {
           <div className="panel border-red-300 p-4 text-sm dark:border-red-800" role="alert">
             <p className="font-semibold text-red-700 dark:text-red-400">✖ {t("error")}</p>
             <p className="mt-1">{error}</p>
-            {file && (
-              <button type="button" className="btn mt-3" onClick={() => run(file, options)}>
-                {t("retry")}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {file && (
+                <button type="button" className="btn" onClick={() => run(file, options)}>
+                  {t("retry")}
+                </button>
+              )}
+              <button type="button" className="btn" onClick={() => openFeedback({ errorDetail: error })}>
+                {t("reportProblem")}
               </button>
-            )}
+            </div>
           </div>
         )}
 

@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import logging
+import time
 
 import anyio
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
 from app.config import settings
 from app.rate_limit import limiter
-from app.service import InputError, run
+from app.service import InputError, TooLargeError, detect_kind, run
 from app.service import Request as ConvertRequest
+from app.usage.context import emit
+from app.usage.conversion import conversion_fields, is_sample
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -57,7 +60,31 @@ async def convert(
     )
     if not (req.include_block or req.include_core):
         raise HTTPException(400, "select the TPT block, the core structures or both")
+    start = time.perf_counter()
     try:
-        return await anyio.to_thread.run_sync(run, req, limiter=_slots)
+        result = await anyio.to_thread.run_sync(run, req, limiter=_slots)
     except InputError as exc:
+        # Only the exception class: messages may quote values from the file.
+        emit(
+            "convert",
+            status="rejected" if isinstance(exc, TooLargeError) else "parse_error",
+            status_code=422,
+            error_detail=type(exc.__cause__ or exc).__name__,
+            direction="tpt-to-fundsxml" if detect_kind(data, req.filename) == "tpt" else "fundsxml-to-tpt",
+            source="sample" if is_sample(data) else None,
+            input_bytes=len(data),
+            duration_ms=_elapsed_ms(start),
+        )
         raise HTTPException(422, str(exc)) from exc
+    emit(
+        "convert",
+        status="ok",
+        status_code=200,
+        duration_ms=_elapsed_ms(start),
+        **conversion_fields(req, result),
+    )
+    return result
+
+
+def _elapsed_ms(start: float) -> int:
+    return round((time.perf_counter() - start) * 1000)

@@ -12,9 +12,12 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+
+from app.usage.context import emit
+from app.usage.events import utm_fields
 
 
 @dataclass(frozen=True)
@@ -74,7 +77,7 @@ def mount_spa(app: FastAPI, static_path: Path) -> None:
     index_file = static_path / "index.html"
 
     @app.get("/{full_path:path}", include_in_schema=False)
-    async def spa_fallback(full_path: str) -> Response:
+    async def spa_fallback(full_path: str, request: Request) -> Response:
         if full_path.startswith("api/"):
             return JSONResponse(status_code=404, content={"error": "not_found"})
         if full_path and full_path != "index.html":
@@ -84,6 +87,7 @@ def mount_spa(app: FastAPI, static_path: Path) -> None:
         route = full_path.rstrip("/")
         if route not in ROUTE_META:
             return Response(status_code=404, content="Not Found", media_type="text/plain")
+        emit("page_view", path=f"/{route}", status_code=200, status="ok", **utm_fields(request.query_params))
         return Response(
             render_shell(index_file.read_text(encoding="utf-8"), route),
             media_type="text/html",
