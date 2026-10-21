@@ -20,3 +20,4 @@ docs
 .env*
 .vscode
 .idea
+testfiles
