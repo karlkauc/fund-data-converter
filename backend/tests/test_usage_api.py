@@ -115,10 +115,40 @@ def test_too_many_positions_is_rejected(client, events, fixture_bytes, monkeypat
 def test_requests_turned_away_early_are_counted(client, events, fixture_bytes, monkeypatch):
     from app.config import settings
 
-    assert _post(client, "a.xlsx", fixture_bytes("tpt_v7_sample.xlsx"), tpt_version="V9").status_code == 400
+    sample = fixture_bytes("tpt_v7_sample.xlsx")
+    assert _post(client, "a.xlsx", sample, tpt_version="V9").status_code == 400
     monkeypatch.setattr(settings, "max_upload_mb", 1)
     assert _post(client, "big.csv", b"x" * (3 * 1024 * 1024)).status_code == 413
     assert [(e.status, e.status_code) for e in events] == [("rejected", 400), ("rejected", 413)]
+    bad_version, body_limit = events
+    # In the handler: what is known about the upload is kept; the bad value itself is not.
+    assert bad_version.error_detail == "bad_tpt_version" and bad_version.tpt_version is None
+    assert (bad_version.direction, bad_version.source) == ("tpt-to-fundsxml", "sample")
+    assert bad_version.input_bytes == len(sample)
+    # Stopped by the body limit before the handler: nothing about the file.
+    assert body_limit.direction is None and body_limit.source is None and body_limit.input_bytes is None
+
+
+def test_handler_rejections_carry_direction_source_and_version(client, events, fixture_bytes, monkeypatch):
+    from app.config import settings
+
+    clean = fixture_bytes("01_clean.xlsx")
+    assert _post(client, "e.xml", b"", tpt_version="V8").status_code == 400
+    assert _post(client, "e", b"").status_code == 400
+    nothing = {"include_block": "false", "include_core": "false"}
+    assert _post(client, "a.xlsx", clean, tpt_version="v8", **nothing).status_code == 400
+    monkeypatch.setattr(settings, "max_upload_mb", 1)
+    too_big = b"<FundsXML4/>" + b" " * (1024 * 1024)
+    assert _post(client, "big.xml", too_big).status_code == 413
+    assert [
+        (e.status, e.status_code, e.error_detail, e.direction, e.source, e.tpt_version, e.input_bytes)
+        for e in events
+    ] == [
+        ("rejected", 400, "empty_file", "fundsxml-to-tpt", "xml", "V8", 0),
+        ("rejected", 400, "empty_file", None, None, None, 0),
+        ("rejected", 400, "nothing_selected", "tpt-to-fundsxml", "xlsx", "V8", len(clean)),
+        ("rejected", 413, "too_large", "fundsxml-to-tpt", "xml", None, 1024 * 1024 + 1),
+    ]
 
 
 def test_sample_and_mapping_events(client, events):

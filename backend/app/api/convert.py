@@ -37,6 +37,35 @@ def _input_source(data: bytes, filename: str) -> str | None:
     return source
 
 
+def _direction(data: bytes, filename: str) -> str | None:
+    """The direction ``run`` would take, or None when neither content nor name tell."""
+    suffix = PurePath(filename).suffix.lower()
+    if not data and suffix not in _SOURCE_BY_SUFFIX:
+        return None
+    return "tpt-to-fundsxml" if detect_kind(data, filename) == "tpt" else "fundsxml-to-tpt"
+
+
+def _reject(
+    status_code: int, detail: str, reason: str, data: bytes, filename: str, tpt_version: str | None
+) -> HTTPException:
+    """Record a request the handler turns away and build its HTTPException.
+
+    ``reason`` is a fixed code for ``error_detail`` (never the message, as for
+    failed conversions). Returned, not raised, so call sites read ``raise _reject(...)``.
+    """
+    emit(
+        "convert",
+        status="rejected",
+        status_code=status_code,
+        error_detail=reason,
+        direction=_direction(data, filename),
+        source=_input_source(data, filename),
+        tpt_version=tpt_version,
+        input_bytes=len(data),
+    )
+    return HTTPException(status_code, detail)
+
+
 def _flag(value: str | None, default: bool) -> bool:
     if value is None or value == "":
         return default
@@ -56,16 +85,20 @@ async def convert(
     all_columns: str | None = Form(None),
 ) -> dict:
     data = await file.read(settings.max_upload_bytes + 1)
-    if len(data) > settings.max_upload_bytes:
-        raise HTTPException(413, f"file exceeds the {settings.max_upload_mb} MB limit")
-    if not data:
-        raise HTTPException(400, "the uploaded file is empty")
+    filename = file.filename or "upload"
     version = (tpt_version or "").upper() or None
+    # An unknown version is not recorded: tpt_version holds V7/V8 only.
+    requested = version if version in ("V7", "V8") else None
+    if len(data) > settings.max_upload_bytes:
+        detail = f"file exceeds the {settings.max_upload_mb} MB limit"
+        raise _reject(413, detail, "too_large", data, filename, requested)
+    if not data:
+        raise _reject(400, "the uploaded file is empty", "empty_file", data, filename, requested)
     if version not in (None, "V7", "V8"):
-        raise HTTPException(400, "tpt_version must be V7 or V8")
+        raise _reject(400, "tpt_version must be V7 or V8", "bad_tpt_version", data, filename, None)
     req = ConvertRequest(
         data=data,
-        filename=file.filename or "upload",
+        filename=filename,
         tpt_version=version,
         include_block=_flag(include_block, True),
         include_core=_flag(include_core, True),
@@ -74,7 +107,8 @@ async def convert(
         all_columns=_flag(all_columns, True),
     )
     if not (req.include_block or req.include_core):
-        raise HTTPException(400, "select the TPT block, the core structures or both")
+        detail = "select the TPT block, the core structures or both"
+        raise _reject(400, detail, "nothing_selected", data, filename, version)
     start = time.perf_counter()
     try:
         result = await anyio.to_thread.run_sync(run, req, limiter=_slots)
@@ -85,7 +119,7 @@ async def convert(
             status="rejected" if isinstance(exc, TooLargeError) else "parse_error",
             status_code=422,
             error_detail=type(exc.__cause__ or exc).__name__,
-            direction="tpt-to-fundsxml" if detect_kind(data, req.filename) == "tpt" else "fundsxml-to-tpt",
+            direction=_direction(data, req.filename),
             source=_input_source(data, req.filename),
             tpt_version=version,
             input_bytes=len(data),

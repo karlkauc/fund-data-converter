@@ -42,7 +42,7 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`):
 | `diagnostic_count`, `error_count` | messages shown; XSD errors (TPT → FundsXML) or error messages |
 | `issue_codes` | distinct `Issue.code` values (`mandatory_missing`, `xsd_invalid` …), never the messages |
 | `valid`, `zipped` | generated FundsXML valid against the XSD; output delivered as zip |
-| `status`, `status_code`, `error_detail` | `ok` / `parse_error` / `rejected` (position limit, 400, 413, 429) / `error` (5xx); `error_detail` is the exception **class** only (`TptReadError` …), because messages may quote file values |
+| `status`, `status_code`, `error_detail` | `ok` / `parse_error` / `rejected` (position limit, 400, 413, 429) / `error` (5xx); `error_detail` is the exception **class** only (`TptReadError` …), because messages may quote file values; a request the handler refuses before converting carries a fixed code (`too_large`, `empty_file`, `bad_tpt_version`, `nothing_selected`) together with `direction`, `source`, the requested `tpt_version` and `input_bytes` as far as the upload tells them. Rows refused before the handler (body limit, 429, malformed form) have no `direction` — the dashboard labels them "rejected before processing" |
 | `instance` | `cloudrun` / `vps` (`USAGE_INSTANCE`) |
 | `app_version`, `received_at` | version + Cloud Run revision, server timestamp |
 
@@ -67,7 +67,8 @@ request → usage_context middleware (app/main.py) binds RequestUsage(ip, ua, re
 ```
 
 - `emit()` never raises and is a no-op without a tracker. Requests to `/api/convert` that are
-  turned away before the handler (413, 429, malformed form, crash) are recorded by the middleware.
+  turned away before the handler (413, 429, malformed form, crash) are recorded by the middleware;
+  refusals inside the handler go through `_reject()` in `app/api/convert.py`.
 - On Cloud Run the CPU is throttled once the response is sent, so the middleware waits (bounded by
   `USAGE_DRAIN_SECONDS`, default 2 s) for pending writes before returning a response that emitted
   events. On shutdown the lifespan flushes for ≤ 5 s.
