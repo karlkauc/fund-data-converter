@@ -62,6 +62,18 @@ export function Header({ route }: { route: Route }) {
             <span aria-hidden>⇆</span>
             <span className="hidden sm:inline">{t("mapping")}</span>
           </a>
+          <a
+            href="/api-docs"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("api-docs");
+            }}
+            className={`btn ${route === "api-docs" ? "btn-primary" : ""}`}
+            aria-current={route === "api-docs" ? "page" : undefined}
+          >
+            <span aria-hidden>{"</>"}</span>
+            <span className="hidden sm:inline">{t("api")}</span>
+          </a>
           <button
             type="button"
             className="btn px-2.5"

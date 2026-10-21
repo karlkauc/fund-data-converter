@@ -28,7 +28,8 @@ export async function convertFile(file: File, opts: ConvertOptions, signal?: Abo
   form.append("include_core", String(opts.includeCore));
   form.append("output_format", opts.outputFormat);
   form.append("delimiter", opts.delimiter);
-  const res = await fetch("/api/convert", { method: "POST", body: form, signal });
+  // X-Client tells the usage statistics the SPA from API scripts (backend/app/main.py).
+  const res = await fetch("/api/convert", { method: "POST", body: form, headers: { "X-Client": "web" }, signal });
   if (!res.ok) throw await errorFrom(res);
   return res.json();
 }

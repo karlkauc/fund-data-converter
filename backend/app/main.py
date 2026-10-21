@@ -141,6 +141,15 @@ if settings.cors_allow_origins:
     )
 
 
+# Swagger UI (/api/docs) loads its bundle from jsdelivr and starts it with an inline script;
+# the strict API policy below (sandbox, default-src 'none') would leave the page blank.
+DOCS_CSP = (
+    "default-src 'none'; script-src https://cdn.jsdelivr.net 'unsafe-inline'; "
+    "style-src https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: https://fastapi.tiangolo.com; "
+    "connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'"
+)
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     try:
@@ -151,6 +160,8 @@ async def security_headers(request: Request, call_next):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
+    if request.url.path == app.docs_url:
+        response.headers["Content-Security-Policy"] = DOCS_CSP
     response.headers.setdefault(
         "Content-Security-Policy", "default-src 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"
     )
@@ -171,6 +182,8 @@ async def usage_context(request: Request, call_next):
         ip=client_ip(request),
         user_agent=request.headers.get("user-agent"),
         referrer=request.headers.get("referer"),
+        # Only the converter's own frontend sends X-Client; everything else is a script.
+        channel="web" if request.headers.get("x-client") == "web" else "api",
     )
     token = bind(usage)
     start = time.perf_counter()

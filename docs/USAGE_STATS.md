@@ -23,13 +23,16 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 > attempts) until the column exists. Apply the migration section at the end of
 > `backend/sql/usage_stats.sql` by hand as the owning role first; the statements are idempotent
 > (`ADD COLUMN IF NOT EXISTS`). Pending since 2026-10-21: `delimiter`, `all_columns`,
-> `output_bytes` —
+> `output_bytes`, `channel`, `response_mode` —
 >
 > ```sql
 > ALTER TABLE usage_event
 >   ADD COLUMN IF NOT EXISTS delimiter    text,
 >   ADD COLUMN IF NOT EXISTS all_columns  boolean,
 >   ADD COLUMN IF NOT EXISTS output_bytes int;
+> ALTER TABLE usage_event
+>   ADD COLUMN IF NOT EXISTS channel       text,
+>   ADD COLUMN IF NOT EXISTS response_mode text;
 > ```
 
 
@@ -62,6 +65,8 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 | `all_columns` | FundsXML → TPT option: every catalog column (`true`) or only the filled ones; NULL for TPT → FundsXML |
 | `status`, `status_code`, `error_detail` | `ok` / `parse_error` / `rejected` (position limit, 400, 413, 429) / `error` (5xx); `error_detail` is the exception **class** only (`TptReadError` …), because messages may quote file values; a request the handler refuses before converting carries a fixed code (`too_large`, `empty_file`, `bad_tpt_version`, `nothing_selected`) together with `direction`, `source`, the requested `tpt_version` and `input_bytes` as far as the upload tells them. Rows refused before the handler (body limit, 429, malformed form) have no `direction` — the dashboard labels them "rejected before processing" |
 | `instance` | `cloudrun` / `vps` (`USAGE_INSTANCE`) |
+| `channel` | `web` when the request carries `X-Client: web` (only the SPA sends it), else `api`. API scripts are usually also `device = bot` (curl, python-requests …), so filter API use by `channel`, not by `device` |
+| `response_mode` | convert: the API's `response=` option, `json` / `file` / `zip` |
 | `app_version`, `received_at` | version + Cloud Run revision, server timestamp |
 
 **Never collected:** file content, file names, portfolio ids/names/NAVs, cell values, issue

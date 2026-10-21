@@ -45,7 +45,9 @@ CREATE TABLE IF NOT EXISTS usage_event (
   instance         text,                 -- cloudrun | vps
   delimiter        text,                 -- CSV only: semicolon | comma | pipe | tab (TPT CSV input detected / TPT CSV output chosen)
   all_columns      boolean,              -- FundsXML → TPT option: every catalog column or only filled ones
-  output_bytes     int                   -- size of the delivered file (after zipping if zipped)
+  output_bytes     int,                  -- size of the delivered file (after zipping if zipped)
+  channel          text,                 -- web (the SPA sends X-Client: web) | api
+  response_mode    text                  -- convert: json | file | zip (the API's response= option)
 );
 
 CREATE INDEX IF NOT EXISTS idx_usage_event_received  ON usage_event (received_at);
@@ -64,3 +66,8 @@ ALTER TABLE usage_event
   ADD COLUMN IF NOT EXISTS delimiter    text,
   ADD COLUMN IF NOT EXISTS all_columns  boolean,
   ADD COLUMN IF NOT EXISTS output_bytes int;
+
+-- 2026-10-21 (public API): channel, response_mode
+ALTER TABLE usage_event
+  ADD COLUMN IF NOT EXISTS channel       text,
+  ADD COLUMN IF NOT EXISTS response_mode text;

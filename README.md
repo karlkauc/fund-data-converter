@@ -19,6 +19,22 @@ XLSX or CSV) to **FundsXML 4.2.11** and back. Runs as a single container on Goog
   Anonymous usage statistics (counts, sizes, durations, issue codes – never file content, file names
   or IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`.
 
+## API
+
+Scripts use the same endpoint as the web interface. No account, no API key; the limits below apply.
+
+```bash
+# TPT → FundsXML: the XML file, key figures in X-Conversion-* headers
+curl -F file=@fund.xlsx -F response=file -OJ -D - https://<host>/api/convert
+# FundsXML → TPT CSV, plus report.json and issues.csv, in one zip
+curl -F file=@fundsxml.xml -F output_format=csv -F response=zip -OJ https://<host>/api/convert
+```
+
+`response=json` (the default) returns the report with the file base64-encoded. Besides the conversion
+messages, the report holds `validation`, `issueCounts`, `dataLoss` (TPT values lost or only kept as
+custom attributes) and `meta` (versions, sha256 of input and output, duration). Documentation with
+PowerShell and Python examples is at `/api-docs`, and the OpenAPI description at `/api/docs`.
+
 ## Layout
 
 ```

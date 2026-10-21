@@ -213,3 +213,12 @@ def test_page_view_only_for_known_routes(tmp_path, monkeypatch):
         ("page_view", {"path": "/mapping", "status_code": 200, "status": "ok", "utm_source": "linkedin"}),
         ("page_view", {"path": "/", "status_code": 200, "status": "ok"}),
     ]
+
+
+def test_channel_tells_the_spa_from_scripts(client, events, fixture_bytes):
+    data = fixture_bytes("01_clean.xlsx")
+    client.post("/api/convert", files={"file": ("a.xlsx", data)}, headers={"X-Client": "web"})
+    _post(client, "a.xlsx", data, response="file")
+    web, api = events
+    assert (web.channel, web.response_mode) == ("web", "json")
+    assert (api.channel, api.response_mode) == ("api", "file")

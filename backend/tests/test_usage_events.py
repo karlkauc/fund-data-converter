@@ -74,8 +74,7 @@ class TestDevice:
 
     def test_current_safari_stays_human(self) -> None:
         iphone = (
-            "Mozilla/5.0 (iPhone; CPU iPhone OS {} like Mac OS X) "
-            "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+            "Mozilla/5.0 (iPhone; CPU iPhone OS {} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
         )
         ios17 = iphone.format("17_5") + "Version/17.5 Mobile/15E148 Safari/604.1"
         ios18 = iphone.format("18_1") + "Version/18.1 Mobile/15E148 Safari/604.1"
@@ -124,7 +123,7 @@ class TestRow:
     def test_insert_names_every_column_in_order(self) -> None:
         names = INSERT_SQL.split("(", 1)[1].split(")", 1)[0].split(", ")
         assert tuple(names) == COLUMNS
-        assert names[-3:] == ["delimiter", "all_columns", "output_bytes"]
+        assert names[-5:] == ["delimiter", "all_columns", "output_bytes", "channel", "response_mode"]
 
 
 _DDL = Path(__file__).resolve().parent.parent / "sql" / "usage_stats.sql"
@@ -145,7 +144,7 @@ def test_ddl_matches_usage_event_columns() -> None:
     assert [c for c in created if c not in ("event_id", "received_at")] == list(COLUMNS)
     # Every migrated column is in CREATE TABLE too, so a fresh install and a migrated one agree.
     assert set(added) <= set(created)
-    assert {"delimiter", "all_columns", "output_bytes"} <= set(added)
+    assert {"delimiter", "all_columns", "output_bytes", "channel", "response_mode"} <= set(added)
 
 
 def test_utm_fields_keep_only_short_slugs() -> None:

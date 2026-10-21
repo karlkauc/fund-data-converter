@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import re
 import uuid
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
@@ -71,6 +71,7 @@ class ConversionResult:
     stats: dict
     valid: bool | None
     validation_errors: list[str] = field(default_factory=list)
+    issue_totals: dict[str, int] = field(default_factory=dict)  # per code, before capping
 
 
 def group_portfolios(rows: list[TptRow]) -> list[PortfolioGroup]:
@@ -228,7 +229,7 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
             doc, kept if opts.include_block else None, core_kept if opts.include_core else None, custom_keys
         ),
     }
-    return ConversionResult(xml, _cap(issues), stats, valid, errors)
+    return ConversionResult(xml, _cap(issues), stats, valid, errors, dict(Counter(i.code for i in issues)))
 
 
 # ---------------------------------------------------------------------------

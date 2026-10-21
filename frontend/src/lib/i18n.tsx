@@ -9,6 +9,7 @@ const en = {
   dirToFundsxml: "TPT → FundsXML",
   dirToTpt: "FundsXML → TPT",
   mapping: "Field mapping",
+  api: "API",
   dropTitle: "Drop a file here or",
   chooseFile: "Choose file…",
   dropHintTpt: ".xlsx · .csv · .txt (TPT V7 or V8, max. 25 MB)",
@@ -109,6 +110,7 @@ const de: typeof en = {
   dirToFundsxml: "TPT → FundsXML",
   dirToTpt: "FundsXML → TPT",
   mapping: "Feld-Mapping",
+  api: "API",
   dropTitle: "Datei hierher ziehen oder",
   chooseFile: "Datei wählen…",
   dropHintTpt: ".xlsx · .csv · .txt (TPT V7 oder V8, max. 25 MB)",
@@ -255,6 +257,9 @@ const ISSUES: Record<Lang, Record<string, string>> = {
     more_messages: "… {n} weitere Hinweis(e) dieser Art",
   },
 };
+
+/** Every issue code with a text, for the API documentation. */
+export const ISSUE_CODES = Object.keys(ISSUES.en);
 
 export function issueText(lang: Lang, code: string, fallback: string, params?: Record<string, string | number>): string {
   let s = ISSUES[lang][code];

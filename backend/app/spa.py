@@ -43,6 +43,11 @@ ROUTE_META: dict[str, RouteMeta] = {
         "Which FundsXML 4 element each FinDatEx TPT field maps to: the Solvency II TPT block, "
         "fund, position and asset master data.",
     ),
+    "api-docs": RouteMeta(
+        "TPT ⇄ FundsXML Converter API – convert from scripts with curl, PowerShell or Python",
+        "One HTTP request converts a TPT file to FundsXML 4 or back and returns the file plus a "
+        "report: validation, issues, data loss. No account, no API key.",
+    ),
 }
 
 CSP = (

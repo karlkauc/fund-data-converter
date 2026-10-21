@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 // Keep in sync with ROUTE_META in backend/app/spa.py.
-export type Route = "" | "fundsxml-to-tpt" | "mapping";
-export const ROUTES: Route[] = ["", "fundsxml-to-tpt", "mapping"];
+export type Route = "" | "fundsxml-to-tpt" | "mapping" | "api-docs";
+export const ROUTES: Route[] = ["", "fundsxml-to-tpt", "mapping", "api-docs"];
 
 function current(): Route {
   const path = window.location.pathname.replace(/^\/+|\/+$/g, "");

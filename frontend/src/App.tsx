@@ -1,3 +1,4 @@
+import { ApiDocsPage } from "./components/ApiDocsPage";
 import { Converter } from "./components/Converter";
 import { FeedbackDialog } from "./components/FeedbackDialog";
 import { Header } from "./components/Header";
@@ -15,6 +16,8 @@ export default function App() {
       <main className="flex-1">
         {route === "mapping" ? (
           <MappingPage />
+        ) : route === "api-docs" ? (
+          <ApiDocsPage />
         ) : (
           <Converter direction={route === "fundsxml-to-tpt" ? "fundsxml-to-tpt" : "tpt-to-fundsxml"} />
         )}

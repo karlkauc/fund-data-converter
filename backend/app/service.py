@@ -3,24 +3,28 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import io
 import re
 import zipfile
 from dataclasses import dataclass
 from pathlib import PurePath
 
+from app import __version__
 from app.config import settings
 from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import FundsXmlReadError, parse_fundsxml
 from app.ingest.tpt_reader import TptReadError, read_tpt
 from app.model.issues import Issue
+from app.schema.model import fundsxml_version
 from app.spec.catalog import load_catalog
 from app.writers.tpt_writer import CSV_DELIMITERS, write_csv, write_xlsx
 
 PREVIEW_ROWS = 200
 PREVIEW_KEYS = ("1", "6", "12", "14", "17", "21", "22", "24", "26")
 XML_PREVIEW_BYTES = 60_000
+DIRECTIONS = ("tpt-to-fundsxml", "fundsxml-to-tpt")
 
 
 class InputError(ValueError):
@@ -41,6 +45,21 @@ class Request:
     output_format: str = "xlsx"  # FundsXML → TPT: xlsx | csv
     delimiter: str = "semicolon"
     all_columns: bool = True
+    direction: str = "auto"  # auto | tpt-to-fundsxml | fundsxml-to-tpt (refused on a mismatch)
+    preview: bool = True  # False drops the table and XML previews (API callers rarely want them)
+    data_supplier_name: str | None = None  # TPT → FundsXML: ControlData/DataSupplier overrides
+    data_supplier_short: str | None = None
+    data_supplier_country: str | None = None
+
+
+@dataclass
+class OutputFile:
+    """The converted file as delivered: zipped above ``ZIP_THRESHOLD_MB``."""
+
+    data: bytes
+    filename: str
+    mime: str
+    zipped: bool = False
 
 
 def detect_kind(data: bytes, filename: str) -> str:
@@ -53,23 +72,86 @@ def detect_kind(data: bytes, filename: str) -> str:
 
 
 def run(req: Request) -> dict:
-    kind = detect_kind(req.data, req.filename)
-    return _tpt_to_fundsxml(req) if kind == "tpt" else _fundsxml_to_tpt(req)
+    """The report with the converted file embedded as base64 (the browser's format)."""
+    report, out = convert(req)
+    report["output"]["base64"] = base64.b64encode(out.data).decode("ascii")
+    return report
 
 
-def _tpt_to_fundsxml(req: Request) -> dict:
+def convert(req: Request) -> tuple[dict, OutputFile]:
+    """The report (``output`` holds metadata only) and the converted file."""
+    direction = "tpt-to-fundsxml" if detect_kind(req.data, req.filename) == "tpt" else "fundsxml-to-tpt"
+    if req.direction not in ("auto", direction):
+        kind = "a TPT file" if direction == "tpt-to-fundsxml" else "a FundsXML document"
+        raise InputError(f"direction is {req.direction}, but the upload is {kind}")
+    if direction == "tpt-to-fundsxml":
+        report, out, totals = _tpt_to_fundsxml(req)
+    else:
+        report, out = _fundsxml_to_tpt(req)
+        totals = None
+    report["output"] = {
+        "filename": out.filename,
+        "mimeType": out.mime,
+        "size": len(out.data),
+        "zipped": out.zipped,
+        "sha256": hashlib.sha256(out.data).hexdigest(),
+    }
+    issues = report["issues"]
+    report["issueCounts"] = {
+        level: sum(1 for i in issues if i["level"] == level) for level in ("error", "warning", "info")
+    }
+    report["dataLoss"] = _data_loss(issues, totals) if totals is not None else None
+    report["meta"] = {
+        "converterVersion": __version__,
+        "fundsxmlSchema": fundsxml_version(),
+        "input": {"bytes": len(req.data), "sha256": hashlib.sha256(req.data).hexdigest()},
+    }
+    if not req.preview:
+        for key in ("preview", "xmlPreview", "xmlPreviewTruncated"):
+            report.pop(key, None)
+    return report, out
+
+
+def _data_loss(issues: list[dict], totals: dict[str, int]) -> dict:
+    """TPT values FundsXML did not take where they belong, counted before the 25-per-code cap.
+
+    ``block_value_rejected`` is an error (lost) without core structures and a warning (kept as a
+    custom attribute) with them; ``core_value_rejected`` always falls back to a custom attribute;
+    ``core_value_skipped`` values are still in the TPT block.
+    """
+    block_level = next((i["level"] for i in issues if i["code"] == "block_value_rejected"), None)
+    block = totals.get("block_value_rejected", 0)
+    lost = block if block_level == "error" else 0
+    return {
+        "lost": lost,
+        "keptAsCustomAttribute": block - lost + totals.get("core_value_rejected", 0),
+        "notInCoreStructures": totals.get("core_value_skipped", 0),
+        "codes": sorted(
+            c for c in ("block_value_rejected", "core_value_rejected", "core_value_skipped") if totals.get(c)
+        ),
+    }
+
+
+def _tpt_to_fundsxml(req: Request) -> tuple[dict, OutputFile, dict[str, int]]:
     try:
         doc = read_tpt(req.data, req.filename, req.tpt_version or None)
     except TptReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
     result = convert_tpt_to_fundsxml(
-        doc, ConvertOptions(include_block=req.include_block, include_core=req.include_core)
+        doc,
+        ConvertOptions(
+            include_block=req.include_block,
+            include_core=req.include_core,
+            data_supplier_name=req.data_supplier_name,
+            data_supplier_short=req.data_supplier_short,
+            data_supplier_country=req.data_supplier_country,
+        ),
     )
     catalog = load_catalog(doc.version)
     portfolios = _portfolio_summary([r.values for r in doc.rows])
     name = f"{_stem(req.filename)}_FundsXML.xml"
-    return {
+    report = {
         "direction": "tpt-to-fundsxml",
         "input": {
             "filename": req.filename,
@@ -91,11 +173,11 @@ def _tpt_to_fundsxml(req: Request) -> dict:
         "preview": _preview([r.values for r in doc.rows], catalog),
         "xmlPreview": _xml_preview(result.xml),
         "xmlPreviewTruncated": len(result.xml) > XML_PREVIEW_BYTES,
-        "output": _file(name, "application/xml", result.xml),
     }
+    return report, _package(name, "application/xml", result.xml), result.issue_totals
 
 
-def _fundsxml_to_tpt(req: Request) -> dict:
+def _fundsxml_to_tpt(req: Request) -> tuple[dict, OutputFile]:
     try:
         root = parse_fundsxml(req.data)
     except FundsXmlReadError as exc:
@@ -119,15 +201,15 @@ def _fundsxml_to_tpt(req: Request) -> dict:
     if req.output_format == "csv":
         delim = CSV_DELIMITERS.get(req.delimiter, ";")
         data = write_csv(extract.rows, extract.version, delim, req.all_columns)
-        out = _file(f"{stem}_TPT_{extract.version}.csv", "text/csv", data)
+        out = _package(f"{stem}_TPT_{extract.version}.csv", "text/csv", data)
     else:
         data = write_xlsx(extract.rows, extract.version, req.all_columns)
-        out = _file(
+        out = _package(
             f"{stem}_TPT_{extract.version}.xlsx",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             data,
         )
-    return {
+    report = {
         "direction": "fundsxml-to-tpt",
         "input": {
             "filename": req.filename,
@@ -141,8 +223,8 @@ def _fundsxml_to_tpt(req: Request) -> dict:
         "validation": None,
         "preview": _preview(extract.rows, catalog),
         "xmlPreview": None,
-        "output": out,
     }
+    return report, out
 
 
 # ---------------------------------------------------------------------------
@@ -170,20 +252,13 @@ def _check_size(positions: int) -> None:
         )
 
 
-def _file(name: str, mime: str, data: bytes) -> dict:
-    zipped = len(data) > settings.zip_threshold_mb * 1024 * 1024
-    if zipped:
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
-            zf.writestr(name, data)
-        data, name, mime = buf.getvalue(), name + ".zip", "application/zip"
-    return {
-        "filename": name,
-        "mimeType": mime,
-        "size": len(data),
-        "zipped": zipped,
-        "base64": base64.b64encode(data).decode("ascii"),
-    }
+def _package(name: str, mime: str, data: bytes) -> OutputFile:
+    if len(data) <= settings.zip_threshold_mb * 1024 * 1024:
+        return OutputFile(data, name, mime)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
+        zf.writestr(name, data)
+    return OutputFile(buf.getvalue(), name + ".zip", "application/zip", zipped=True)
 
 
 def _portfolio_summary(rows: list[dict[str, str]]) -> list[dict]:

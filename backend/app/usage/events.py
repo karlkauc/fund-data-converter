@@ -75,6 +75,9 @@ class UsageEvent:
     delimiter: str | None = None
     all_columns: bool | None = None
     output_bytes: int | None = None
+    # added 2026-10 (public API): ALTER TABLE in backend/sql/usage_stats.sql before deploying
+    channel: str | None = None  # web (the SPA sends X-Client: web) | api
+    response_mode: str | None = None  # convert: json | file | zip
 
     def as_row(self) -> tuple:
         return tuple(getattr(self, f.name) for f in fields(self))

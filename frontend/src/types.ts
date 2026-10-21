@@ -65,7 +65,16 @@ export interface ConvertResult {
   preview: { columns: { key: string; name: string }[]; rows: string[][]; total: number };
   xmlPreview: string | null;
   xmlPreviewTruncated?: boolean;
-  output: { filename: string; mimeType: string; size: number; base64: string };
+  output: { filename: string; mimeType: string; size: number; zipped: boolean; sha256: string; base64: string };
+  issueCounts: { error: number; warning: number; info: number };
+  /** TPT → FundsXML only: values FundsXML did not take where they belong (counted before capping). */
+  dataLoss: { lost: number; keptAsCustomAttribute: number; notInCoreStructures: number; codes: string[] } | null;
+  meta: {
+    converterVersion: string;
+    fundsxmlSchema: string;
+    input: { bytes: number; sha256: string };
+    durationMs: number;
+  };
 }
 
 export interface ConvertOptions {

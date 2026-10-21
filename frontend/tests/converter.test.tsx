@@ -33,6 +33,7 @@ test("uploading a file converts it and shows the result", async () => {
   const [url, init] = fetchMock.mock.calls[0];
   expect(url).toBe("/api/convert");
   expect((init.body as FormData).get("include_core")).toBe("true");
+  expect(init.headers).toEqual({ "X-Client": "web" });
 });
 
 test("an API error is shown", async () => {

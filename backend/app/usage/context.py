@@ -60,6 +60,7 @@ class RequestUsage:
     ip: str | None
     user_agent: str | None
     referrer: str | None
+    channel: str | None = None
     emitted: bool = False
 
 
@@ -98,6 +99,7 @@ def emit(event_type: str, **fields: Any) -> bool:
             app_version=release_version(),
             referrer=clean_referrer(ctx.referrer),
             instance=tracker.instance,
+            channel=ctx.channel,
             **fields,
         )
         if event.error_detail:

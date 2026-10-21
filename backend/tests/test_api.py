@@ -1,6 +1,13 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import io
+import json
+import zipfile
+
+import openpyxl
+from lxml import etree
 
 BOMB = b"""<?xml version="1.0"?>
 <!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;&lol;">]>
@@ -108,3 +115,151 @@ def test_xml_preview_is_cut_at_a_line_end(client, fixture_bytes, monkeypatch):
     assert body["xmlPreviewTruncated"] is True
     assert body["xmlPreview"].endswith("\n")
     assert len(body["xmlPreview"].encode()) <= 5000
+
+
+def _report_header(r) -> dict:
+    raw = r.headers["x-conversion-report"]
+    return json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
+
+
+def test_json_report_has_counts_data_loss_and_meta(client, fixture_bytes):
+    data = fixture_bytes("tpt_v7_sample.xlsx")
+    body = client.post("/api/convert", files={"file": ("a.xlsx", data)}).json()
+    assert body["output"]["base64"] and body["preview"]["rows"] and body["xmlPreview"]
+    out = base64.b64decode(body["output"]["base64"])
+    assert body["output"]["sha256"] == hashlib.sha256(out).hexdigest()
+    assert sum(body["issueCounts"].values()) == len(body["issues"])
+    assert body["dataLoss"] == {
+        "lost": 0,
+        "keptAsCustomAttribute": 3,
+        "notInCoreStructures": 0,
+        "codes": ["block_value_rejected"],
+    }
+    meta = body["meta"]
+    assert meta["fundsxmlSchema"] == "4.2.11" and meta["converterVersion"]
+    assert meta["input"] == {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+    assert meta["durationMs"] >= 0
+
+
+def test_data_loss_without_core_structures(client, fixture_bytes):
+    body = client.post(
+        "/api/convert",
+        files={"file": ("a.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))},
+        data={"include_core": "false", "preview": "false"},
+    ).json()
+    assert body["dataLoss"]["lost"] == 3 and body["dataLoss"]["keptAsCustomAttribute"] == 0
+    assert "preview" not in body and "xmlPreview" not in body
+
+
+def test_response_file_tpt_to_fundsxml(client, fixture_bytes):
+    r = client.post(
+        "/api/convert",
+        files={"file": ("my fund.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))},
+        data={"response": "file"},
+    )
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/xml")
+    assert r.headers["content-disposition"] == 'attachment; filename="my_fund_FundsXML.xml"'
+    assert r.content.startswith(b"<?xml") and b"<FundsXML4" in r.content
+    assert r.headers["x-conversion-direction"] == "tpt-to-fundsxml"
+    assert r.headers["x-conversion-valid"] == "true"
+    assert r.headers["x-conversion-positions"] == "20"
+    assert r.headers["x-conversion-data-lost"] == "0"
+    assert "block_value_rejected" in r.headers["x-conversion-issue-codes"].split(",")
+    assert "X-Conversion-Report" in r.headers["access-control-expose-headers"]
+    report = _report_header(r)
+    assert report["output"]["sha256"] == hashlib.sha256(r.content).hexdigest()
+    assert "portfolioList" not in report["summary"] and "fields" not in report["coverage"]
+
+
+def test_response_file_fundsxml_to_tpt(client, fixture_bytes):
+    r = client.post(
+        "/api/convert",
+        files={"file": ("f.xml", fixture_bytes("fundsxml_sample.xml"))},
+        data={"response": "file"},
+    )
+    assert r.status_code == 200
+    assert r.headers["content-disposition"].endswith('_TPT_V7.xlsx"')
+    assert openpyxl.load_workbook(io.BytesIO(r.content)).active.max_row > 1
+    assert r.headers["x-conversion-valid"] == "" and r.headers["x-conversion-data-lost"] == ""
+    assert _report_header(r)["validation"] is None
+
+
+def test_response_zip_bundles_file_report_and_issues(client, fixture_bytes):
+    r = client.post(
+        "/api/convert",
+        files={"file": ("a.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))},
+        data={"response": "zip"},
+    )
+    assert r.status_code == 200 and r.headers["content-type"] == "application/zip"
+    assert r.headers["content-disposition"] == 'attachment; filename="a_FundsXML_conversion.zip"'
+    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+        assert sorted(zf.namelist()) == ["a_FundsXML.xml", "issues.csv", "report.json"]
+        report = json.loads(zf.read("report.json"))
+        issues = zf.read("issues.csv").decode("utf-8-sig").splitlines()
+        xml = zf.read("a_FundsXML.xml")
+    assert "base64" not in report["output"] and "preview" not in report
+    assert report["output"]["sha256"] == hashlib.sha256(xml).hexdigest()
+    assert issues[0] == "level;code;field;row;path;value;message"
+    assert len(issues) == 1 + len(report["issues"])
+
+
+def test_zip_bundle_holds_the_unzipped_file(client, fixture_bytes, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "zip_threshold_mb", 0)
+    data = fixture_bytes("tpt_v7_sample.xlsx")
+    json_body = client.post("/api/convert", files={"file": ("a.xlsx", data)}).json()
+    assert json_body["output"]["zipped"] is True and json_body["output"]["filename"] == "a_FundsXML.xml.zip"
+    r = client.post("/api/convert", files={"file": ("a.xlsx", data)}, data={"response": "zip"})
+    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+        assert zf.read("a_FundsXML.xml").startswith(b"<?xml")
+
+
+def test_direction_option(client, fixture_bytes):
+    tpt = fixture_bytes("tpt_v7_sample.xlsx")
+    ok = client.post("/api/convert", files={"file": ("a.xlsx", tpt)}, data={"direction": "tpt-to-fundsxml"})
+    assert ok.status_code == 200
+    r = client.post("/api/convert", files={"file": ("a.xlsx", tpt)}, data={"direction": "fundsxml-to-tpt"})
+    assert r.status_code == 422 and "TPT file" in r.json()["detail"]
+    r = client.post("/api/convert", files={"file": ("a.xlsx", tpt)}, data={"direction": "sideways"})
+    assert r.status_code == 400
+
+
+def test_bad_response_mode(client, fixture_bytes):
+    data = fixture_bytes("tpt_v7_sample.xlsx")
+    r = client.post("/api/convert", files={"file": ("a.xlsx", data)}, data={"response": "pdf"})
+    assert r.status_code == 400 and "response" in r.json()["detail"]
+
+
+def test_data_supplier_overrides(client, fixture_bytes):
+    r = client.post(
+        "/api/convert",
+        files={"file": ("a.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))},
+        data={
+            "response": "file",
+            "data_supplier_name": "Example Asset Management",
+            "data_supplier_short": "EXAM",
+            "data_supplier_country": "at",
+        },
+    )
+    supplier = etree.fromstring(r.content).find("ControlData/DataSupplier")
+    assert supplier.findtext("Name") == "Example Asset Management"
+    assert supplier.findtext("Short") == "EXAM"
+    assert supplier.findtext("SystemCountry") == "AT"
+
+
+def test_openapi_documents_the_convert_options(client):
+    spec = client.get("/api/openapi.json").json()
+    op = spec["paths"]["/api/convert"]["post"]
+    ref = op["requestBody"]["content"]["multipart/form-data"]["schema"]["$ref"].rsplit("/", 1)[1]
+    props = spec["components"]["schemas"][ref]["properties"]
+    assert {"response", "direction", "preview", "data_supplier_name"} <= set(props)
+    content = set(op["responses"]["200"]["content"])
+    assert content == {"application/json", "application/octet-stream", "application/zip"}
+
+
+def test_swagger_ui_may_load_its_bundle(client):
+    csp = client.get("/api/docs").headers["content-security-policy"]
+    assert "https://cdn.jsdelivr.net" in csp and "sandbox" not in csp
+    assert "sandbox" in client.get("/api/health").headers["content-security-policy"]
