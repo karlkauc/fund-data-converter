@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
+from pathlib import PurePath
 
 import anyio
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
@@ -20,6 +21,20 @@ router = APIRouter()
 
 # CPU-bound work runs in worker threads; this caps how many run at once per instance.
 _slots = anyio.CapacityLimiter(settings.max_concurrent_conversions)
+
+
+# Upload extension -> usage ``source`` (what a successful conversion reports as the input format).
+_SOURCE_BY_SUFFIX = {".xlsx": "xlsx", ".xls": "xlsx", ".csv": "csv", ".xml": "xml"}
+
+
+def _input_source(data: bytes, filename: str) -> str | None:
+    """``source`` of a conversion that failed: a bundled example, else the file extension."""
+    if data and is_sample(data):
+        return "sample"
+    source = _SOURCE_BY_SUFFIX.get(PurePath(filename).suffix.lower())
+    if source is None and data and detect_kind(data, filename) == "fundsxml":
+        return "xml"
+    return source
 
 
 def _flag(value: str | None, default: bool) -> bool:
@@ -71,7 +86,8 @@ async def convert(
             status_code=422,
             error_detail=type(exc.__cause__ or exc).__name__,
             direction="tpt-to-fundsxml" if detect_kind(data, req.filename) == "tpt" else "fundsxml-to-tpt",
-            source="sample" if is_sample(data) else None,
+            source=_input_source(data, req.filename),
+            tpt_version=version,
             input_bytes=len(data),
             duration_ms=_elapsed_ms(start),
         )

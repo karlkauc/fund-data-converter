@@ -32,9 +32,9 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`):
 | `user_agent`, `device` | UA (≤255) and `desktop`/`mobile`/`bot`/`unknown` |
 | `referrer` | `scheme://host/path` of the Referer, no query (the site itself sends `Referrer-Policy: no-referrer`) |
 | `direction` | `tpt-to-fundsxml` / `fundsxml-to-tpt` |
-| `source` | convert: input format `xlsx`/`csv`/`xml`, or `sample` when the upload is a bundled example (compared by hash) |
+| `source` | convert: input format `xlsx`/`csv`/`xml`, or `sample` when the upload is a bundled example (compared by hash). A failed conversion takes it from the file extension (`.xlsx`/`.xls` → `xlsx`, `.csv`, `.xml`; NULL for anything else unless the content is XML) |
 | `schema_name`, `target_namespace` | input and output standard, e.g. `TPT V7` → `FundsXML 4` |
-| `tpt_version`, `version_source` | V7/V8; for TPT input how the version was found (`field 1000`, `default`, `user` …) |
+| `tpt_version`, `version_source` | V7/V8; for TPT input how the version was found (`field 1000`, `default`, `user` …). A failed conversion records the *requested* version (NULL = auto) |
 | `output_format` | `xml` / `xlsx` / `csv` |
 | `include_block`, `include_core` | TPT → FundsXML options |
 | `input_bytes`, `duration_ms` | upload size, conversion time |

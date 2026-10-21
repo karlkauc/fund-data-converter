@@ -81,7 +81,27 @@ def test_parse_error_keeps_only_the_exception_class(client, events):
     (ev,) = events
     assert ev.status == "parse_error" and ev.status_code == 422
     assert ev.error_detail == "FundsXmlReadError" and ev.direction == "fundsxml-to-tpt"
+    assert ev.source == "xml" and ev.tpt_version is None
     assert "Secret" not in repr(dataclasses.astuple(ev))
+
+
+@pytest.mark.parametrize(
+    ("name", "source"),
+    [("a.xlsx", "xlsx"), ("a.XLS", "xlsx"), ("a.csv", "csv"), ("a.xml", "xml"), ("a.txt", None)],
+)
+def test_failed_conversion_keeps_version_and_source(client, events, name, source):
+    assert _post(client, name, b"Secret Fund;1;2\n", tpt_version="v8").status_code == 422
+    (ev,) = events
+    assert ev.status == "parse_error" and ev.tpt_version == "V8" and ev.source == source
+    assert ev.input_bytes == len(b"Secret Fund;1;2\n")
+
+
+def test_failed_conversion_of_a_sample_is_marked(client, events, fixture_bytes, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "max_positions", 1)
+    assert _post(client, "x.xlsx", fixture_bytes("tpt_v7_sample.xlsx")).status_code == 422
+    assert events[0].source == "sample" and events[0].tpt_version is None
 
 
 def test_too_many_positions_is_rejected(client, events, fixture_bytes, monkeypatch):
