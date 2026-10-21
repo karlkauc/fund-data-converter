@@ -7,7 +7,11 @@ See README.md for layout, commands and deployment.
   on the gcloud default.
 - **API types**: the JSON in `backend/app/service.py` is mirrored by hand in `frontend/src/types.ts`; keep
   them in sync.
-- **SPA routes** live in both `backend/app/spa.py` (`ROUTE_META`) and `frontend/src/lib/router.ts` (`ROUTES`).
+- **SPA routes** live in both `backend/app/spa.py` (`ROUTE_META`) and `frontend/src/lib/router.ts` (`ROUTES`,
+  `TITLES` with the same titles).
+- **Content pages** (`backend/app/content/`) are English only. Internal links must resolve
+  (`tests/test_seo.py` checks them). `pages.py`, `render.py` and `template.html` are copies shared with
+  ../online_viewer, ../xml-online-viewer and ../odata-online-viewer.
 - **Issue codes** (`Issue.code`) have DE/EN texts in `frontend/src/lib/i18n.tsx` (`ISSUES`). A new code needs
   both texts; `params` fills the `{placeholders}`.
 - **Mapping changes** go in `backend/app/mapping/rules.py`. A rule needs:

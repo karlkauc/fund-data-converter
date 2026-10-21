@@ -1,4 +1,4 @@
-import type { ConvertOptions, ConvertResult, MappingField } from "../types";
+import type { ConvertOptions, ConvertResult, FaqEntry, MappingField } from "../types";
 
 export class ApiError extends Error {
   constructor(
@@ -66,4 +66,10 @@ export async function fetchMapping(version: "V7" | "V8"): Promise<MappingField[]
   const res = await fetch(`/api/mapping/${version}`);
   if (!res.ok) throw await errorFrom(res);
   return (await res.json()).fields;
+}
+
+export async function fetchFaq(): Promise<FaqEntry[]> {
+  const res = await fetch("/api/content/faq");
+  if (!res.ok) throw await errorFrom(res);
+  return res.json();
 }

@@ -4,21 +4,117 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0f172a" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- Title and description are rewritten per route by backend/app/spa.py (render_shell). -->
-    <title>TPT ⇄ FundsXML Converter</title>
-    <meta name="description" content="Convert FinDatEx TPT (V7/V8) files to FundsXML 4 and back." />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!--
+      Title, description, canonical and og:* are per-route placeholders: the
+      backend (backend/app/spa.py, render_shell) rewrites them for each client
+      route and replaces https://converter.status20.net with SITE_ORIGIN.
+      Keep the attribute order as-is.
+    -->
+    <title>TPT to FundsXML Converter – Solvency II Tripartite Template V7/V8 (Free)</title>
+    <meta
+      name="description"
+      content="Free online TPT converter: turn FinDatEx Tripartite Template (Solvency II TPT V7 and V8) Excel or CSV files into schema-valid FundsXML 4 and back. No login, nothing stored."
+    />
+    <link rel="canonical" href="https://converter.status20.net/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TPT ⇄ FundsXML Converter" />
+    <meta property="og:title" content="TPT ⇄ FundsXML Converter" />
+    <meta
+      property="og:description"
+      content="Free online TPT converter: turn FinDatEx Tripartite Template (Solvency II TPT V7 and V8) Excel or CSV files into schema-valid FundsXML 4 and back. No login, nothing stored."
+    />
+    <meta property="og:url" content="https://converter.status20.net/" />
+    <meta property="og:image" content="https://converter.status20.net/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TPT ⇄ FundsXML Converter — FinDatEx Tripartite Template to FundsXML 4 and back" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Not executed by the browser, so the CSP (script-src 'self') does not apply. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TPT ⇄ FundsXML Converter",
+        "url": "https://converter.status20.net/",
+        "description": "Free online converter for FinDatEx Tripartite Template (Solvency II TPT V7 and V8) files to FundsXML 4.2.11 and back, with XSD validation and a lossless round trip.",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "featureList": [
+          "TPT V7 and V8 (XLSX, CSV) to FundsXML 4.2.11",
+          "FundsXML 4 to TPT V7 or V8 as Excel or CSV",
+          "Solvency II TPT block plus FundsXML fund, position and asset structures",
+          "One TPT portfolio per share class",
+          "Lossless round trip via custom attributes",
+          "XSD validation and a conversion report",
+          "HTTP API for scripts (curl, PowerShell, Python)"
+        ],
+        "screenshot": "https://converter.status20.net/og-image.png",
+        "author": { "@type": "Person", "name": "Karl Kauc" },
+        "isRelatedTo": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "FreeXmlToolkit",
+            "url": "https://karlkauc.github.io/FreeXmlToolkit/",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Windows, macOS, Linux",
+            "isAccessibleForFree": true
+          },
+          { "@type": "WebApplication", "name": "Online XSD Viewer", "url": "https://www.xsd-viewer.online/" },
+          { "@type": "WebApplication", "name": "XML Online Viewer", "url": "https://www.xml-viewer.online/" },
+          { "@type": "WebApplication", "name": "Online OData Viewer", "url": "https://www.odata-viewer.online/" }
+        ]
+      }
+    </script>
+    <!--faq-jsonld-->
     <script src="/theme-init.js"></script>
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <!--
+      Static landing content: crawlers that do not execute JavaScript (and
+      Google's first, non-rendered pass) still see real text. React replaces
+      it on mount.
+    -->
     <div id="root">
-      <noscript>
-        <main style="max-width: 40rem; margin: 3rem auto; font-family: sans-serif">
-          <h1>TPT ⇄ FundsXML Converter</h1>
-          <p>Convert FinDatEx Tripartite Template (TPT V7 and V8) files to FundsXML 4 and back. This
-            tool needs JavaScript.</p>
-        </main>
-      </noscript>
+      <main class="mx-auto max-w-2xl px-6 py-16 font-sans">
+        <h1 class="text-2xl font-semibold">TPT ⇄ FundsXML Converter</h1>
+        <p class="mt-4">
+          Free online converter for the FinDatEx <strong>Tripartite Template</strong> (Solvency II TPT V7 and V8).
+          Upload a TPT file as Excel or CSV and get a schema-valid <strong>FundsXML 4.2.11</strong> document: the
+          Solvency II TPT block plus the regular fund, share class, position and asset structures. Or convert a
+          FundsXML 4 document <a class="underline" href="/fundsxml-to-tpt">into a TPT file</a> — one portfolio per
+          share class, as XLSX or CSV.
+        </p>
+        <p class="mt-4">
+          The round trip is lossless: values FundsXML has no element for are kept as custom attributes. Every
+          conversion comes with a report — XSD validation, missing mandatory fields, moved values. Files are processed
+          in memory and not stored; no login, no cookies.
+        </p>
+        <p class="mt-4">
+          Reference: <a class="underline" href="/tpt/fields">all TPT fields</a>,
+          <a class="underline" href="/mapping">the TPT ⇄ FundsXML field mapping</a>,
+          <a class="underline" href="/guides/what-is-tpt">what the Tripartite Template is</a>,
+          <a class="underline" href="/guides/tpt-v7-vs-v8">TPT V7 vs V8</a>,
+          <a class="underline" href="/api-docs">the conversion API</a> and
+          <a class="underline" href="/guides">all guides</a>.
+        </p>
+        <p class="mt-4">
+          Sister tools by the same author:
+          <a class="underline" href="https://www.xsd-viewer.online/">Online XSD Viewer</a> (browse the FundsXML schema),
+          <a class="underline" href="https://www.xml-viewer.online/">XML Online Viewer</a> and
+          <a class="underline" href="https://www.odata-viewer.online/">Online OData Viewer</a>, plus the desktop app
+          <a class="underline" href="https://karlkauc.github.io/FreeXmlToolkit/">FreeXmlToolkit</a>.
+        </p>
+        <!--faq-->
+        <noscript>
+          <p class="mt-4">The converter needs JavaScript; the guides and the API work without it.</p>
+        </noscript>
+      </main>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

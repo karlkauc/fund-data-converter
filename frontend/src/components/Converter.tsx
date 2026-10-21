@@ -6,6 +6,7 @@ import { useI18n } from "../lib/i18n";
 import { navigate } from "../lib/router";
 import type { ConvertOptions, ConvertResult, Direction } from "../types";
 import { DropZone } from "./DropZone";
+import { Faq } from "./Faq";
 import { OptionsPanel } from "./OptionsPanel";
 import { ResultView } from "./ResultView";
 
@@ -188,6 +189,7 @@ export function Converter({ direction }: { direction: Direction }) {
 
         {result && !busy && <ResultView result={result} />}
       </div>
+      {!file && <Faq />}
     </div>
   );
 }

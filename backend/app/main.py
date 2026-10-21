@@ -7,20 +7,26 @@ import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import anyio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app import __version__
+from app.api.content import router as content_router
 from app.api.convert import router as convert_router
 from app.api.feedback import router as feedback_router
+from app.api.go import router as go_router
 from app.api.mapping import router as mapping_router
 from app.api.samples import router as samples_router
 from app.config import settings
+from app.content.fields import field_pages
+from app.content.pages import register_provider
 from app.rate_limit import client_ip, limiter
 from app.spa import mount_spa
 from app.usage.context import RequestUsage, UsageTracker, bind, emit, unbind
@@ -132,6 +138,8 @@ async def _rate_limited(_request: Request, exc: RateLimitExceeded) -> JSONRespon
 
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(BufferRequestBodyMiddleware)
+# Text responses (HTML, JS, CSS, JSON, XML) shrink to a fifth; the proxies in front don't compress.
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 if settings.cors_allow_origins:
     app.add_middleware(
         CORSMiddleware,
@@ -150,6 +158,10 @@ DOCS_CSP = (
 )
 
 
+# localhost/testserver: local runs and tests behave like the public host.
+_INDEXED_HOSTS = {urlsplit(settings.site_origin).hostname, "localhost", "127.0.0.1", "testserver"}
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     try:
@@ -166,6 +178,9 @@ async def security_headers(request: Request, call_next):
         "Content-Security-Policy", "default-src 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"
     )
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    if request.url.hostname not in _INDEXED_HOSTS:
+        # The same app answers on *.run.app and staging hosts; only SITE_ORIGIN is indexed.
+        response.headers["X-Robots-Tag"] = "noindex"
     if request.url.path.startswith("/api/"):
         response.headers.setdefault("Cache-Control", "no-store")
     return response
@@ -214,9 +229,13 @@ async def health() -> dict[str, str]:
 
 
 app.include_router(convert_router, prefix="/api")
+app.include_router(content_router, prefix="/api")
 app.include_router(feedback_router, prefix="/api")
+app.include_router(go_router)
 app.include_router(mapping_router, prefix="/api")
 app.include_router(samples_router, prefix="/api")
+
+register_provider(field_pages)
 
 _static = Path(settings.static_dir)
 if (_static / "index.html").is_file():

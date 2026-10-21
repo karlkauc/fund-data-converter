@@ -47,6 +47,7 @@ backend/   FastAPI app (Python 3.12, lxml, openpyxl)
   app/spec/        TPT V7/V8 field catalogs (from findatex-validator, tools/sync_specs.py)
   app/samples/     example files behind "Try an example" (tools/make_samples.py)
   app/usage/       anonymous usage statistics + feedback store (docs/USAGE_STATS.md)
+  app/content/     server-rendered guides (pages/*.md), one page per TPT field (fields.py), home FAQ
   sql/             DDL of the usage-statistics database
 frontend/  React 18 + Vite + Tailwind SPA (DE/EN, dark mode), served by FastAPI in production
 e2e/       Playwright (desktop, phone, tablet)
@@ -91,6 +92,17 @@ the service URL.
 Usage statistics switch on once the Secret Manager secrets from `docs/USAGE_STATS.md` exist; the script
 then also downloads GeoLite2 into `backend/geoip/` and mounts the secrets. The Docker copy
 (`docker-compose.yml`) reads the same settings from `.env` (see `.env.example`).
+
+### Search engines
+
+- `SITE_ORIGIN` (default `https://converter.status20.net`) is the indexed address: canonical links,
+  `og:url`, `/sitemap.xml`, `/robots.txt` and `/llms.txt` use it. Every other host – the `*.run.app` URL,
+  staging – gets `X-Robots-Tag: noindex`. Set it in `deploy.sh`'s environment and in `.env`.
+- Content pages live in `backend/app/content/`: Markdown with TOML front matter under `pages/`, the
+  generated field pages in `fields.py`, the home FAQ in `faq.toml`. `pages.py`, `render.py` and
+  `template.html` are shared with the sister sites (xsd/xml/odata viewer); keep them in step.
+- After a deploy with new pages: `python3 tools/indexnow_ping.py --key $INDEXNOW_KEY --site $SITE_ORIGIN`.
+- `tools/generate_og_image.py` renders `og-image.png` and `apple-touch-icon.png`.
 
 ### Limits and abuse protection
 

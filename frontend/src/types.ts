@@ -91,6 +91,12 @@ export interface MappingRule {
   transform?: string;
 }
 
+/** GET /api/content/faq (backend/app/api/content.py). */
+export interface FaqEntry {
+  question: string;
+  answer_html: string;
+}
+
 export interface MappingField {
   key: string;
   name: string;

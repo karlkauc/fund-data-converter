@@ -22,6 +22,8 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "geoip2>=4.8",
     "httpx>=0.27",
+    # server-rendered content pages (app/content)
+    "markdown-it-py>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -37,7 +39,7 @@ where = ["."]
 include = ["app*"]
 
 [tool.setuptools.package-data]
-app = ["schema/*.xsd", "spec/*.json", "samples/*"]
+app = ["schema/*.xsd", "spec/*.json", "samples/*", "content/template.html", "content/faq.toml", "content/pages/**/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

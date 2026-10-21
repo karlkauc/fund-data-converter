@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="${robots}" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
+    <link rel="canonical" href="${canonical}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="${site_name}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:url" content="${canonical}" />
+    <meta property="og:image" content="${og_image}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${og_image_alt}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/content.css" />
+    ${json_ld}
+    <script src="/theme-init.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/"><img src="${logo}" alt="" width="24" height="24" /> ${site_name}</a>
+      <a class="button" href="${viewer}">${open_label}</a>
+    </header>
+    <main class="content">
+      <nav class="crumbs" aria-label="Breadcrumb">${crumbs}</nav>
+      <h1>${h1}</h1>
+      ${body}
+      ${cta}
+      ${faq}
+    </main>
+    <footer class="site-footer">
+      <p><a href="/guides">Guides and resources</a> · <a href="${viewer}">${open_label}</a></p>
+      <p>${family}</p>
+      <p>Free · no account · nothing stored</p>
+    </footer>
+  </body>
+</html>

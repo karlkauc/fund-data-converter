@@ -44,3 +44,15 @@ test("mapping page lists and filters fields", async ({ page }) => {
   await expect(page.getByText("33_Coupon_rate")).toBeVisible();
   await expect(page.getByText("150_LTEI_Fund_Elligibility", { exact: true })).toHaveCount(0);
 });
+
+test("home shows the FAQ, titles follow navigation, guides render without the SPA", async ({ page }) => {
+  await page.goto("/");
+  await page.getByText("Is the conversion lossless?").click();
+  await expect(page.getByText(/kept as custom attributes named/)).toBeVisible();
+  await page.getByRole("link", { name: "Field mapping" }).click();
+  await expect(page).toHaveTitle(/field mapping/);
+  await page.getByRole("link", { name: "All TPT fields" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tripartite Template (TPT) fields");
+  await page.getByRole("link", { name: "CIC code of the instrument" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("TPT field 12 – CIC code of the instrument");
+});

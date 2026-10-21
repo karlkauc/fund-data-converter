@@ -25,6 +25,8 @@ class Settings:
     usage_drain_seconds: float
     geoip_db_path: str
     maxmind_license_key: str
+    site_origin: str
+    indexnow_key: str
 
     @property
     def max_upload_bytes(self) -> int:
@@ -57,6 +59,11 @@ def load_settings() -> Settings:
         usage_drain_seconds=float(os.getenv("USAGE_DRAIN_SECONDS", "2")),
         geoip_db_path=os.getenv("GEOIP_DB_PATH", "/app/geoip/GeoLite2-Country.mmdb"),
         maxmind_license_key=os.getenv("MAXMIND_LICENSE_KEY", ""),
+        # The public address search engines should index (canonical, sitemap, og:url). Requests
+        # for any other host (*.run.app, staging) get X-Robots-Tag: noindex.
+        site_origin=os.getenv("SITE_ORIGIN", "https://converter.status20.net").rstrip("/"),
+        # IndexNow key (tools/indexnow_ping.py); served as /<key>.txt when set.
+        indexnow_key=os.getenv("INDEXNOW_KEY", ""),
         cors_allow_origins=tuple(
             o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()
         ),

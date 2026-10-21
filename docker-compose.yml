@@ -20,4 +20,7 @@ services:
       # Apache appends the client IP to X-Forwarded-For.
       TRUSTED_PROXY_HOPS: "1"
       USAGE_INSTANCE: vps
+      # Canonical address for search engines; other hosts get X-Robots-Tag: noindex.
+      SITE_ORIGIN: ${SITE_ORIGIN:-https://converter.status20.net}
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
     mem_limit: 1g

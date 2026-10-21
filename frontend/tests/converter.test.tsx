@@ -30,7 +30,8 @@ test("uploading a file converts it and shows the result", async () => {
   fireEvent.click(screen.getByRole("button", { name: "XML" }));
   const tag = screen.getByTestId("xml-preview").querySelector("span.text-blue-700");
   expect(tag).not.toBeNull();
-  const [url, init] = fetchMock.mock.calls[0];
+  // The FAQ below the drop zone fetches /api/content/faq first.
+  const [url, init] = fetchMock.mock.calls.find(([u]) => u === "/api/convert")!;
   expect(url).toBe("/api/convert");
   expect((init.body as FormData).get("include_core")).toBe("true");
   expect(init.headers).toEqual({ "X-Client": "web" });

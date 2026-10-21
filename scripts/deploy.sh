@@ -25,6 +25,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 ENV_VARS="MAX_UPLOAD_MB=25,MAX_POSITIONS=10000,MAX_CONCURRENT_CONVERSIONS=1,TRUSTED_PROXY_HOPS=1"
+# The address search engines index (canonical, sitemap). Every other host – including the
+# *.run.app URL – answers with X-Robots-Tag: noindex.
+ENV_VARS+=",SITE_ORIGIN=${SITE_ORIGIN:-https://converter.status20.net}"
+if [[ -n "${INDEXNOW_KEY:-}" ]]; then ENV_VARS+=",INDEXNOW_KEY=${INDEXNOW_KEY}"; fi
 USAGE_FLAGS=()
 if gcloud secrets describe tptconverter-db-password --project "$PROJECT" >/dev/null 2>&1; then
   if [[ "${SKIP_GEOIP:-}" != "1" ]]; then
