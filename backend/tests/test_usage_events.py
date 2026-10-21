@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 from datetime import date
+from pathlib import Path
 
 from app.usage.events import (
     COLUMNS,
@@ -118,6 +120,32 @@ class TestRow:
         assert row[COLUMNS.index("event_type")] == "page_view"
         assert row[COLUMNS.index("path")] == "/"
         assert INSERT_SQL.count("%s") == len(COLUMNS)
+
+    def test_insert_names_every_column_in_order(self) -> None:
+        names = INSERT_SQL.split("(", 1)[1].split(")", 1)[0].split(", ")
+        assert tuple(names) == COLUMNS
+        assert names[-3:] == ["delimiter", "all_columns", "output_bytes"]
+
+
+_DDL = Path(__file__).resolve().parent.parent / "sql" / "usage_stats.sql"
+
+
+def _ddl_columns() -> tuple[list[str], list[str]]:
+    """Columns of CREATE TABLE usage_event, and those the migration section adds."""
+    sql = re.sub(r"--[^\n]*", "", _DDL.read_text(encoding="utf-8"))
+    body = re.search(r"CREATE TABLE IF NOT EXISTS usage_event \((.*?)\n\);", sql, re.S).group(1)
+    created = [line.split()[0] for line in body.splitlines() if line.strip()]
+    added = re.findall(r"ADD COLUMN IF NOT EXISTS (\w+)", sql)
+    return created, added
+
+
+def test_ddl_matches_usage_event_columns() -> None:
+    """INSERT_SQL names every UsageEvent field: a column missing from the DDL breaks every insert."""
+    created, added = _ddl_columns()
+    assert [c for c in created if c not in ("event_id", "received_at")] == list(COLUMNS)
+    # Every migrated column is in CREATE TABLE too, so a fresh install and a migrated one agree.
+    assert set(added) <= set(created)
+    assert {"delimiter", "all_columns", "output_bytes"} <= set(added)
 
 
 def test_utm_fields_keep_only_short_slugs() -> None:

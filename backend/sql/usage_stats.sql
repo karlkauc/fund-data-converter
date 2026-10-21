@@ -42,10 +42,25 @@ CREATE TABLE IF NOT EXISTS usage_event (
   issue_codes      text[]      NOT NULL DEFAULT '{}',  -- distinct Issue.code values, never messages
   valid            boolean,              -- generated FundsXML valid against the XSD
   zipped           boolean,              -- output delivered as zip
-  instance         text                  -- cloudrun | vps
+  instance         text,                 -- cloudrun | vps
+  delimiter        text,                 -- CSV only: semicolon | comma | pipe | tab (TPT CSV input detected / TPT CSV output chosen)
+  all_columns      boolean,              -- FundsXML → TPT option: every catalog column or only filled ones
+  output_bytes     int                   -- size of the delivered file (after zipping if zipped)
 );
 
 CREATE INDEX IF NOT EXISTS idx_usage_event_received  ON usage_event (received_at);
 CREATE INDEX IF NOT EXISTS idx_usage_event_type_time ON usage_event (event_type, received_at);
 CREATE INDEX IF NOT EXISTS idx_usage_event_visitor   ON usage_event (visitor_hash);
 CREATE INDEX IF NOT EXISTS idx_usage_event_country   ON usage_event (country_code);
+
+-- ---------------------------------------------------------------------------
+-- Migrations for an existing table (idempotent). Apply by hand as the owning role
+-- BEFORE deploying the matching app version: INSERT_SQL names every column of
+-- UsageEvent, so every insert fails until the columns exist.
+-- ---------------------------------------------------------------------------
+
+-- 2026-10-21 (T3): delimiter, all_columns, output_bytes
+ALTER TABLE usage_event
+  ADD COLUMN IF NOT EXISTS delimiter    text,
+  ADD COLUMN IF NOT EXISTS all_columns  boolean,
+  ADD COLUMN IF NOT EXISTS output_bytes int;

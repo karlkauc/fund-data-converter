@@ -16,7 +16,22 @@ column `instance` tells them apart.
 
 ## What is collected
 
-One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`):
+One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
+
+> **Schema changes need DDL before the deploy.** `INSERT_SQL` names every field of `UsageEvent`,
+> so an app version with a new column makes **every** insert fail (events are dropped after three
+> attempts) until the column exists. Apply the migration section at the end of
+> `backend/sql/usage_stats.sql` by hand as the owning role first; the statements are idempotent
+> (`ADD COLUMN IF NOT EXISTS`). Pending since 2026-10-21: `delimiter`, `all_columns`,
+> `output_bytes` —
+>
+> ```sql
+> ALTER TABLE usage_event
+>   ADD COLUMN IF NOT EXISTS delimiter    text,
+>   ADD COLUMN IF NOT EXISTS all_columns  boolean,
+>   ADD COLUMN IF NOT EXISTS output_bytes int;
+> ```
+
 
 | `event_type` | Emitted by | |
 |---|---|---|
@@ -42,6 +57,9 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`):
 | `diagnostic_count`, `error_count` | messages shown; XSD errors (TPT → FundsXML) or error messages |
 | `issue_codes` | distinct `Issue.code` values (`mandatory_missing`, `xsd_invalid` …), never the messages |
 | `valid`, `zipped` | generated FundsXML valid against the XSD; output delivered as zip |
+| `output_bytes` | size of the delivered file (after zipping when `zipped`) |
+| `delimiter` | CSV only: `semicolon`/`comma`/`pipe`/`tab` — detected in a TPT CSV upload, or chosen for a TPT CSV output (an unknown choice is written as `semicolon`); NULL for xlsx/xml |
+| `all_columns` | FundsXML → TPT option: every catalog column (`true`) or only the filled ones; NULL for TPT → FundsXML |
 | `status`, `status_code`, `error_detail` | `ok` / `parse_error` / `rejected` (position limit, 400, 413, 429) / `error` (5xx); `error_detail` is the exception **class** only (`TptReadError` …), because messages may quote file values; a request the handler refuses before converting carries a fixed code (`too_large`, `empty_file`, `bad_tpt_version`, `nothing_selected`) together with `direction`, `source`, the requested `tpt_version` and `input_bytes` as far as the upload tells them. Rows refused before the handler (body limit, 429, malformed form) have no `direction` — the dashboard labels them "rejected before processing" |
 | `instance` | `cloudrun` / `vps` (`USAGE_INSTANCE`) |
 | `app_version`, `received_at` | version + Cloud Run revision, server timestamp |

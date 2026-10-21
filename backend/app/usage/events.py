@@ -71,6 +71,10 @@ class UsageEvent:
     valid: bool | None = None
     zipped: bool | None = None
     instance: str | None = None
+    # added 2026-10 (T3): ALTER TABLE in backend/sql/usage_stats.sql before deploying
+    delimiter: str | None = None
+    all_columns: bool | None = None
+    output_bytes: int | None = None
 
     def as_row(self) -> tuple:
         return tuple(getattr(self, f.name) for f in fields(self))

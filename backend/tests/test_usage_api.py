@@ -47,6 +47,19 @@ def test_convert_tpt_event(client, events, fixture_bytes):
     assert isinstance(ev.valid, bool) and ev.zipped is False and ev.duration_ms is not None
     assert ev.instance == "test" and ev.visitor_hash and ev.app_version
     assert ev.issue_codes == sorted(set(ev.issue_codes))
+    assert ev.delimiter is None and ev.all_columns is None
+
+
+def test_convert_event_records_output_size(client, events, fixture_bytes):
+    body = _post(client, "a.xlsx", fixture_bytes("01_clean.xlsx")).json()
+    assert events[0].output_bytes == body["output"]["size"] > 0
+
+
+def test_convert_tpt_csv_records_detected_delimiter(client, events, fixture_bytes):
+    _post(client, "m.csv", fixture_bytes("02_missing_mandatory.csv"))
+    (ev,) = events
+    assert ev.source == "csv" and ev.delimiter == "semicolon"
+    assert ev.all_columns is None
 
 
 def test_convert_event_carries_no_file_data(client, events, fixture_bytes):
@@ -69,6 +82,22 @@ def test_convert_fundsxml_event(client, events, fixture_bytes):
     assert ev.source == "sample" and ev.schema_name == "FundsXML 4"
     assert ev.target_namespace == f"TPT {ev.tpt_version}" and ev.valid is None
     assert ev.include_block is None and ev.type_count is None
+    assert ev.delimiter == "semicolon" and ev.all_columns is True
+    assert ev.output_bytes == r.json()["output"]["size"] > 0
+
+
+@pytest.mark.parametrize(
+    ("form", "delimiter", "all_columns"),
+    [
+        ({"output_format": "csv", "delimiter": "Tab", "all_columns": "false"}, "tab", False),
+        ({"output_format": "csv", "delimiter": "nonsense"}, "semicolon", True),
+        ({"output_format": "xlsx", "delimiter": "comma", "all_columns": "0"}, None, False),
+    ],
+)
+def test_convert_fundsxml_options_are_recorded(client, events, fixture_bytes, form, delimiter, all_columns):
+    assert _post(client, "f.xml", fixture_bytes("fundsxml_sample.xml"), **form).status_code == 200
+    (ev,) = events
+    assert (ev.delimiter, ev.all_columns) == (delimiter, all_columns) and ev.output_bytes
 
 
 def test_sample_upload_is_marked(client, events, fixture_bytes):

@@ -12,6 +12,10 @@ from functools import lru_cache
 from pathlib import Path
 
 from app.service import Request as ConvertRequest
+from app.writers.tpt_writer import CSV_DELIMITERS
+
+# Delimiter character -> the option name the form uses (semicolon, comma, pipe, tab).
+_DELIMITER_NAMES = {char: name for name, char in CSV_DELIMITERS.items()}
 
 _SAMPLE_DIR = Path(__file__).resolve().parent.parent / "samples"
 
@@ -50,6 +54,7 @@ def conversion_fields(req: ConvertRequest, result: dict) -> dict:
         "issue_codes": sorted({i["code"] for i in issues if i.get("code")}),
         "valid": validation["valid"] if validation else None,
         "zipped": output.get("zipped"),
+        "output_bytes": output.get("size"),
     }
     if to_fundsxml:
         fields |= {
@@ -57,5 +62,17 @@ def conversion_fields(req: ConvertRequest, result: dict) -> dict:
             "type_count": inp.get("columns"),
             "include_block": req.include_block,
             "include_core": req.include_core,
+            # CSV input: the delimiter the reader detected.
+            "delimiter": _DELIMITER_NAMES.get(inp.get("delimiter") or "")
+            if inp.get("format") == "csv"
+            else None,
+        }
+    else:
+        fields |= {
+            # CSV output: the delimiter written (an unknown choice falls back to semicolon).
+            "delimiter": (req.delimiter if req.delimiter in CSV_DELIMITERS else "semicolon")
+            if req.output_format == "csv"
+            else None,
+            "all_columns": req.all_columns,
         }
     return fields
