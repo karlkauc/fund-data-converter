@@ -39,6 +39,12 @@ SHARECLASS = {
     "OFST020560": "2020-01-15",
     "OFST6030AT": "yes",
     "OFST452010": "0.015",
+    "OFST452200": "0.00808",
+    "OFST452220": "2025-02-15",
+    "OFST010580": "no",
+    "OFST010720": "yes",
+    "OFST6030DE": "no",  # with a deregistration date: De-registered
+    "OFST6011DE": "2024-06-30",
     "OFDY000035": "101.5",
     "OFDY000036": "2025-12-31",
     "OFDY000070": "1000000",
@@ -111,6 +117,11 @@ def test_values_reach_the_core_structures():
     assert sc.findtext("Identifiers/ISIN") == "LU0000000001"
     assert sc.findtext("ShareClassType/EarningUse") == "D"
     assert sc.findtext("Prices/Price/NavPrice") == "101.5"
+    fund = root.find("Funds/Fund")
+    assert fund.findtext("FundStaticData/OngoingCosts/OngoingCost/Percentage") == "0.808"
+    assert fund.findtext("SingleFund/SingleFundStaticData/ManagementType") == "PASSIVE"
+    reg = sc.find("RegistrationCountries/RegistrationCountry[CountryCode='DE']")
+    assert reg.findtext("Status") == "De-registered" and reg.findtext("StatusDate") == "2024-06-30"
     assert root.findtext("Funds/Fund/FundStaticData/InvestmentCompany/Name") == "Demo ManCo S.A."
     positions = sc.findall("Portfolios/Portfolio/Positions/Position")
     assert len(positions) == 2

@@ -17,9 +17,9 @@ record (e.g. the currency in ``Amount[@ccy={OFST020540}]``); the rule is skipped
 ``DEFAULTS`` lists constant mandatory children the engine adds when their parent exists.
 
 Deliberately not mapped (kept as custom attributes): subscription/redemption fees (FundsXML
-``Fee`` values are a percentage of TNA paid/received by the fund), applied fees, TER and ongoing
-charges (``Fee/DataByPeriods`` needs a begin/end period, ``FundStaticData/OngoingCosts`` holds a
-single fund-level entry), ``OFST023200 Benchmark`` (FundsXML needs a benchmark currency),
+``Fee`` values are a percentage of TNA paid/received by the fund), applied fees, TER and other
+period figures (``Fee/DataByPeriods`` needs a begin/end period), transaction costs, fund texts
+(language and date mandatory), ``OFST023200 Benchmark`` (FundsXML needs a benchmark currency),
 ``OFST020600 Is RDR Compliant`` (``UK_RDR_Flag`` means "retail only"), OFRE ratios/breakdowns,
 OFDC cost figures, OFFV fair values and OFCA corporate actions (no core counterpart), and the
 Austrian ``OeKBStammdatenblatt`` (too many mandatory fields without an openfunds source).
@@ -136,6 +136,10 @@ INVESTMENT_STATUS_OPEN = _lossy_table(
     },
     "investment status → open to new investors (only 'open' is read back)",
 )
+DEREGISTERED = _mapping(
+    "deregistered", {"no": "De-registered"}, "'no' with a deregistration/end date ↔ De-registered"
+)
+MANAGEMENT_TYPE = _mapping("management_type", {"yes": "PASSIVE", "no": "ACTIVE"}, "passive fund ↔ PASSIVE")
 REGISTRATION_STATUS = _lossy_table(
     "registration_status",
     {"yes": "Registered"},
@@ -189,11 +193,16 @@ def _never(_row: dict[str, str]) -> bool:
     return False
 
 
+def _always(_row: dict[str, str]) -> bool:
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Rules
 # ---------------------------------------------------------------------------
 
 _FSD = "FundStaticData"
+_SFSD = "SingleFund/SingleFundStaticData"
 _IC = f"{_FSD}/InvestmentCompany"
 _CUST = f"{_FSD}/Custodian"
 _SC_ID = "Identifiers"
@@ -263,9 +272,9 @@ _FUND_RULES: list[Rule] = [
     _r("OFST700400", _F, f"{_company('Domiciliary Agent')}/Name"),
     _r("OFST6102CH", _F, f"{_company('Swiss Representative')}/Name"),
     _r("OFST6107CH", _F, f"{_company('Swiss Paying Agent')}/Name"),
-    _r("OFST001450", _F, f"{_company('Portfolio Managing Company', False)}/Name"),
-    _r("OFST001455", _F, f"{_company('Portfolio Managing Company', False)}/Address/Country"),
-    _r("OFST001500", _F, f"{_company('Fund Advisor', False)}/Name"),
+    _r("OFST001450", _F, f"{_SFSD}/Managers/Manager/Name"),
+    _r("OFST001455", _F, f"{_SFSD}/Managers/Manager/Address/Country"),
+    _r("OFST001500", _F, f"{_SFSD}/Advisor/Name"),
     _r("OFST001430", _F, f"{_company('Trustee', False)}/Name"),
     _r("OFST001440", _F, f"{_company('Depository', False)}/Name"),
     _r("OFST001445", _F, f"{_company('Depository', False)}/Identifiers/LEI"),
@@ -281,6 +290,23 @@ _FUND_RULES: list[Rule] = [
     _r("OFST700500", _F, f"{_FSD}/Classifications/Classification[ListedGroup=AMF]/Value"),
     _r("OFST730010", _F, f"{_FSD}/Classifications/Classification[ListedGroup=BVI]/Value"),
     _r("OFST701030", _F, f"{_FSD}/Classifications/Classification[ListedGroup=IMA]/Value"),
+    _r("OFST809511", _F, f"{_FSD}/Classifications/Classification[ListedGroup=FATCA]/Value"),
+    _r("OFST710095", _F, f"{_FSD}/Classifications/Classification[UnlistedGroup=CNMV]/Value"),
+    _r(
+        "OFST350050",
+        _F,
+        f"{_FSD}/Classifications/Classification[UnlistedGroup=Clearstream Fund Centre]/Value",
+    ),
+    _r("OFST700601", _F, f"{_FSD}/Classifications/Classification[UnlistedGroup=MAS]/Value"),
+    _r("OFST710110", _F, f"{_FSD}/Classifications/Classification[UnlistedGroup=HK SFC]/Value"),
+    # -- ongoing charges (UCITS KIID figure, decimal fraction) with its calculation date
+    _r("OFST452200", _F, f"{_FSD}/OngoingCosts/OngoingCost[CostType=Ongoing Charges]/Percentage", t.PCT100),
+    _r("OFST452220", _F, f"{_FSD}/OngoingCosts/OngoingCost[CostType=Ongoing Charges]/PublicationDate"),
+    # -- single fund static data
+    _r("OFST010580", _F, f"{_SFSD}/ExchangeTradedFlag", YES_NO),
+    _r("OFST010500", _F, f"{_SFSD}/FundOfFundFlag", YES_NO),
+    _r("OFST010720", _F, f"{_SFSD}/ManagementType", MANAGEMENT_TYPE),
+    _r("OFST710102", _F, f"{_SFSD}/IsFeederFor/ISIN"),
     # -- tracked index (index funds): only the index fields give the mandatory currency; the name
     # doubles as BenchmarkID (the schema keys benchmarks by it)
     _r("OFST023800", _F, f"{_FSD}/Benchmarks/Benchmark[BenchmarkID={{OFST023800}}]/Name"),
@@ -459,6 +485,17 @@ def _registration_rules(cc: str) -> list[Rule]:
     return [
         _r(legal, _S, f"{reg}/Status", REGISTRATION_STATUS),
         _r(f"OFST6010{cc}", _S, f"{reg}/StatusDate", when=registered, when_text=f"{legal} = yes/res"),
+        # "no" plus a deregistration date: the share class was registered and no longer is
+        _r(
+            legal,
+            _S,
+            f"{reg}/Status",
+            DEREGISTERED,
+            when=lambda row: bool(row.get(f"OFST6011{cc}", "").strip()),
+            when_text=f"OFST6011{cc} given",
+            reverse_when=_always,
+        ),
+        _r(f"OFST6011{cc}", _S, f"{reg}/StatusDate", when=field_is(legal, "no"), when_text=f"{legal} = no"),
         _r(marketing, _S, f"{reg}/MarketingDistributionStatus", REGISTRATION_STATUS),
         _r(
             f"OFST6020{cc}",
@@ -466,6 +503,22 @@ def _registration_rules(cc: str) -> list[Rule]:
             f"{reg}/MarketingDistributionStatusDate",
             when=distributed,
             when_text=f"{marketing} = yes/res",
+        ),
+        _r(
+            marketing,
+            _S,
+            f"{reg}/MarketingDistributionStatus",
+            DEREGISTERED,
+            when=lambda row: bool(row.get(f"OFST6021{cc}", "").strip()),
+            when_text=f"OFST6021{cc} given",
+            reverse_when=_always,
+        ),
+        _r(
+            f"OFST6021{cc}",
+            _S,
+            f"{reg}/MarketingDistributionStatusDate",
+            when=field_is(marketing, "no"),
+            when_text=f"{marketing} = no",
         ),
     ]
 
