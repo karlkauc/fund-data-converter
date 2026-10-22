@@ -275,6 +275,7 @@ def _check_file(path: Path, out: Path, keep: bool) -> tuple[str, dict]:
                 back = _leaves(parse_fundsxml(cur))
                 lost, extra = src_leaves - back, back - src_leaves
                 back_paths = {p: v for p, v in back}
+                lost_paths = {p for p, _ in lost}
                 changed = {(p, v) for p, v in lost if p in back_paths}
                 cyc.update(
                     leavesBack=len(back),
@@ -290,7 +291,7 @@ def _check_file(path: Path, out: Path, keep: bool) -> tuple[str, dict]:
                     ),
                     addedPatterns=dict(
                         Counter(
-                            _pattern(p) for p, _ in extra if p not in dict(lost)
+                            _pattern(p) for p, _ in extra if p not in lost_paths
                         ).most_common()
                     ),
                     missingSample=[
