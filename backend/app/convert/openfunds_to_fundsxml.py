@@ -35,7 +35,7 @@ from app.convert.to_fundsxml import (
 )
 from app.ingest.openfunds_reader import INSTRUMENT_ID, ISIN, OfDocument
 from app.ingest.tpt_reader import TptRow
-from app.mapping.openfunds_holdings import holding_to_tpt, with_implied
+from app.mapping.openfunds_holdings import add_accrued_interest, holding_to_tpt, with_implied
 from app.mapping.openfunds_rules import DEFAULTS, OF_FUND, OF_SHARECLASS, STATIC_RULES
 from app.mapping.openfunds_templates import templates
 from app.mapping.rules import ASSET_FIELDS, PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIER, PORTFOLIO_FIELDS
@@ -128,6 +128,7 @@ def convert_openfunds_to_fundsxml(
         # TPT fields carried as non-openfunds columns (a TPT file sent through openfunds) are the
         # original values and win over the ones derived from openfunds columns.
         tpt = {**tpt, **_tpt_columns(h.extra)}
+        add_accrued_interest(tpt)
         holding_rows[n] = (h.values, h.extra, represented)
         sources[n] = h.source
         owner = _owner(h.values, by_key, records)
@@ -312,7 +313,9 @@ def _template_records(model, records: list[TptRow], kept: dict[int, set[str]]):
         linkable = record_type is not None and record_type.child("FundOrShareClassIdentifiers") is not None
         for rec in records:
             present = [(f, rec.get(f.of_id)) for f in tpl.fields if rec.get(f.of_id)]
-            if not present:
+            if not present or all(f.of_id in kept[rec.source_row] for f, _ in present):
+                # Nothing, or only values a static rule placed already (OFEP000900, the fund CIC):
+                # no template record, and no warning about one that would be incomplete.
                 continue
             node = Node(tpl.element)
             if linkable and rec.get(ISIN):

@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <FundsXML4 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://github.com/fundsxml/schema/releases/download/4.2.11/FundsXML.xsd">
   <ControlData>
-    <UniqueDocumentID>OF-554b8178eeb74dc493f5</UniqueDocumentID>
-    <DocumentGenerated>2026-10-22T09:12:14</DocumentGenerated>
+    <UniqueDocumentID>OF-3bc9e4ddd92d4c399d29</UniqueDocumentID>
+    <DocumentGenerated>2026-10-22T15:43:36</DocumentGenerated>
     <Version>4.2.11</Version>
     <ContentDate>2025-12-31</ContentDate>
     <DataSupplier>
@@ -110,6 +110,10 @@
           <Classification>
             <UnlistedGroup>MAS</UnlistedGroup>
             <Value>excluded investment products (EIP)</Value>
+          </Classification>
+          <Classification>
+            <ListedGroup>CIC</ListedGroup>
+            <Value>XL44</Value>
           </Classification>
           <Classification>
             <UnlistedGroup>HK SFC</UnlistedGroup>
@@ -401,6 +405,9 @@
                       <MarketValue>
                         <Amount ccy="EUR">5066500</Amount>
                       </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">49000</Amount>
+                      </InterestClaimGross>
                     </Bond>
                     <CustomAttributes>
                       <Attribute>
@@ -455,6 +462,9 @@
                       <MarketValue>
                         <Amount ccy="EUR">2997000</Amount>
                       </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">21000</Amount>
+                      </InterestClaimGross>
                     </Bond>
                     <CustomAttributes>
                       <Attribute>
@@ -544,6 +554,9 @@
                       <MarketValue>
                         <Amount ccy="EUR">2346000</Amount>
                       </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">4000</Amount>
+                      </InterestClaimGross>
                     </Bond>
                     <CustomAttributes>
                       <Attribute>
@@ -984,6 +997,9 @@
                       <MarketValue>
                         <Amount ccy="EUR">990000</Amount>
                       </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">0</Amount>
+                      </InterestClaimGross>
                     </Bond>
                     <CustomAttributes>
                       <Attribute>
@@ -1048,6 +1064,9 @@
                       <MarketValue>
                         <Amount ccy="EUR">700000</Amount>
                       </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">2000</Amount>
+                      </InterestClaimGross>
                     </Bond>
                     <CustomAttributes>
                       <Attribute>
@@ -2866,6 +2885,7 @@
         <ISIN>DE000BU2Z023</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>BUNDESANLEIHE 2.60% 15/08/2034</Name>
       <AssetType>BO</AssetType>
       <AssetDetails>
@@ -2876,6 +2896,7 @@
               <LEI>529900MBHTLGWCUCVS41</LEI>
             </Identifiers>
             <Name>BUNDESREPUBLIK DEUTSCHLAND</Name>
+            <BusinessCountry>DE</BusinessCountry>
           </Issuer>
           <MaturityDate>2034-08-15</MaturityDate>
           <Coupon>
@@ -2904,6 +2925,7 @@
         <ISIN>FR00140DEMO4</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>FR</Country>
       <Name>DEMO INDUSTRIES FRN 20/06/2029</Name>
       <AssetType>BO</AssetType>
       <AssetDetails>
@@ -2912,6 +2934,7 @@
           <Issuer>
             <Identifiers/>
             <Name>DEMO INDUSTRIES SA</Name>
+            <BusinessCountry>FR</BusinessCountry>
           </Issuer>
           <MaturityDate>2029-06-20</MaturityDate>
           <Coupon>
@@ -2944,6 +2967,7 @@
         <ISIN>DE000A3DEMO4</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>NL</Country>
       <Name>SIEMENS ENERGY 0.5% CV 2030</Name>
       <AssetType>BO</AssetType>
       <AssetDetails>
@@ -2954,6 +2978,7 @@
               <LEI>529900DEMOSIEMENS171</LEI>
             </Identifiers>
             <Name>SIEMENS ENERGY FINANCE BV</Name>
+            <BusinessCountry>NL</BusinessCountry>
           </Issuer>
           <MaturityDate>2030-09-14</MaturityDate>
           <Coupon>
@@ -2981,6 +3006,7 @@
         <CUSIP>037833100</CUSIP>
       </Identifiers>
       <Currency>USD</Currency>
+      <Country>US</Country>
       <Name>APPLE INC</Name>
       <AssetType>EQ</AssetType>
       <AssetDetails>
@@ -2990,6 +3016,7 @@
               <LEI>HWUPKR0MPOU8FGXBT394</LEI>
             </Identifiers>
             <Name>APPLE INC</Name>
+            <BusinessCountry>US</BusinessCountry>
           </Issuer>
         </Equity>
       </AssetDetails>
@@ -3006,6 +3033,7 @@
         <SEDOL>B929F46</SEDOL>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>NL</Country>
       <Name>ASML HOLDING NV</Name>
       <AssetType>EQ</AssetType>
       <AssetDetails>
@@ -3015,6 +3043,7 @@
               <LEI>724500Y6DUVHQD6OXN27</LEI>
             </Identifiers>
             <Name>ASML HOLDING NV</Name>
+            <BusinessCountry>NL</BusinessCountry>
           </Issuer>
         </Equity>
       </AssetDetails>
@@ -3031,6 +3060,7 @@
         <GermanWKN>716460</GermanWKN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>SAP SE</Name>
       <AssetType>EQ</AssetType>
       <AssetDetails>
@@ -3040,6 +3070,7 @@
               <LEI>529900D6BF99LW9R2E68</LEI>
             </Identifiers>
             <Name>SAP SE</Name>
+            <BusinessCountry>DE</BusinessCountry>
           </Issuer>
         </Equity>
       </AssetDetails>
@@ -3058,6 +3089,7 @@
         </Bloomberg>
       </Identifiers>
       <Currency>GBP</Currency>
+      <Country>GB</Country>
       <Name>SHELL PLC</Name>
       <AssetType>EQ</AssetType>
       <AssetDetails>
@@ -3067,6 +3099,7 @@
               <LEI>21380068P1DRHMJ8KU70</LEI>
             </Identifiers>
             <Name>SHELL PLC</Name>
+            <BusinessCountry>GB</BusinessCountry>
           </Issuer>
         </Equity>
       </AssetDetails>
@@ -3083,6 +3116,7 @@
         <OtherID FreeType="TPT code type 99">PE-DGP-II</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>LU</Country>
       <Name>DEMO GROWTH PARTNERS II</Name>
       <AssetType>PE</AssetType>
       <AssetDetails>
@@ -3090,6 +3124,7 @@
           <Issuer>
             <Identifiers/>
             <Name>DEMO GROWTH PARTNERS II SCSP</Name>
+            <BusinessCountry>LU</BusinessCountry>
           </Issuer>
         </Equity>
       </AssetDetails>
@@ -3106,6 +3141,7 @@
         <ISIN>IE00B4L5Y983</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>IE</Country>
       <Name>ISHARES CORE MSCI WORLD UCITS ETF</Name>
       <AssetType>SC</AssetType>
       <AssetDetails>
@@ -3115,6 +3151,7 @@
               <LEI>549300DEMOBLKRCK1E59</LEI>
             </Identifiers>
             <Name>BLACKROCK ASSET MANAGEMENT IRELAND</Name>
+            <BusinessCountry>IE</BusinessCountry>
           </Issuer>
         </ShareClass>
       </AssetDetails>
@@ -3131,6 +3168,7 @@
         <FIGI>BBG00DEMOMM1</FIGI>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>LU</Country>
       <Name>DEMO EURO LIQUIDITY FUND I</Name>
       <AssetType>SC</AssetType>
       <AssetDetails>
@@ -3140,6 +3178,7 @@
               <LEI>529900DEMOLIQUIDTY08</LEI>
             </Identifiers>
             <Name>DEMO LIQUIDITY FUNDS SICAV</Name>
+            <BusinessCountry>LU</BusinessCountry>
           </Issuer>
         </ShareClass>
       </AssetDetails>
@@ -3156,6 +3195,7 @@
         <OtherID FreeType="TPT code type 9">BBG01DEMOSN2</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>DEMO BANK RATE-LINKED NOTE 2028</Name>
       <AssetType>BO</AssetType>
       <AssetDetails>
@@ -3166,6 +3206,7 @@
               <LEI>529900DEMOINVBANK021</LEI>
             </Identifiers>
             <Name>DEMO INVESTMENT BANK AG</Name>
+            <BusinessCountry>DE</BusinessCountry>
           </Issuer>
           <MaturityDate>2028-03-01</MaturityDate>
           <Coupon>
@@ -3192,6 +3233,7 @@
         <ISIN>XS28DEMO1232</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>IE</Country>
       <Name>DEMO AUTO LOANS 2024-1 A</Name>
       <AssetType>BO</AssetType>
       <AssetDetails>
@@ -3202,6 +3244,7 @@
               <LEI>635400DEMOAUTOLOAN08</LEI>
             </Identifiers>
             <Name>DEMO AUTO LOANS 2024-1 DAC</Name>
+            <BusinessCountry>IE</BusinessCountry>
           </Issuer>
           <MaturityDate>2031-11-20</MaturityDate>
           <Coupon>
@@ -3230,6 +3273,7 @@
         <OtherID FreeType="TPT code type 99">CASH-EUR</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>LU</Country>
       <Name>CASH ACCOUNT EUR</Name>
       <AssetType>AC</AssetType>
       <AssetDetails>
@@ -3255,6 +3299,7 @@
         <OtherID FreeType="TPT code type 99">CASH-USD</OtherID>
       </Identifiers>
       <Currency>USD</Currency>
+      <Country>LU</Country>
       <Name>CASH ACCOUNT USD</Name>
       <AssetType>AC</AssetType>
       <AssetDetails>
@@ -3280,6 +3325,7 @@
         <OtherID FreeType="TPT code type 99">DEP-SIGHT-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>SIGHT DEPOSIT DEMO BANK</Name>
       <AssetType>AC</AssetType>
       <AssetDetails>
@@ -3305,6 +3351,7 @@
         <OtherID FreeType="TPT code type 99">DEP-TERM-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>TERM DEPOSIT 3M DEMO BANK</Name>
       <AssetType>FT</AssetType>
       <Classifications>
@@ -3320,6 +3367,7 @@
         <OtherID FreeType="TPT code type 99">LOAN-0001</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>DEMO MITTELSTAND TERM LOAN</Name>
       <AssetType>LO</AssetType>
       <Classifications>
@@ -3335,6 +3383,7 @@
         <OtherID FreeType="TPT code type 99">PROP-LUX-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>LU</Country>
       <Name>OFFICE BUILDING LUXEMBOURG KIRCHBERG</Name>
       <AssetType>RE</AssetType>
       <Classifications>
@@ -3350,6 +3399,7 @@
         <OtherID FreeType="TPT code type 9">XAU=</OtherID>
       </Identifiers>
       <Currency>USD</Currency>
+      <Country>DE</Country>
       <Name>PHYSICAL GOLD CERTIFICATE</Name>
       <AssetType>CE</AssetType>
       <Classifications>
@@ -3365,6 +3415,7 @@
         <ISIN>DE000C7DEMO3</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>EURO STOXX 50 FUTURE MAR 2026</Name>
       <AssetType>FU</AssetType>
       <AssetDetails>
@@ -3387,6 +3438,7 @@
         <ISIN>DE000C6AXQV7</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>EURO BUND FUTURE MAR 2026</Name>
       <AssetType>FU</AssetType>
       <AssetDetails>
@@ -3409,6 +3461,7 @@
         <ISIN>DE000C8DEMO1</ISIN>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>EURO STOXX 50 CALL 5000 JUN 2026</Name>
       <AssetType>OP</AssetType>
       <AssetDetails>
@@ -3435,6 +3488,7 @@
         <OtherID FreeType="TPT code type 99">OTC-PUT-SAP-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>SAP SE PUT 200 SEP 2026 OTC</Name>
       <AssetType>OP</AssetType>
       <AssetDetails>
@@ -3461,6 +3515,7 @@
         <OtherID FreeType="TPT code type 99">OTC-CSO-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>ITRAXX MAIN CREDIT SPREAD OPTION</Name>
       <AssetType>OP</AssetType>
       <Classifications>
@@ -3476,6 +3531,7 @@
         <OtherID FreeType="TPT code type 99">IRS-EUR-10Y-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>IRS PAY FIX 2.4% / REC EURIBOR 6M 2035</Name>
       <AssetType>SW</AssetType>
       <AssetDetails>
@@ -3503,6 +3559,7 @@
         <OtherID FreeType="TPT code type 9">TRS-EQ-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>TOTAL RETURN SWAP ON DEMO EQUITY BASKET</Name>
       <AssetType>SW</AssetType>
       <AssetDetails>
@@ -3530,6 +3587,7 @@
         <OtherID FreeType="TPT code type 99">CDS-ITRAXX-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>CDS ITRAXX EUROPE MAIN S44 5Y</Name>
       <AssetType>SW</AssetType>
       <AssetDetails>
@@ -3557,6 +3615,7 @@
         <OtherID FreeType="TPT code type 99">FXF-EURUSD-01</OtherID>
       </Identifiers>
       <Currency>USD</Currency>
+      <Country>DE</Country>
       <Name>FX FORWARD SELL USD 1.2M / BUY EUR MAR 2026</Name>
       <AssetType>FX</AssetType>
       <Classifications>
@@ -3572,6 +3631,7 @@
         <OtherID FreeType="TPT code type 99">FRA-3X6-01</OtherID>
       </Identifiers>
       <Currency>EUR</Currency>
+      <Country>DE</Country>
       <Name>FRA 3X6 EURIBOR 2.1%</Name>
       <AssetType>FU</AssetType>
       <AssetDetails>

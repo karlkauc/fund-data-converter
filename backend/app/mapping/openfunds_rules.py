@@ -298,6 +298,9 @@ _FUND_RULES: list[Rule] = [
         f"{_FSD}/Classifications/Classification[UnlistedGroup=Clearstream Fund Centre]/Value",
     ),
     _r("OFST700601", _F, f"{_FSD}/Classifications/Classification[UnlistedGroup=MAS]/Value"),
+    # The fund's own CIC (TPT 123): openfunds has it only as the EPT field, which also goes to the
+    # EPT block when the record is complete.
+    _r("OFEP000900", _F, f"{_FSD}/Classifications/Classification[ListedGroup=CIC]/Value"),
     _r("OFST710110", _F, f"{_FSD}/Classifications/Classification[UnlistedGroup=HK SFC]/Value"),
     # -- ongoing charges (UCITS KIID figure, decimal fraction) with its calculation date
     _r("OFST452200", _F, f"{_FSD}/OngoingCosts/OngoingCost[CostType=Ongoing Charges]/Percentage", t.PCT100),

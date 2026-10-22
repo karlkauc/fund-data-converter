@@ -14,6 +14,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
+from app.convert.derive import INTEREST_BEARING, amount, dec
+from app.mapping.transforms import cic_category
 from app.model.xmltree import parse_decimal
 from app.spec.openfunds import load_openfunds
 
@@ -132,6 +134,19 @@ def holding_to_tpt(values: dict[str, str]) -> tuple[dict[str, str], dict[str, se
     back = tpt_to_holding(tpt)[0]
     represented = {c: keys for c, keys in sources.items() if _same(values.get(c, ""), back.get(c, ""))}
     return tpt, represented
+
+
+def add_accrued_interest(tpt: dict[str, str]) -> None:
+    """TPT 126 (accrued income, portfolio currency) for an interest-bearing holding without it.
+
+    openfunds has no accrued interest column, but market value (24, OFPH000250) minus clean market
+    value (25, OFPH000260) is exactly that amount; FundsXML keeps it as ``InterestClaimGross``.
+    """
+    if tpt.get("126") or cic_category(tpt.get("12", "")) not in INTEREST_BEARING:
+        return
+    market, clean = dec(tpt.get("24")), dec(tpt.get("25"))
+    if market is not None and clean is not None:
+        tpt["126"] = amount(market - clean)  # 0 for a zero coupon bond, as FundsXML states it
 
 
 def tpt_to_holding(tpt: dict[str, str]) -> tuple[dict[str, str], set[str]]:

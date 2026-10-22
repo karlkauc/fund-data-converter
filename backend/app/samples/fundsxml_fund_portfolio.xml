@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <FundsXML4 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://github.com/fundsxml/schema/releases/download/4.2.11/FundsXML.xsd">
   <ControlData>
-    <UniqueDocumentID>TPT-07847074afe947fa864d</UniqueDocumentID>
-    <DocumentGenerated>2026-10-22T09:12:13</DocumentGenerated>
+    <UniqueDocumentID>TPT-4cb5da49f2b64c05a297</UniqueDocumentID>
+    <DocumentGenerated>2026-10-22T15:43:36</DocumentGenerated>
     <Version>4.2.11</Version>
     <ContentDate>2025-12-31</ContentDate>
     <DataSupplier>

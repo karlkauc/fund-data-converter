@@ -394,9 +394,10 @@ def _position_fallbacks() -> list[Rule]:
         ("FixedTimeDeposit", "Interests"),
         ("Loan", "InterestAccruals"),
     ):
-        if kind != "Bond":  # the bond rules for 25/126 are bidirectional
-            out.append(_ro("25", "position", f"{kind}/MarketValue/Amount[@ccy={{4}}]"))
-            out.append(_ro("126", "position", f"{kind}/{interest}/Amount[@ccy={{4}}]"))
+        if kind == "Bond":
+            continue  # the bond rules for 23/25/125/126 are bidirectional
+        out.append(_ro("25", "position", f"{kind}/MarketValue/Amount[@ccy={{4}}]"))
+        out.append(_ro("126", "position", f"{kind}/{interest}/Amount[@ccy={{4}}]"))
         out.append(_ro("23", "position", f"{kind}/MarketValue/Amount[@ccy={{21}}]"))
         out.append(_ro("125", "position", f"{kind}/{interest}/Amount[@ccy={{21}}]"))
     return out
@@ -422,6 +423,12 @@ def _asset_fallbacks() -> list[Rule]:
 
 
 _BOND = asset_types("BO")
+
+
+def _foreign_bond(row) -> bool:
+    """A bond quoted in another currency than the portfolio's: its amounts exist in both."""
+    return _BOND(row) and bool(row.get("21")) and row.get("21") != row.get("4")
+
 _EQ_LIKE = asset_types("EQ", "PE")
 
 CORE_RULES: list[Rule] = [
@@ -475,6 +482,20 @@ CORE_RULES: list[Rule] = [
     ),
     _r("25", "position", "Bond/MarketValue/Amount[@ccy={4}]", when=_BOND, when_text="bond"),
     _r("126", "position", "Bond/InterestClaimGross/Amount[@ccy={4}]", when=_BOND, when_text="bond"),
+    _r(
+        "23",
+        "position",
+        "Bond/MarketValue/Amount[@ccy={21}]",
+        when=_foreign_bond,
+        when_text="bond quoted in another currency than the portfolio",
+    ),
+    _r(
+        "125",
+        "position",
+        "Bond/InterestClaimGross/Amount[@ccy={21}]",
+        when=_foreign_bond,
+        when_text="bond quoted in another currency than the portfolio",
+    ),
     _r("18", "position", "Equity/Units", when=_EQ_LIKE, when_text="equity (CIC x3)"),
     _r("24", "position", "Equity/MarketValue/Amount[@ccy={4}]", when=_EQ_LIKE, when_text="equity"),
     _r("18", "position", "ShareClass/Shares", when=asset_types("SC"), when_text="fund share (CIC x4)"),

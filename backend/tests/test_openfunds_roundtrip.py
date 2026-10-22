@@ -18,7 +18,7 @@ from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
 from app.ingest.openfunds_reader import read_openfunds
 from app.ingest.tpt_reader import read_tpt
-from app.mapping.openfunds_holdings import holding_to_tpt, tpt_to_holding
+from app.mapping.openfunds_holdings import add_accrued_interest, holding_to_tpt, tpt_to_holding
 from app.mapping.openfunds_rules import DEFAULTS, OF_FUND, STATIC_RULES
 from app.mapping.openfunds_templates import templates
 from app.schema.model import fundsxml_model
@@ -171,6 +171,41 @@ def test_holding_adapter():
         "OFPH000715": "yes",
     }
     assert kept == {"14", "15", "44", "52", "58"}
+
+
+def test_fund_cic_travels_as_ept_fund_cic_code():
+    """TPT 123 (the fund's CIC) has no openfunds column but OFEP000900; alone it makes no EPT record."""
+    data, filename, _ = write_openfunds([{**SECOND, "OFEP000900": "XL41"}], [])
+    result = convert_openfunds_to_fundsxml(read_openfunds(data, filename))
+    root = parse_fundsxml(result.xml)
+    cic = "Funds/Fund/FundStaticData/Classifications/Classification[ListedGroup='CIC']/Value"
+    assert root.findtext(cic) == "XL41"
+    assert "of_template_incomplete" not in {i.code for i in result.issues}
+    assert extract_openfunds(root).shareclasses[0]["OFEP000900"] == "XL41"
+
+
+def test_accrued_interest_from_market_values():
+    """openfunds has no accrued interest column: market value (24) minus clean value (25) is TPT 126."""
+    bond = {"12": "DE21", "24": "1675506.23", "25": "1630080.00"}
+    add_accrued_interest(bond)
+    assert bond["126"] == "45426.23"
+    zero_coupon = {"12": "DE21", "24": "1000", "25": "1000"}
+    add_accrued_interest(zero_coupon)
+    assert zero_coupon["126"] == "0"
+    given = {"12": "DE21", "24": "10", "25": "8", "126": "1.5"}
+    add_accrued_interest(given)
+    assert given["126"] == "1.5"
+    equity = {"12": "DE31", "24": "10", "25": "8"}
+    add_accrued_interest(equity)
+    assert "126" not in equity
+
+
+def test_accrued_interest_reaches_fundsxml():
+    holding = {**HOLDINGS[0], "OFPH000250": "500450", "OFPH000260": "500000"}
+    data, filename, _ = write_openfunds([SHARECLASS], [holding])
+    root = parse_fundsxml(convert_openfunds_to_fundsxml(read_openfunds(data, filename)).xml)
+    pos = root.find("Funds/Fund/SingleFund/ShareClasses/ShareClass/Portfolios/Portfolio/Positions/Position")
+    assert pos.findtext("Bond/InterestClaimGross/Amount") == "450"
 
 
 # -- mapping tables ---------------------------------------------------------------

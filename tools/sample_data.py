@@ -829,6 +829,7 @@ OF_FUND_STATIC = {
     "OFST011010": "Demo Securities Lending Ltd",
     "OFST011110": BANK[0],
     "OFST350100": "Multi-Asset",
+    "OFEP000900": "XL44",  # the fund's own CIC (TPT 123): asset allocation fund
     "OFST350110": "Multi-Asset Flexible",
     "OFST700500": "Diversifiés",
     "OFST701030": "Mixed Investment 40-85% Shares",
