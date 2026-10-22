@@ -218,3 +218,23 @@ def test_template_values():
     assert pct.to_xml("0.25") == ["25"] and pct.lossless("0.25")
     many = next(f for f in tpl["EET"].fields if f.many and not f.enums)
     assert many.to_xml("GB;DE") == ["GB", "DE"] and many.from_xml(["GB", "DE"]) == "GB;DE"
+
+
+@pytest.mark.parametrize(
+    "name", ["openfunds_sample.xlsx", "openfunds_multi.xlsx", "openfunds_static.xlsx", "openfunds_csv.zip"]
+)
+def test_openfunds_samples_are_lossless(fixture_bytes, name):
+    doc = read_openfunds(fixture_bytes(name), name)
+    result = convert_openfunds_to_fundsxml(doc)
+    assert result.valid, result.validation_errors[:5]
+    back = extract_openfunds(parse_fundsxml(result.xml))
+    for b in back.shareclasses:
+        # FundsXML has one NAV date: a number-of-shares date without an AuM date comes back as the latter.
+        for nos, aum in (("OFDY000066", "OFDY000061"), ("OFDY000076", "OFDY000071")):
+            b.setdefault(nos, b.get(aum, ""))
+    assert [_lost(o.values, b) for o, b in zip(doc.shareclasses, back.shareclasses, strict=True)] == [
+        {} for _ in doc.shareclasses
+    ]
+    assert [_lost(o.values, b) for o, b in zip(doc.holdings, back.holdings, strict=True)] == [
+        {} for _ in doc.holdings
+    ]

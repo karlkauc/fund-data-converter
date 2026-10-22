@@ -138,8 +138,10 @@ Uploaded XML with a DOCTYPE or entity declaration is rejected, which rules out X
   `core/target/classes/spec/tpt/*.catalog.json`).
 - FundsXML: replace `backend/app/schema/FundsXML4.xsd`, then run the tests. Rule paths that no longer
   exist show up as "element not in schema" messages.
-- Samples: `python tools/make_samples.py ../findatex-validator` (`--openfunds` rebuilds only the openfunds
-  sample from `tpt_v7_sample.xlsx`).
+- Samples: `python tools/make_samples.py ../findatex-validator` (`--synthetic` rebuilds only the files from
+  `tools/sample_data.py`). A new sample also goes into `SAMPLES` (`backend/app/api/samples.py`),
+  `SAMPLE_FILES` (`frontend/src/lib/api.ts`) and `SAMPLE_TEXT` (`frontend/src/lib/i18n.tsx`);
+  `tests/test_samples.py` checks that the samples together cover the conditional mapping rules.
 - openfunds catalog: `python tools/sync_openfunds.py [pdf-or-url]` (needs `pdftotext` from poppler-utils;
   default: the 2.13.0 field list on openfunds.org), then `python tools/build_openfunds_templates.py` to rejoin
   the template fields with the FundsXML schema. Check its "unmatched" list; `MANUAL`/`MANUAL_IDS` in the

@@ -252,7 +252,8 @@ def convert_openfunds_to_fundsxml(
                 else "Not accepted by the core structures (kept as custom attribute)",
             )
         )
-    for d in res_f.invalid + res_a.invalid + res_r.invalid:
+    # An empty AssetMasterData (no holdings) is left out of the document, so its gaps are none.
+    for d in res_f.invalid + (res_a.invalid if assets.node.children else []) + res_r.invalid:
         issues.append(
             _issue(
                 d, sources, "warning", "schema_incomplete", "Mandatory FundsXML content missing or invalid"

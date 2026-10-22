@@ -40,7 +40,7 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 |---|---|---|
 | `page_view` | `spa.py`, a known route's HTML shell | `path`, `utm_*`; client-side navigation is not counted |
 | `convert` | `POST /api/convert` | one per upload, including rejected ones |
-| `sample_load` | `GET /api/samples/{name}` | `source` = sample name |
+| `sample_load` | `GET /api/samples/{name}` | `source` = sample name, `<name>:download` for `?download=1` |
 | `mapping_view` | `GET /api/mapping/{version}` | `tpt_version` |
 
 | Column | Meaning |

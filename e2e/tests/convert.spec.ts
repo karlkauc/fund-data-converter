@@ -15,6 +15,16 @@ test("TPT sample → FundsXML download", async ({ page }) => {
   expect((await download).suggestedFilename()).toBe("tpt_v8_sample_FundsXML.xml");
 });
 
+test("example cards: fund portfolio FundsXML → TPT, download link", async ({ page }) => {
+  await page.goto("/fundsxml-to-tpt");
+  await expect(page.getByTestId("samples").getByRole("listitem")).toHaveCount(6);
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download fundsxml_fund_portfolio.xml" }).click();
+  expect((await download).suggestedFilename()).toBe("fundsxml_fund_portfolio.xml");
+  await page.getByRole("button", { name: /^Fund portfolio/ }).click();
+  await expect(page.getByRole("button", { name: /Download/ })).toContainText("fundsxml_fund_portfolio_TPT_V7.xlsx");
+});
+
 test("uploaded FundsXML → TPT CSV", async ({ page }) => {
   await page.goto("/fundsxml-to-tpt");
   await page.getByText("CSV", { exact: true }).click();
@@ -33,7 +43,7 @@ test("dropping an XML on the TPT tab switches direction", async ({ page }) => {
 
 test("openfunds sample → FundsXML, then → TPT by switching the target", async ({ page }) => {
   await page.goto("/openfunds-to-fundsxml");
-  await page.getByRole("button", { name: "openfunds", exact: true }).click();
+  await page.getByRole("button", { name: /^Share class with holdings/ }).click();
   await expect(page.getByText("valid against FundsXML 4.2.11 XSD")).toBeVisible();
   await expect(page.getByRole("button", { name: /Download/ })).toContainText("openfunds_sample_FundsXML.xml");
   await page.getByRole("radiogroup", { name: "To" }).getByRole("radio", { name: "TPT" }).click();

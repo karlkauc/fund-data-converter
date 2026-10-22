@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS usage_event (
   app_version      text,                 -- version + Cloud Run revision
   path             text,                 -- page_view: SPA route served
   referrer         text,                 -- scheme://host/path, no query
-  source           text,                 -- convert: xlsx | csv | xml | sample ; sample_load: tpt-v7 | tpt-v8 | fundsxml
+  source           text,                 -- convert: xlsx | csv | xml | sample ; sample_load: sample name, :download suffix
   schema_name      text,                 -- convert: input standard (TPT V7, FundsXML 4) – never a file name
   target_namespace text,                 -- convert: output standard (FundsXML 4, TPT V8)
   input_bytes      int,

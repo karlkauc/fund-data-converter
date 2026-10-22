@@ -9,6 +9,7 @@ import type { ConvertOptions, ConvertResult, Direction, Format } from "../types"
 import { DropZone } from "./DropZone";
 import { Faq } from "./Faq";
 import { OptionsPanel } from "./OptionsPanel";
+import { SampleCards } from "./SampleCards";
 import { ResultView } from "./ResultView";
 
 const DEFAULTS: ConvertOptions = {
@@ -25,14 +26,6 @@ const DROP_HINT: Record<Format, MessageKey> = {
   tpt: "dropHintTpt",
   fundsxml: "dropHintXml",
   openfunds: "dropHintOpenfunds",
-};
-const SAMPLES: Record<Format, { name: SampleName; label: MessageKey }[]> = {
-  tpt: [
-    { name: "tpt-v7", label: "sampleV7" },
-    { name: "tpt-v8", label: "sampleV8" },
-  ],
-  fundsxml: [{ name: "fundsxml", label: "sampleXml" }],
-  openfunds: [{ name: "openfunds", label: "sampleOpenfunds" }],
 };
 
 export function Converter({ direction }: { direction: Direction }) {
@@ -178,14 +171,7 @@ export function Converter({ direction }: { direction: Direction }) {
         {!file && (
           <>
             <DropZone accept={ACCEPT[source]} hint={t(DROP_HINT[source])} onFile={onFile} />
-            <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              {t("trySample")}
-              {SAMPLES[source].map((sample) => (
-                <button key={sample.name} type="button" className="btn" onClick={() => loadSample(sample.name)}>
-                  {t(sample.label)}
-                </button>
-              ))}
-            </p>
+            <SampleCards format={source} onLoad={loadSample} />
           </>
         )}
 

@@ -47,3 +47,27 @@ test("an API error is shown", async () => {
   fireEvent.change(screen.getByTestId("file-input"), { target: { files: [new File(["x"], "a.csv")] } });
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("no TPT header row found"));
 });
+
+test("example cards per source format load a sample and offer its download", async () => {
+  const fetchMock = vi.fn(async (url: string, _init?: RequestInit) =>
+    url.startsWith("/api/samples/")
+      ? { ok: true, blob: async () => new Blob(["x"], { type: "application/xml" }) }
+      : { ok: true, json: async () => (url === "/api/convert" ? RESULT : []) },
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  render(
+    <I18nProvider lang="de">
+      <Converter direction="fundsxml-to-tpt" />
+    </I18nProvider>,
+  );
+  const cards = screen.getByTestId("samples");
+  expect(cards.querySelectorAll("li")).toHaveLength(6);
+  expect(screen.getByText("mit Fehlern")).toBeInTheDocument();
+  const link = screen.getByRole("link", { name: "fundsxml_fund_portfolio.xml herunterladen" });
+  expect(link).toHaveAttribute("href", "/api/samples/fundsxml-fund-portfolio?download=1");
+  fireEvent.click(screen.getByRole("button", { name: /Fondsportfolio/ }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/convert", expect.anything()));
+  expect(fetchMock).toHaveBeenCalledWith("/api/samples/fundsxml-fund-portfolio");
+  const init = fetchMock.mock.calls.find(([u]) => u === "/api/convert")![1]!;
+  expect(((init.body as FormData).get("file") as File).name).toBe("fundsxml_fund_portfolio.xml");
+});

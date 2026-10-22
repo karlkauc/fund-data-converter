@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <FundsXML4 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://github.com/fundsxml/schema/releases/download/4.2.11/FundsXML.xsd">
   <ControlData>
-    <UniqueDocumentID>TPT-d3c19f43776042488856</UniqueDocumentID>
-    <DocumentGenerated>2026-10-20T10:48:55</DocumentGenerated>
+    <UniqueDocumentID>TPT-ea537b6218a44cf9a56e</UniqueDocumentID>
+    <DocumentGenerated>2026-10-22T09:05:50</DocumentGenerated>
     <Version>4.2.11</Version>
     <ContentDate>2025-12-31</ContentDate>
     <DataSupplier>
@@ -15,520 +15,545 @@
   </ControlData>
   <Funds>
     <Fund>
-      <Identifiers>
-        <ISIN>FR0010000001</ISIN>
-      </Identifiers>
+      <Identifiers/>
       <Names>
         <OfficialName>Demo Euro Bond Fund</OfficialName>
       </Names>
       <Currency>EUR</Currency>
       <SingleFundFlag>true</SingleFundFlag>
-      <FundDynamicData>
-        <TotalAssetValues>
-          <TotalAssetValue>
-            <NavDate>2025-12-31</NavDate>
-            <TotalAssetNature>OFFICIAL</TotalAssetNature>
-            <TotalNetAssetValue>
-              <Amount ccy="EUR">97000000</Amount>
-            </TotalNetAssetValue>
-            <SharesOutstanding>1250000</SharesOutstanding>
-          </TotalAssetValue>
-        </TotalAssetValues>
-        <Portfolios>
-          <Portfolio>
-            <NavDate>2025-12-31</NavDate>
-            <Positions>
-              <Position>
-                <UniqueID>A_FR0000571085</UniqueID>
-                <Identifiers>
-                  <ISIN>FR0000571085</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">14200000</Amount>
-                </TotalValue>
-                <TotalPercentage>14.6392</TotalPercentage>
-                <Bond>
-                  <Nominal>14430894.31</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">14069360</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000BU2Z023</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000BU2Z023</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">12800000</Amount>
-                </TotalValue>
-                <TotalPercentage>13.1959</TotalPercentage>
-                <Bond>
-                  <Nominal>12641975.31</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">12682240</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_IT0005428617</UniqueID>
-                <Identifiers>
-                  <ISIN>IT0005428617</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">9600000</Amount>
-                </TotalValue>
-                <TotalPercentage>9.8969</TotalPercentage>
-                <Bond>
-                  <Nominal>9221902.02</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">9511680</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_ES00000128Q6</UniqueID>
-                <Identifiers>
-                  <ISIN>ES00000128Q6</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">7400000</Amount>
-                </TotalValue>
-                <TotalPercentage>7.6289</TotalPercentage>
-                <Bond>
-                  <Nominal>7359522.63</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">7331920</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_NL00150016M6</UniqueID>
-                <Identifiers>
-                  <ISIN>NL00150016M6</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">6100000</Amount>
-                </TotalValue>
-                <TotalPercentage>6.2887</TotalPercentage>
-                <Bond>
-                  <Nominal>6275720.16</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">6043880</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_AT0000A2QFE3</UniqueID>
-                <Identifiers>
-                  <ISIN>AT0000A2QFE3</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">4900000</Amount>
-                </TotalValue>
-                <TotalPercentage>5.0515</TotalPercentage>
-                <Bond>
-                  <Nominal>4813359.53</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">4854920</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000A3H3JZ6</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000A3H3JZ6</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">5300000</Amount>
-                </TotalValue>
-                <TotalPercentage>5.4639</TotalPercentage>
-                <Bond>
-                  <Nominal>5543933.05</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">5251240</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000A3E5N96</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000A3E5N96</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">4700000</Amount>
-                </TotalValue>
-                <TotalPercentage>4.8454</TotalPercentage>
-                <Bond>
-                  <Nominal>4685942.17</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">4656760</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000A30VN69</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000A30VN69</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">4200000</Amount>
-                </TotalValue>
-                <TotalPercentage>4.3299</TotalPercentage>
-                <Bond>
-                  <Nominal>3947368.42</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">4161360</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000A3MQS15</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000A3MQS15</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">3900000</Amount>
-                </TotalValue>
-                <TotalPercentage>4.0206</TotalPercentage>
-                <Bond>
-                  <Nominal>3898050.97</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">3864120</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-                <CustomAttributes>
-                  <Attribute>
-                    <Name>TPT_32_Interest_rate_type</Name>
-                    <Type>T</Type>
-                    <ValueText>Floating</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_34_Interest_rate_reference_identification</Name>
-                    <Type>T</Type>
-                    <ValueText>EUR003M</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_35_Identification_type_for_interest_rate_index</Name>
-                    <Type>T</Type>
-                    <ValueText>BLOOMBERG</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_36_Interest_rate_index_name</Name>
-                    <Type>T</Type>
-                    <ValueText>Euribor 3 month</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_37_Interest_rate_margin</Name>
-                    <Type>T</Type>
-                    <ValueText>0.0055</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_38_Coupon_payment_frequency</Name>
-                    <Type>T</Type>
-                    <ValueText>4</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_39_Maturity_date</Name>
-                    <Type>T</Type>
-                    <ValueText>2028-06-15</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_40_Redemption_type</Name>
-                    <Type>T</Type>
-                    <ValueText>Bullet</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_41_Redemption_rate</Name>
-                    <Type>T</Type>
-                    <ValueText>1</ValueText>
-                  </Attribute>
-                </CustomAttributes>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000A3MP7L1</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000A3MP7L1</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">3600000</Amount>
-                </TotalValue>
-                <TotalPercentage>3.7113</TotalPercentage>
-                <Bond>
-                  <Nominal>3567889</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">3566880</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_FR001400H576</UniqueID>
-                <Identifiers>
-                  <ISIN>FR001400H576</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">3400000</Amount>
-                </TotalValue>
-                <TotalPercentage>3.5052</TotalPercentage>
-                <Bond>
-                  <Nominal>3285024.15</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">3368720</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_FR001400BQ52</UniqueID>
-                <Identifiers>
-                  <ISIN>FR001400BQ52</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">3100000</Amount>
-                </TotalValue>
-                <TotalPercentage>3.1959</TotalPercentage>
-                <Bond>
-                  <Nominal>3036238.98</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">3071480</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_FR001400CJ35</UniqueID>
-                <Identifiers>
-                  <ISIN>FR001400CJ35</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">2800000</Amount>
-                </TotalValue>
-                <TotalPercentage>2.8866</TotalPercentage>
-                <Bond>
-                  <Nominal>2802802.8</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">2774240</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-                <CustomAttributes>
-                  <Attribute>
-                    <Name>TPT_32_Interest_rate_type</Name>
-                    <Type>T</Type>
-                    <ValueText>Floating</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_34_Interest_rate_reference_identification</Name>
-                    <Type>T</Type>
-                    <ValueText>EUR006M</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_35_Identification_type_for_interest_rate_index</Name>
-                    <Type>T</Type>
-                    <ValueText>BLOOMBERG</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_36_Interest_rate_index_name</Name>
-                    <Type>T</Type>
-                    <ValueText>Euribor 6 month</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_37_Interest_rate_margin</Name>
-                    <Type>T</Type>
-                    <ValueText>0.0090</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_38_Coupon_payment_frequency</Name>
-                    <Type>T</Type>
-                    <ValueText>4</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_39_Maturity_date</Name>
-                    <Type>T</Type>
-                    <ValueText>2027-11-09</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_40_Redemption_type</Name>
-                    <Type>T</Type>
-                    <ValueText>Bullet</ValueText>
-                  </Attribute>
-                  <Attribute>
-                    <Name>TPT_41_Redemption_rate</Name>
-                    <Type>T</Type>
-                    <ValueText>1</ValueText>
-                  </Attribute>
-                </CustomAttributes>
-              </Position>
-              <Position>
-                <UniqueID>A_IT0005539934</UniqueID>
-                <Identifiers>
-                  <ISIN>IT0005539934</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">2500000</Amount>
-                </TotalValue>
-                <TotalPercentage>2.5773</TotalPercentage>
-                <Bond>
-                  <Nominal>2387774.59</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">2477000</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_ES0445064175</UniqueID>
-                <Identifiers>
-                  <ISIN>ES0445064175</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">2200000</Amount>
-                </TotalValue>
-                <TotalPercentage>2.268</TotalPercentage>
-                <Bond>
-                  <Nominal>2169625.25</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">2179760</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_US037833EK49</UniqueID>
-                <Identifiers>
-                  <ISIN>US037833EK49</ISIN>
-                </Identifiers>
-                <Currency>USD</Currency>
-                <TotalValue>
-                  <Amount ccy="USD">2056277.06</Amount>
-                  <Amount ccy="EUR">1900000</Amount>
-                </TotalValue>
-                <TotalPercentage>1.9588</TotalPercentage>
-                <Bond>
-                  <Nominal>2051149.18</Nominal>
-                  <MarketValue>
-                    <Amount ccy="EUR">1882520</Amount>
-                  </MarketValue>
-                  <InterestClaimGross>
-                    <Amount ccy="EUR">300700</Amount>
-                  </InterestClaimGross>
-                </Bond>
-              </Position>
-              <Position>
-                <UniqueID>A_IE00B4L5Y983</UniqueID>
-                <Identifiers>
-                  <ISIN>IE00B4L5Y983</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">1500000</Amount>
-                </TotalValue>
-                <TotalPercentage>1.5464</TotalPercentage>
-                <ShareClass>
-                  <Shares>14337.6028</Shares>
-                </ShareClass>
-              </Position>
-              <Position>
-                <UniqueID>A_DE000C6AXQV7</UniqueID>
-                <Identifiers>
-                  <ISIN>DE000C6AXQV7</ISIN>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">320000</Amount>
-                </TotalValue>
-                <TotalPercentage>0.3299</TotalPercentage>
-                <Future>
-                  <Contracts>2416.1885</Contracts>
-                </Future>
-                <CustomAttributes>
-                  <Attribute>
-                    <Name>TPT_39_Maturity_date</Name>
-                    <Type>T</Type>
-                    <ValueText>2026-03-10</ValueText>
-                  </Attribute>
-                </CustomAttributes>
-              </Position>
-              <Position>
-                <UniqueID>A_CASH-EUR-001</UniqueID>
-                <Identifiers>
-                  <OtherID FreeType="TPT code type 99">CASH-EUR-001</OtherID>
-                </Identifiers>
-                <Currency>EUR</Currency>
-                <TotalValue>
-                  <Amount ccy="EUR">2580000</Amount>
-                </TotalValue>
-                <TotalPercentage>2.6598</TotalPercentage>
-                <Account>
-                  <MarketValue>
-                    <Amount ccy="EUR">2580000</Amount>
-                  </MarketValue>
-                </Account>
-              </Position>
-            </Positions>
-          </Portfolio>
-        </Portfolios>
-      </FundDynamicData>
-      <SingleFund/>
+      <FundStaticData>
+        <Classifications>
+          <Classification>
+            <ListedGroup>CIC</ListedGroup>
+            <Value>FR41</Value>
+          </Classification>
+        </Classifications>
+      </FundStaticData>
+      <SingleFund>
+        <ShareClasses>
+          <ShareClass>
+            <Identifiers>
+              <ISIN>FR0010000001</ISIN>
+            </Identifiers>
+            <Names>
+              <OfficialName>Demo Euro Bond Fund</OfficialName>
+            </Names>
+            <Currency>EUR</Currency>
+            <Prices>
+              <Price>
+                <ActionCode>C</ActionCode>
+                <NavDate>2025-12-31</NavDate>
+                <PriceCurrency>EUR</PriceCurrency>
+                <PriceNature>OFFICIAL</PriceNature>
+                <NavPrice>77.6</NavPrice>
+              </Price>
+            </Prices>
+            <TotalAssetValues>
+              <TotalAssetValue>
+                <NavDate>2025-12-31</NavDate>
+                <TotalAssetNature>OFFICIAL</TotalAssetNature>
+                <TotalNetAssetValue>
+                  <Amount ccy="EUR">97000000</Amount>
+                </TotalNetAssetValue>
+                <SharesOutstanding>1250000</SharesOutstanding>
+              </TotalAssetValue>
+            </TotalAssetValues>
+            <Portfolios>
+              <Portfolio>
+                <NavDate>2025-12-31</NavDate>
+                <Positions>
+                  <Position>
+                    <UniqueID>A_FR0000571085</UniqueID>
+                    <Identifiers>
+                      <ISIN>FR0000571085</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">14200000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>14.6392</TotalPercentage>
+                    <Bond>
+                      <Nominal>14430894.31</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">14069360</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000BU2Z023</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000BU2Z023</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">12800000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>13.1959</TotalPercentage>
+                    <Bond>
+                      <Nominal>12641975.31</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">12682240</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_IT0005428617</UniqueID>
+                    <Identifiers>
+                      <ISIN>IT0005428617</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">9600000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>9.8969</TotalPercentage>
+                    <Bond>
+                      <Nominal>9221902.02</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">9511680</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_ES00000128Q6</UniqueID>
+                    <Identifiers>
+                      <ISIN>ES00000128Q6</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">7400000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>7.6289</TotalPercentage>
+                    <Bond>
+                      <Nominal>7359522.63</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">7331920</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_NL00150016M6</UniqueID>
+                    <Identifiers>
+                      <ISIN>NL00150016M6</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">6100000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>6.2887</TotalPercentage>
+                    <Bond>
+                      <Nominal>6275720.16</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">6043880</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_AT0000A2QFE3</UniqueID>
+                    <Identifiers>
+                      <ISIN>AT0000A2QFE3</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">4900000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>5.0515</TotalPercentage>
+                    <Bond>
+                      <Nominal>4813359.53</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">4854920</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000A3H3JZ6</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000A3H3JZ6</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">5300000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>5.4639</TotalPercentage>
+                    <Bond>
+                      <Nominal>5543933.05</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">5251240</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000A3E5N96</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000A3E5N96</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">4700000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>4.8454</TotalPercentage>
+                    <Bond>
+                      <Nominal>4685942.17</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">4656760</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000A30VN69</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000A30VN69</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">4200000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>4.3299</TotalPercentage>
+                    <Bond>
+                      <Nominal>3947368.42</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">4161360</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000A3MQS15</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000A3MQS15</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">3900000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>4.0206</TotalPercentage>
+                    <Bond>
+                      <Nominal>3898050.97</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">3864120</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                    <CustomAttributes>
+                      <Attribute>
+                        <Name>TPT_32_Interest_rate_type</Name>
+                        <Type>T</Type>
+                        <ValueText>Floating</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_34_Interest_rate_reference_identification</Name>
+                        <Type>T</Type>
+                        <ValueText>EUR003M</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_35_Identification_type_for_interest_rate_index</Name>
+                        <Type>T</Type>
+                        <ValueText>BLOOMBERG</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_36_Interest_rate_index_name</Name>
+                        <Type>T</Type>
+                        <ValueText>Euribor 3 month</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_37_Interest_rate_margin</Name>
+                        <Type>T</Type>
+                        <ValueText>0.0055</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_38_Coupon_payment_frequency</Name>
+                        <Type>T</Type>
+                        <ValueText>4</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_39_Maturity_date</Name>
+                        <Type>T</Type>
+                        <ValueText>2028-06-15</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_40_Redemption_type</Name>
+                        <Type>T</Type>
+                        <ValueText>Bullet</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_41_Redemption_rate</Name>
+                        <Type>T</Type>
+                        <ValueText>1</ValueText>
+                      </Attribute>
+                    </CustomAttributes>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000A3MP7L1</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000A3MP7L1</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">3600000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>3.7113</TotalPercentage>
+                    <Bond>
+                      <Nominal>3567889</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">3566880</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_FR001400H576</UniqueID>
+                    <Identifiers>
+                      <ISIN>FR001400H576</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">3400000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>3.5052</TotalPercentage>
+                    <Bond>
+                      <Nominal>3285024.15</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">3368720</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_FR001400BQ52</UniqueID>
+                    <Identifiers>
+                      <ISIN>FR001400BQ52</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">3100000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>3.1959</TotalPercentage>
+                    <Bond>
+                      <Nominal>3036238.98</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">3071480</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_FR001400CJ35</UniqueID>
+                    <Identifiers>
+                      <ISIN>FR001400CJ35</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">2800000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>2.8866</TotalPercentage>
+                    <Bond>
+                      <Nominal>2802802.8</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">2774240</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                    <CustomAttributes>
+                      <Attribute>
+                        <Name>TPT_32_Interest_rate_type</Name>
+                        <Type>T</Type>
+                        <ValueText>Floating</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_34_Interest_rate_reference_identification</Name>
+                        <Type>T</Type>
+                        <ValueText>EUR006M</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_35_Identification_type_for_interest_rate_index</Name>
+                        <Type>T</Type>
+                        <ValueText>BLOOMBERG</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_36_Interest_rate_index_name</Name>
+                        <Type>T</Type>
+                        <ValueText>Euribor 6 month</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_37_Interest_rate_margin</Name>
+                        <Type>T</Type>
+                        <ValueText>0.0090</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_38_Coupon_payment_frequency</Name>
+                        <Type>T</Type>
+                        <ValueText>4</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_39_Maturity_date</Name>
+                        <Type>T</Type>
+                        <ValueText>2027-11-09</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_40_Redemption_type</Name>
+                        <Type>T</Type>
+                        <ValueText>Bullet</ValueText>
+                      </Attribute>
+                      <Attribute>
+                        <Name>TPT_41_Redemption_rate</Name>
+                        <Type>T</Type>
+                        <ValueText>1</ValueText>
+                      </Attribute>
+                    </CustomAttributes>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_IT0005539934</UniqueID>
+                    <Identifiers>
+                      <ISIN>IT0005539934</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">2500000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>2.5773</TotalPercentage>
+                    <Bond>
+                      <Nominal>2387774.59</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">2477000</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_ES0445064175</UniqueID>
+                    <Identifiers>
+                      <ISIN>ES0445064175</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">2200000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>2.268</TotalPercentage>
+                    <Bond>
+                      <Nominal>2169625.25</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">2179760</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_US037833EK49</UniqueID>
+                    <Identifiers>
+                      <ISIN>US037833EK49</ISIN>
+                    </Identifiers>
+                    <Currency>USD</Currency>
+                    <TotalValue>
+                      <Amount ccy="USD">2056277.06</Amount>
+                      <Amount ccy="EUR">1900000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>1.9588</TotalPercentage>
+                    <Bond>
+                      <Nominal>2051149.18</Nominal>
+                      <MarketValue>
+                        <Amount ccy="EUR">1882520</Amount>
+                      </MarketValue>
+                      <InterestClaimGross>
+                        <Amount ccy="EUR">300700</Amount>
+                      </InterestClaimGross>
+                    </Bond>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_IE00B4L5Y983</UniqueID>
+                    <Identifiers>
+                      <ISIN>IE00B4L5Y983</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">1500000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>1.5464</TotalPercentage>
+                    <ShareClass>
+                      <Shares>14337.6028</Shares>
+                    </ShareClass>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_DE000C6AXQV7</UniqueID>
+                    <Identifiers>
+                      <ISIN>DE000C6AXQV7</ISIN>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">320000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>0.3299</TotalPercentage>
+                    <Future>
+                      <Contracts>2416.1885</Contracts>
+                    </Future>
+                    <CustomAttributes>
+                      <Attribute>
+                        <Name>TPT_39_Maturity_date</Name>
+                        <Type>T</Type>
+                        <ValueText>2026-03-10</ValueText>
+                      </Attribute>
+                    </CustomAttributes>
+                  </Position>
+                  <Position>
+                    <UniqueID>A_CASH-EUR-001</UniqueID>
+                    <Identifiers>
+                      <OtherID FreeType="TPT code type 99">CASH-EUR-001</OtherID>
+                    </Identifiers>
+                    <Currency>EUR</Currency>
+                    <TotalValue>
+                      <Amount ccy="EUR">2580000</Amount>
+                    </TotalValue>
+                    <TotalPercentage>2.6598</TotalPercentage>
+                    <Account>
+                      <MarketValue>
+                        <Amount ccy="EUR">2580000</Amount>
+                      </MarketValue>
+                    </Account>
+                  </Position>
+                </Positions>
+              </Portfolio>
+            </Portfolios>
+          </ShareClass>
+        </ShareClasses>
+      </SingleFund>
     </Fund>
   </Funds>
   <AssetMasterData>
@@ -553,6 +578,7 @@
           </Issuer>
           <MaturityDate>2032-05-25</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>2.5</InterestRate>
           </Coupon>
@@ -591,6 +617,7 @@
           </Issuer>
           <MaturityDate>2034-08-15</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>2.6</InterestRate>
           </Coupon>
@@ -629,6 +656,7 @@
           </Issuer>
           <MaturityDate>2033-05-01</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>SEMI</PaymentFrequency>
             <InterestRate>4.4</InterestRate>
           </Coupon>
@@ -667,6 +695,7 @@
           </Issuer>
           <MaturityDate>2031-04-30</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>3.15</InterestRate>
           </Coupon>
@@ -705,6 +734,7 @@
           </Issuer>
           <MaturityDate>2030-07-15</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>2</InterestRate>
           </Coupon>
@@ -743,6 +773,7 @@
           </Issuer>
           <MaturityDate>2037-02-20</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>2.9</InterestRate>
           </Coupon>
@@ -781,6 +812,7 @@
           </Issuer>
           <MaturityDate>2029-03-10</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>1.625</InterestRate>
           </Coupon>
@@ -822,6 +854,7 @@
           </Issuer>
           <MaturityDate>2031-02-22</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>2.875</InterestRate>
           </Coupon>
@@ -860,6 +893,7 @@
           </Issuer>
           <MaturityDate>2033-09-06</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>4.252</InterestRate>
           </Coupon>
@@ -898,6 +932,7 @@
           </Issuer>
           <MaturityDate>2028-06-15</MaturityDate>
           <Coupon>
+            <Type>float</Type>
             <PaymentFrequency>QURT</PaymentFrequency>
             <OffsetBPS>55</OffsetBPS>
           </Coupon>
@@ -935,6 +970,7 @@
           </Issuer>
           <MaturityDate>2030-07-05</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>3.125</InterestRate>
           </Coupon>
@@ -973,6 +1009,7 @@
           </Issuer>
           <MaturityDate>2032-09-14</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>3.75</InterestRate>
           </Coupon>
@@ -1011,6 +1048,7 @@
           </Issuer>
           <MaturityDate>2029-06-21</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>3.5</InterestRate>
           </Coupon>
@@ -1049,6 +1087,7 @@
           </Issuer>
           <MaturityDate>2027-11-09</MaturityDate>
           <Coupon>
+            <Type>float</Type>
             <PaymentFrequency>QURT</PaymentFrequency>
             <OffsetBPS>90</OffsetBPS>
           </Coupon>
@@ -1086,6 +1125,7 @@
           </Issuer>
           <MaturityDate>2031-06-14</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>4.25</InterestRate>
           </Coupon>
@@ -1124,6 +1164,7 @@
           </Issuer>
           <MaturityDate>2030-01-12</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>YEAR</PaymentFrequency>
             <InterestRate>3.375</InterestRate>
           </Coupon>
@@ -1162,6 +1203,7 @@
           </Issuer>
           <MaturityDate>2031-05-09</MaturityDate>
           <Coupon>
+            <Type>fix</Type>
             <PaymentFrequency>SEMI</PaymentFrequency>
             <InterestRate>4.15</InterestRate>
           </Coupon>

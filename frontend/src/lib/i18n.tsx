@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { SampleName } from "./api";
 
 export type Lang = "de" | "en";
 
@@ -19,10 +20,8 @@ const en = {
   dropHintXml: ".xml (FundsXML 4, max. 25 MB)",
   dropHintOpenfunds: ".xlsx · .csv · .zip (openfunds with OF-ID columns, max. 25 MB)",
   trySample: "No file at hand? Try an example:",
-  sampleV7: "TPT V7",
-  sampleV8: "TPT V8",
-  sampleXml: "FundsXML",
-  sampleOpenfunds: "openfunds",
+  downloadSample: "Download {file}",
+  sampleHasErrors: "with errors",
   options: "Options",
   tptVersion: "TPT version",
   tptVersionInput: "TPT version of the file",
@@ -149,10 +148,8 @@ const de: typeof en = {
   dropHintXml: ".xml (FundsXML 4, max. 25 MB)",
   dropHintOpenfunds: ".xlsx · .csv · .zip (openfunds mit OF-ID-Spalten, max. 25 MB)",
   trySample: "Keine Datei zur Hand? Beispiel laden:",
-  sampleV7: "TPT V7",
-  sampleV8: "TPT V8",
-  sampleXml: "FundsXML",
-  sampleOpenfunds: "openfunds",
+  downloadSample: "{file} herunterladen",
+  sampleHasErrors: "mit Fehlern",
   options: "Optionen",
   tptVersion: "TPT-Version",
   tptVersionInput: "TPT-Version der Datei",
@@ -260,6 +257,81 @@ const de: typeof en = {
   backToConverter: "Zurück zum Konverter",
   theme: "Farbschema wechseln",
   language: "English",
+};
+
+// Title and one-line description of each example file (tools/make_samples.py).
+export const SAMPLE_TEXT: Record<Lang, Record<SampleName, [string, string]>> = {
+  en: {
+    "tpt-v7": ["Mixed portfolio", "Bonds, equities, ETFs, a future, an option and cash – 20 positions, V7"],
+    "tpt-v8": ["TPT V8", "The same portfolio as V8, with fields 150/151"],
+    "tpt-all-cic": [
+      "All CIC categories",
+      "Every asset type 0–9, A–F: floater, convertible, swaps, CDS, FX forward, loan, property …",
+    ],
+    "tpt-multi": ["Several funds & share classes", "Two funds, one of them with three share classes incl. USD"],
+    "tpt-csv": ["CSV with semicolons", "All CIC categories as a delimited text file"],
+    "tpt-errors": ["Faulty delivery", "Missing NAV, invalid CIC, currency, date and code list values"],
+    fundsxml: ["From the TPT example", "Core structures and TPT block, portfolio per share class"],
+    "fundsxml-all-cic": [
+      "All instrument types",
+      "AssetDetails for bonds, equities, funds, derivatives, deposits, loans, property",
+    ],
+    "fundsxml-core-only": ["Core structures only", "No TPT block: TPT is derived from Fund, Position and AssetMasterData"],
+    "fundsxml-fund-portfolio": [
+      "Fund portfolio",
+      "Three share classes share the fund's portfolio; a fund without share classes",
+    ],
+    "fundsxml-openfunds": [
+      "Rich static data",
+      "Companies, fees, registrations, prices and distributions – converted from openfunds",
+    ],
+    "fundsxml-errors": ["Inconsistent document", "An older TPT block, core and block disagree, mandatory values missing"],
+    openfunds: ["Share class with holdings", "One share class, its static data and 20 holdings; field-name header"],
+    "openfunds-multi": ["Several funds & share classes", "Four share classes in two funds; OF-ID header"],
+    "openfunds-static": [
+      "Static & dynamic data",
+      "Identifiers, companies, fees, registrations, NAVs, dividend, an ETF – holdings for one class",
+    ],
+    "openfunds-zip": ["ZIP with CSV files", "Share classes and holdings (all CIC categories) as two CSV files"],
+    "openfunds-errors": ["Faulty delivery", "Unknown field, invalid values, a holding without its share class"],
+  },
+  de: {
+    "tpt-v7": ["Gemischtes Portfolio", "Anleihen, Aktien, ETFs, ein Future, eine Option und Kasse – 20 Positionen, V7"],
+    "tpt-v8": ["TPT V8", "Dasselbe Portfolio als V8, mit den Feldern 150/151"],
+    "tpt-all-cic": [
+      "Alle CIC-Kategorien",
+      "Jede Anlageart 0–9, A–F: Floater, Wandelanleihe, Swaps, CDS, Devisentermin, Darlehen, Immobilie …",
+    ],
+    "tpt-multi": ["Mehrere Fonds & Anteilsklassen", "Zwei Fonds, einer davon mit drei Anteilsklassen inkl. USD"],
+    "tpt-csv": ["CSV mit Semikolon", "Alle CIC-Kategorien als Textdatei mit Trennzeichen"],
+    "tpt-errors": ["Fehlerhafte Lieferung", "Fehlender NAV, ungültiger CIC, Währung, Datum und Code-Werte"],
+    fundsxml: ["Aus dem TPT-Beispiel", "Kernstrukturen und TPT-Block, Portfolio je Anteilsklasse"],
+    "fundsxml-all-cic": [
+      "Alle Instrumenttypen",
+      "AssetDetails für Anleihen, Aktien, Fonds, Derivate, Einlagen, Darlehen, Immobilien",
+    ],
+    "fundsxml-core-only": ["Nur Kernstrukturen", "Ohne TPT-Block: TPT wird aus Fund, Position und AssetMasterData abgeleitet"],
+    "fundsxml-fund-portfolio": [
+      "Fondsportfolio",
+      "Drei Anteilsklassen teilen sich das Fondsportfolio; ein Fonds ohne Anteilsklassen",
+    ],
+    "fundsxml-openfunds": [
+      "Umfangreiche Stammdaten",
+      "Gesellschaften, Gebühren, Zulassungen, Preise und Ausschüttungen – aus openfunds konvertiert",
+    ],
+    "fundsxml-errors": [
+      "Inkonsistentes Dokument",
+      "Älterer TPT-Block, Kern und Block widersprechen sich, Pflichtwerte fehlen",
+    ],
+    openfunds: ["Anteilsklasse mit Holdings", "Eine Anteilsklasse, ihre Stammdaten und 20 Holdings; Kopfzeile mit Feldnamen"],
+    "openfunds-multi": ["Mehrere Fonds & Anteilsklassen", "Vier Anteilsklassen in zwei Fonds; Kopfzeile mit OF-IDs"],
+    "openfunds-static": [
+      "Stamm- & Dynamikdaten",
+      "Kennungen, Gesellschaften, Gebühren, Zulassungen, NAVs, Ausschüttung, ein ETF – Holdings für eine Klasse",
+    ],
+    "openfunds-zip": ["ZIP mit CSV-Dateien", "Anteilsklassen und Holdings (alle CIC-Kategorien) als zwei CSV-Dateien"],
+    "openfunds-errors": ["Fehlerhafte Lieferung", "Unbekanntes Feld, ungültige Werte, ein Holding ohne seine Anteilsklasse"],
+  },
 };
 
 // Issue texts by backend issue code (app/model/issues.py); {placeholders} come from issue.params.

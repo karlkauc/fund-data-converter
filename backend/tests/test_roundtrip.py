@@ -22,6 +22,9 @@ FILES = [
     "12_multi_fund_clean.xlsx",
     "tpt_v7_sample.xlsx",
     "tpt_v8_sample.xlsx",
+    "tpt_all_cic.xlsx",
+    "tpt_multi_fund.xlsx",
+    "tpt_semicolon.csv",
 ]
 
 
@@ -61,7 +64,9 @@ def test_lossless_roundtrip(fixture_bytes, name, block, core):
     assert _diffs(doc, extract.rows) == []
 
 
-@pytest.mark.parametrize("name", ["tpt_v7_sample.xlsx", "tpt_v8_sample.xlsx"])
+@pytest.mark.parametrize(
+    "name", ["tpt_v7_sample.xlsx", "tpt_v8_sample.xlsx", "tpt_all_cic.xlsx", "tpt_multi_fund.xlsx"]
+)
 @pytest.mark.parametrize("block", [True, False])
 def test_complete_files_are_schema_valid(fixture_bytes, name, block):
     doc = read_tpt(fixture_bytes(name), name)

@@ -236,7 +236,7 @@ def _check_values(rec: OfRecord, catalog: OfCatalog) -> list[Issue]:
         f = catalog.by_id.get(match.of_id) if match else None
         if f is None:
             continue
-        reason = _invalid(f.data_type, f.codes, value)
+        reason = _invalid(f.data_type, f.codes, value, f.values)
         if reason:
             issues.append(
                 Issue(
@@ -251,7 +251,7 @@ def _check_values(rec: OfRecord, catalog: OfCatalog) -> list[Issue]:
     return issues
 
 
-def _invalid(data_type: str, codes: tuple[str, ...], value: str) -> str | None:
+def _invalid(data_type: str, codes: tuple[str, ...], value: str, values: str = "") -> str | None:
     v = value.strip()
     if data_type in ("double", "integer"):
         try:
@@ -264,6 +264,12 @@ def _invalid(data_type: str, codes: tuple[str, ...], value: str) -> str | None:
     if data_type == "boolean":
         return None if v.lower() in ("yes", "no", "true", "false", "y", "n", "1", "0") else '"yes" or "no"'
     if data_type == "date":
+        if values.strip() == "MM-DD":  # e.g. the fiscal year end; a full date is accepted as well
+            m = re.fullmatch(r"(?:--|\d{4}-)?(\d{2})-(\d{2})", v)
+            try:
+                return None if m and date(2000, int(m[1]), int(m[2])) else "a month and day (MM-DD)"
+            except ValueError:
+                return "a month and day (MM-DD)"
         try:
             date.fromisoformat(v[:10])
         except ValueError:

@@ -224,8 +224,10 @@ def _swap_type(cic: str) -> str | None:
     return SWAP_TYPE.get(cic_subcategory(cic), "Interestrateswap")
 
 
-def _call_put(cic: str) -> str | None:
-    return {"B": "CALL", "C": "PUT"}.get(cic_category(cic))
+def _call_put_to(cic: str, ctx: dict[str, str]) -> tuple[str | None, bool]:
+    # A credit spread option (CIC xF2) is neither category B nor C: field 60 tells call from put.
+    by_cic = {"B": "CALL", "C": "PUT"}.get(cic_category(cic))
+    return by_cic or {"cal": "CALL", "put": "PUT"}.get(ctx.get("60", "").strip().lower()), False
 
 
 def _convertible(cic: str) -> str | None:
@@ -269,7 +271,9 @@ ASSET_TYPE = Transform(
 FUTURE_TYPE_T = _derived("cic_future_type", _future_type, "Future type from the CIC subcategory")
 OPTION_TYPE_T = _derived("cic_option_type", _option_type, "Option type from the CIC subcategory")
 SWAP_TYPE_T = _derived("cic_swap_type", _swap_type, "Swap type from the CIC subcategory")
-CALL_PUT_T = _derived("cic_call_put", _call_put, "CIC category B = call, C = put")
+CALL_PUT_T = Transform(
+    "cic_call_put", _call_put_to, lambda _v, _c: None, "CIC category B = call, C = put, else field 60"
+)
 CONVERTIBLE_T = _derived("cic_convertible", _convertible, "CIC x22 = convertible bond")
 
 

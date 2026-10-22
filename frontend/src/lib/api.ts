@@ -45,18 +45,40 @@ export async function convertFile(
   return res.json();
 }
 
-export type SampleName = "tpt-v7" | "tpt-v8" | "fundsxml" | "openfunds";
-
-// Keep in sync with SAMPLES in backend/app/api/samples.py.
-const SAMPLE_FILES: Record<SampleName, string> = {
+// Keep in sync with SAMPLES in backend/app/api/samples.py (titles and descriptions: SAMPLE_TEXT in i18n.tsx).
+export const SAMPLE_FILES = {
   "tpt-v7": "tpt_v7_sample.xlsx",
   "tpt-v8": "tpt_v8_sample.xlsx",
+  "tpt-all-cic": "tpt_all_cic.xlsx",
+  "tpt-multi": "tpt_multi_fund.xlsx",
+  "tpt-csv": "tpt_semicolon.csv",
+  "tpt-errors": "tpt_with_errors.xlsx",
   fundsxml: "fundsxml_sample.xml",
+  "fundsxml-all-cic": "fundsxml_all_cic.xml",
+  "fundsxml-core-only": "fundsxml_core_only.xml",
+  "fundsxml-fund-portfolio": "fundsxml_fund_portfolio.xml",
+  "fundsxml-openfunds": "fundsxml_from_openfunds.xml",
+  "fundsxml-errors": "fundsxml_with_errors.xml",
   openfunds: "openfunds_sample.xlsx",
-};
+  "openfunds-multi": "openfunds_multi.xlsx",
+  "openfunds-static": "openfunds_static.xlsx",
+  "openfunds-zip": "openfunds_csv.zip",
+  "openfunds-errors": "openfunds_with_errors.xlsx",
+} as const;
+
+export type SampleName = keyof typeof SAMPLE_FILES;
+
+/** The samples of a source format, in the order shown ("-errors" ones carry delivery errors). */
+export function samplesOf(format: Format): SampleName[] {
+  return (Object.keys(SAMPLE_FILES) as SampleName[]).filter((n) => n.split("-")[0] === format);
+}
+
+export function sampleUrl(name: SampleName, download = false): string {
+  return `/api/samples/${name}${download ? "?download=1" : ""}`;
+}
 
 export async function fetchSample(name: SampleName): Promise<File> {
-  const res = await fetch(`/api/samples/${name}`);
+  const res = await fetch(sampleUrl(name));
   if (!res.ok) throw await errorFrom(res);
   const blob = await res.blob();
   return new File([blob], SAMPLE_FILES[name], { type: blob.type });

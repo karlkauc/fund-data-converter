@@ -18,7 +18,7 @@ are completed by ``app.convert.derive``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 from functools import lru_cache
 
@@ -220,6 +220,12 @@ def _read(el: etree._Element, rules: list[Rule], values: dict[str, str]) -> None
         if rule.field in values or not rule.applies_reverse(values):
             continue
         path = rule.resolve(values)
+        if path is None and f"={{{rule.field}}}]" in rule.path:
+            # A list item keyed by this very value (e.g. PortfolioManager[Name={OFPM000010}]/Name):
+            # the first item; the rules for its other children then resolve with the key read here.
+            path = replace(rule, path=rule.path.replace(_key_predicate(rule.path, rule.field), "")).resolve(
+                values
+            )
         if path is None:
             continue
         found = _compiled(path)(el)
@@ -235,6 +241,11 @@ def _read(el: etree._Element, rules: list[Rule], values: dict[str, str]) -> None
             values[rule.field] = value
             for key, v in rule.reverse_sets:
                 values.setdefault(key, v)
+
+
+def _key_predicate(path: str, field: str) -> str:
+    end = path.index(f"={{{field}}}]") + len(field) + 4
+    return path[path.rindex("[", 0, end) : end]
 
 
 def _custom_values(el: etree._Element) -> dict[str, str]:
