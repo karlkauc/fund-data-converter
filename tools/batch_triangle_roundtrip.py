@@ -549,8 +549,10 @@ def _nav_fundsxml(root) -> list[dict]:
             for pf in holder.iterfind("Portfolios/Portfolio"):
                 when = (pf.findtext("NavDate") or "").strip()
                 total, n, missing = Decimal(0), 0, 0
+                percent = Decimal(0)
                 for pos in pf.iterfind("Positions/Position"):
                     n += 1
+                    percent += _dec(pos.findtext("TotalPercentage")) or 0
                     amounts = pos.findall("TotalValue/Amount")
                     amount = next((a for a in amounts if a.get("ccy") == ccy), None)
                     value = _dec(amount.text) if amount is not None else None
@@ -571,7 +573,9 @@ def _nav_fundsxml(root) -> list[dict]:
                         "sum": str(total.quantize(Decimal("0.01"))),
                         "nav": None if own is None else str(own),
                         "deviationPct": _pct_dev(total, own),
-                        "result": _verdict(total, own, whole, None),
+                        "weightsPct": str(percent.quantize(Decimal("0.0001"))),
+                        # TotalPercentage is in percent; TPT 26 a fraction.
+                        "result": _verdict(total, own, whole, percent / 100),
                     }
                 )
     return out
