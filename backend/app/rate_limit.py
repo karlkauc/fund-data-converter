@@ -7,6 +7,12 @@ the client sent and must never be trusted.
 
 from __future__ import annotations
 
+import math
+import time
+
+from limits import RateLimitItem, parse_many
+from limits.storage import MemoryStorage
+from limits.strategies import FixedWindowRateLimiter
 from slowapi import Limiter
 from starlette.requests import Request
 
@@ -24,3 +30,73 @@ def client_ip(request: Request) -> str | None:
 
 
 limiter = Limiter(key_func=lambda request: client_ip(request) or "unknown", default_limits=[])
+
+
+class Quota:
+    """Several fixed windows (``"20/minute;200/hour"``) whose state can be reported.
+
+    slowapi enforces limits but keeps the counters to itself; the converter tells its visitors and
+    API callers how much is left (headers, the report's ``rateLimit``, ``GET /api/limits``).
+    A request counts against every window, and only when all of them still have room.
+    """
+
+    def __init__(self, spec: str, scope: str) -> None:
+        self.spec = spec
+        self.scope = scope
+        self.items = parse_many(spec)
+        self._storage = MemoryStorage()
+        self._limiter = FixedWindowRateLimiter(self._storage)
+
+    def hit(self, key: str) -> bool:
+        # No await in between: the check and the hit cannot interleave with another request.
+        if not all(self._limiter.test(item, self.scope, key) for item in self.items):
+            return False
+        for item in self.items:
+            self._limiter.hit(item, self.scope, key)
+        return True
+
+    def status(self, key: str) -> list[dict]:
+        """Per window: limit, remaining, seconds until it resets (0 while it has not started)."""
+        now = time.time()
+        out = []
+        for item in self.items:
+            stats = self._limiter.get_window_stats(item, self.scope, key)
+            started = stats.remaining < item.amount
+            out.append(
+                {
+                    "window": _window(item),
+                    "limit": item.amount,
+                    "remaining": stats.remaining,
+                    "resetSeconds": max(0, math.ceil(stats.reset_time - now)) if started else 0,
+                }
+            )
+        return out
+
+    def headers(self, key: str) -> dict[str, str]:
+        """``X-RateLimit-Limit-Minute: 20`` and so on, one set per window."""
+        out = {}
+        for w in self.status(key):
+            suffix = w["window"].title().replace(" ", "")
+            out[f"X-RateLimit-Limit-{suffix}"] = str(w["limit"])
+            out[f"X-RateLimit-Remaining-{suffix}"] = str(w["remaining"])
+            out[f"X-RateLimit-Reset-{suffix}"] = str(w["resetSeconds"])
+        return out
+
+    def retry_after(self, key: str) -> int:
+        """Seconds until every exhausted window has room again."""
+        return max((w["resetSeconds"] for w in self.status(key) if w["remaining"] <= 0), default=1) or 1
+
+    def describe(self) -> str:
+        """``20 per minute, 200 per hour``."""
+        return ", ".join(f"{item.amount} per {_window(item)}" for item in self.items)
+
+    def reset(self) -> None:
+        self._storage.reset()
+
+
+def _window(item: RateLimitItem) -> str:
+    name = item.GRANULARITY.name
+    return name if item.multiples == 1 else f"{item.multiples} {name}s"
+
+
+convert_quota = Quota(settings.convert_rate_limit, "convert")

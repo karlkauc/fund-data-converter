@@ -90,6 +90,16 @@ export interface ConvertResult {
     input: { bytes: number; sha256: string };
     durationMs: number;
   };
+  /** The caller's rate limit after this conversion (Quota.status in backend/app/rate_limit.py). */
+  rateLimit?: RateWindow[];
+}
+
+/** One window of the /api/convert rate limit; resetSeconds is 0 while the window has not started. */
+export interface RateWindow {
+  window: string;
+  limit: number;
+  remaining: number;
+  resetSeconds: number;
 }
 
 export interface ConvertOptions {

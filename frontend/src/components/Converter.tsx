@@ -1,14 +1,16 @@
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, convertFile, fetchSample, type SampleName } from "../lib/api";
+import { ApiError, convertFile, fetchLimits, fetchSample, type SampleName } from "../lib/api";
 import { ACCEPT, FORMAT_LABEL, FORMATS, guessSource, makeDirection, parseDirection, routeOf } from "../lib/directions";
 import { openFeedback, setFeedbackContext } from "../lib/feedback";
 import { useI18n, type MessageKey } from "../lib/i18n";
+import { useLimitsText } from "../lib/rateLimit";
 import { navigate } from "../lib/router";
-import type { ConvertOptions, ConvertResult, Direction, Format } from "../types";
+import type { ConvertOptions, ConvertResult, Direction, Format, RateWindow } from "../types";
 import { DropZone } from "./DropZone";
 import { Faq } from "./Faq";
 import { OptionsPanel } from "./OptionsPanel";
+import { RateLimitNote } from "./RateLimitNote";
 import { SampleCards } from "./SampleCards";
 import { ResultView } from "./ResultView";
 
@@ -21,6 +23,9 @@ const DEFAULTS: ConvertOptions = {
   ofHeaderNames: false,
   nonOpenfundsColumns: true,
 };
+
+// Marks a 429 in the error state: shown as rateLimitError in the current language.
+const RATE_LIMITED = "\u0000rate-limited";
 
 const DROP_HINT: Record<Format, MessageKey> = {
   tpt: "dropHintTpt",
@@ -35,6 +40,8 @@ export function Converter({ direction }: { direction: Direction }) {
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [limits, setLimits] = useState<RateWindow[]>([]);
+  const limitsText = useLimitsText();
   const abort = useRef<AbortController | null>(null);
   // The format of the current file as far as the browser can tell, and whether the next change of
   // direction only follows the server (which detected another format than guessed).
@@ -52,6 +59,7 @@ export function Converter({ direction }: { direction: Direction }) {
       const res = await convertFile(f, opts, to, ctrl.signal);
       if (ctrl.signal.aborted) return;
       setResult(res);
+      if (res.rateLimit) setLimits(res.rateLimit);
       // The server knows the format for sure (an XLSX may be TPT or openfunds): follow it.
       fileSource.current = parseDirection(res.direction).source;
       if (routeOf(res.direction) !== window.location.pathname.replace(/^\/+|\/+$/g, "")) {
@@ -61,10 +69,25 @@ export function Converter({ direction }: { direction: Direction }) {
     } catch (e) {
       if (ctrl.signal.aborted) return;
       setResult(null);
-      setError(e instanceof ApiError || e instanceof Error ? e.message : String(e));
+      if (e instanceof ApiError && e.status === 429) {
+        // The note below then says when the next conversion is possible.
+        const now = await fetchLimits().catch(() => [] as RateWindow[]);
+        setLimits(now);
+        setError(RATE_LIMITED);
+      } else {
+        setError(e instanceof ApiError || e instanceof Error ? e.message : String(e));
+      }
     } finally {
       if (!ctrl.signal.aborted) setBusy(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchLimits()
+      .then(setLimits)
+      .catch(() => {
+        /* the note is informative only */
+      });
   }, []);
 
   const onFile = useCallback(
@@ -187,7 +210,7 @@ export function Converter({ direction }: { direction: Direction }) {
         {error && !busy && (
           <div className="panel border-red-300 p-4 text-sm dark:border-red-800" role="alert">
             <p className="font-semibold text-red-700 dark:text-red-400">✖ {t("error")}</p>
-            <p className="mt-1">{error}</p>
+            <p className="mt-1">{error === RATE_LIMITED ? t("rateLimitError", { limits: limitsText(limits) }) : error}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {file && (
                 <button type="button" className="btn" onClick={() => run(file, options, target)}>
@@ -202,6 +225,7 @@ export function Converter({ direction }: { direction: Direction }) {
         )}
 
         {result && !busy && <ResultView result={result} />}
+        <RateLimitNote windows={limits} />
       </div>
       {!file && <Faq />}
     </div>

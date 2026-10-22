@@ -62,6 +62,7 @@ const TEXT = {
       ["dataLoss", "lost (values not in the output), keptAsCustomAttribute, notInCoreStructures (only in the TPT block), codes. Counted in full even where issues lists only the first 25 per code. TPT ⇄ openfunds: fields the other format has no place for (hop_data_loss). null for FundsXML input"],
       ["output", "filename, mimeType, size, zipped (above 8 MB the file is delivered zipped), sha256 (and base64 with response=json)"],
       ["meta", "converterVersion, fundsxmlSchema, input bytes and sha256, durationMs"],
+      ["rateLimit", "your rate limit after this conversion: per window (minute, hour) limit, remaining and resetSeconds"],
     ] as Row[],
     headerRows: [
       ["X-Conversion-Direction", "tpt-to-fundsxml · fundsxml-to-tpt · openfunds-to-fundsxml · fundsxml-to-openfunds · tpt-to-openfunds · openfunds-to-tpt"],
@@ -71,11 +72,12 @@ const TEXT = {
       ["X-Conversion-Data-Lost", "number of values not in the output; empty for FundsXML input"],
       ["X-Conversion-Issue-Codes", "comma-separated codes"],
       ["X-Conversion-Report", "the report without the per-row lists (issues, portfolioList, coverage.fields), as base64url JSON"],
+      ["X-RateLimit-Limit-Minute / -Remaining-Minute / -Reset-Minute", "your rate limit (also -Hour); Reset in seconds, 0 while the window has not started. On every /api/convert response, 429 included"],
     ] as Row[],
     limitRows: [
       ["Upload", "25 MB per file"],
       ["Positions", "10,000 per file – split larger files by portfolio"],
-      ["Rate", "20 conversions per minute per IP address; then 429 with Retry-After"],
+      ["Rate", "20 conversions per minute and 200 per hour per IP address; then 429 with Retry-After. GET /api/limits shows what is left without using a conversion"],
       ["Output", "files above 8 MB are delivered zipped"],
     ] as Row[],
     errorRows: [
@@ -141,6 +143,7 @@ const TEXT = {
       ["dataLoss", "lost (Werte nicht im Ergebnis), keptAsCustomAttribute, notInCoreStructures (nur im TPT-Block), codes. Vollständig gezählt, auch wenn issues je Code nur die ersten 25 auflistet. TPT ⇄ openfunds: Felder, für die das andere Format keinen Platz hat (hop_data_loss). null bei FundsXML-Eingabe"],
       ["output", "filename, mimeType, size, zipped (über 8 MB wird gezippt geliefert), sha256 (und base64 bei response=json)"],
       ["meta", "converterVersion, fundsxmlSchema, Bytes und sha256 der Eingabe, durationMs"],
+      ["rateLimit", "dein Rate-Limit nach dieser Konvertierung: je Zeitfenster (minute, hour) limit, remaining und resetSeconds"],
     ] as Row[],
     headerRows: [
       ["X-Conversion-Direction", "tpt-to-fundsxml · fundsxml-to-tpt · openfunds-to-fundsxml · fundsxml-to-openfunds · tpt-to-openfunds · openfunds-to-tpt"],
@@ -150,11 +153,12 @@ const TEXT = {
       ["X-Conversion-Data-Lost", "Anzahl der Werte, die nicht im Ergebnis sind; leer bei FundsXML-Eingabe"],
       ["X-Conversion-Issue-Codes", "Codes, kommagetrennt"],
       ["X-Conversion-Report", "der Report ohne zeilenweise Listen (issues, portfolioList, coverage.fields), als base64url-JSON"],
+      ["X-RateLimit-Limit-Minute / -Remaining-Minute / -Reset-Minute", "dein Rate-Limit (ebenso -Hour); Reset in Sekunden, 0 solange das Zeitfenster nicht begonnen hat. Bei jeder Antwort von /api/convert, auch bei 429"],
     ] as Row[],
     limitRows: [
       ["Upload", "25 MB je Datei"],
       ["Positionen", "10.000 je Datei – größere Dateien nach Portfolio aufteilen"],
-      ["Rate", "20 Konvertierungen pro Minute und IP-Adresse; danach 429 mit Retry-After"],
+      ["Rate", "20 Konvertierungen pro Minute und 200 pro Stunde je IP-Adresse; danach 429 mit Retry-After. GET /api/limits zeigt den Rest, ohne eine Konvertierung zu verbrauchen"],
       ["Ausgabe", "Dateien über 8 MB werden gezippt geliefert"],
     ] as Row[],
     errorRows: [

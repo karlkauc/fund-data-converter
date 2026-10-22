@@ -21,7 +21,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 
 from app.config import settings
-from app.rate_limit import limiter
+from app.rate_limit import client_ip, convert_quota
 from app.service import (
     DEFAULT_TARGET,
     DIRECTIONS,
@@ -70,7 +70,12 @@ an upload of another format refused.
 - `zip`: the converted file, `report.json` and `issues.csv` in one zip.
 
 Errors are `{"detail": "…"}` with status 400 (bad option), 413 (too large), 422 (not
-convertible) or 429 (rate limit, see `Retry-After`). Documentation: /api-docs."""
+convertible) or 429 (rate limit, see `Retry-After`).
+
+Rate limit per IP address (default 20 per minute and 200 per hour): every response carries
+`X-RateLimit-Limit-Minute`, `X-RateLimit-Remaining-Minute` and `X-RateLimit-Reset-Minute` (seconds), the
+same for `-Hour`, and the report the same as `rateLimit`. `GET /api/limits` reports them without using
+a conversion. Documentation: /api-docs."""
 
 
 # Upload extension -> usage ``source`` (what a successful conversion reports as the input format).
@@ -147,7 +152,6 @@ def _text(value: str | None) -> str | None:
         429: {"description": "Rate limit exceeded"},
     },
 )
-@limiter.limit(settings.convert_rate_limit)
 async def convert(
     request: Request,
     file: UploadFile = File(
@@ -192,6 +196,12 @@ async def convert(
         None, description="TPT → FundsXML: DataSupplier/SystemCountry, ISO 3166 alpha-2 (default: field 122)"
     ),
 ) -> Response | dict:
+    visitor = client_ip(request) or "unknown"
+    if not convert_quota.hit(visitor):
+        # The X-RateLimit-* headers are added by the middleware in main.py, like on every response.
+        wait = convert_quota.retry_after(visitor)
+        detail = f"rate limit exceeded ({convert_quota.describe()}); try again in {wait} s"
+        raise HTTPException(429, detail, headers={"Retry-After": str(wait)})
     data = await file.read(settings.max_upload_bytes + 1)
     filename = file.filename or "upload"
     version = (tpt_version or "").upper() or None
@@ -256,6 +266,7 @@ async def convert(
         )
         raise HTTPException(422, str(exc)) from exc
     report["meta"]["durationMs"] = _elapsed_ms(start)
+    report["rateLimit"] = convert_quota.status(visitor)
     emit(
         "convert",
         status="ok",
@@ -270,6 +281,13 @@ async def convert(
         return _zip_response(report, out)
     report["output"]["base64"] = base64.b64encode(out.data).decode("ascii")
     return report
+
+
+@router.get("/limits", tags=["convert"], summary="Rate limit of /api/convert for the calling IP address")
+async def limits(request: Request) -> dict:
+    """Per window: `limit`, `remaining` and `resetSeconds` (0 while the window has not started).
+    Does not count as a conversion."""
+    return {"convert": convert_quota.status(client_ip(request) or "unknown")}
 
 
 def _safe_direction(data: bytes, filename: str, wanted: str, target: str | None) -> str | None:

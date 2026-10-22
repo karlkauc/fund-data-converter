@@ -29,7 +29,7 @@ from app.config import settings
 from app.content.fields import field_pages
 from app.content.openfunds_fields import openfunds_field_pages
 from app.content.pages import register_provider
-from app.rate_limit import client_ip, limiter
+from app.rate_limit import client_ip, convert_quota, limiter
 from app.spa import mount_spa
 from app.usage.context import RequestUsage, UsageTracker, bind, emit, unbind
 from app.usage.feedback import FeedbackStore
@@ -185,6 +185,15 @@ async def security_headers(request: Request, call_next):
         response.headers["X-Robots-Tag"] = "noindex"
     if request.url.path.startswith("/api/"):
         response.headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
+@app.middleware("http")
+async def convert_rate_headers(request: Request, call_next):
+    """The caller's rate limit on every /api/convert answer: success, error and 429 alike."""
+    response = await call_next(request)
+    if request.url.path == "/api/convert" and request.method == "POST":
+        response.headers.update(convert_quota.headers(client_ip(request) or "unknown"))
     return response
 
 

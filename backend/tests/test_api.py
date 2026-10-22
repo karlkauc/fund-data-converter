@@ -96,8 +96,39 @@ def test_upload_limit(client, monkeypatch):
 
 def test_rate_limit(client, fixture_bytes, monkeypatch):
     data = b"1;6;12\nx;y;z\n"
-    codes = [client.post("/api/convert", files={"file": ("a.csv", data)}).status_code for _ in range(22)]
-    assert 429 in codes
+    answers = [client.post("/api/convert", files={"file": ("a.csv", data)}) for _ in range(22)]
+    codes = [r.status_code for r in answers]
+    assert codes.index(429) == 20  # 20 per minute, whatever the outcome of the conversion
+    first, refused = answers[0], answers[20]
+    assert first.headers["X-RateLimit-Limit-Minute"] == "20"
+    assert first.headers["X-RateLimit-Remaining-Minute"] == "19"
+    assert first.headers["X-RateLimit-Limit-Hour"] == "200"
+    assert first.headers["X-RateLimit-Remaining-Hour"] == "199"
+    assert refused.headers["X-RateLimit-Remaining-Minute"] == "0"
+    assert refused.headers["X-RateLimit-Remaining-Hour"] == "180"  # a refused request does not count
+    assert 0 < int(refused.headers["Retry-After"]) <= 60
+    assert "20 per minute, 200 per hour" in refused.json()["detail"]
+
+
+def test_rate_limit_is_reported(client, fixture_bytes):
+    before = client.get("/api/limits").json()["convert"]
+    assert before == [
+        {"window": "minute", "limit": 20, "remaining": 20, "resetSeconds": 0},
+        {"window": "hour", "limit": 200, "remaining": 200, "resetSeconds": 0},
+    ]
+    sample = {"file": ("tpt_v7_sample.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))}
+    r = client.post("/api/convert", files=sample)
+    windows = r.json()["rateLimit"]
+    assert [(w["window"], w["remaining"]) for w in windows] == [("minute", 19), ("hour", 199)]
+    assert 0 < windows[0]["resetSeconds"] <= 60
+    # Asking costs nothing.
+    assert [w["remaining"] for w in client.get("/api/limits").json()["convert"]] == [19, 199]
+    file = client.post(
+        "/api/convert",
+        files={"file": ("tpt_v7_sample.xlsx", fixture_bytes("tpt_v7_sample.xlsx"))},
+        data={"response": "file"},
+    )
+    assert file.headers["X-RateLimit-Remaining-Minute"] == "18"
 
 
 def test_unknown_routes_404(client):

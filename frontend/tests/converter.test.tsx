@@ -71,3 +71,66 @@ test("example cards per source format load a sample and offer its download", asy
   const init = fetchMock.mock.calls.find(([u]) => u === "/api/convert")![1]!;
   expect(((init.body as FormData).get("file") as File).name).toBe("fundsxml_fund_portfolio.xml");
 });
+
+const WINDOWS = (minute: number, hour: number, reset = 0) => [
+  { window: "minute", limit: 20, remaining: minute, resetSeconds: reset },
+  { window: "hour", limit: 200, remaining: hour, resetSeconds: reset ? 3000 : 0 },
+];
+
+function routedFetch(convert: () => unknown) {
+  return vi.fn((url: string) => {
+    if (url === "/api/limits") return Promise.resolve({ ok: true, json: async () => ({ convert: WINDOWS(20, 200) }) });
+    if (url === "/api/convert") return Promise.resolve(convert());
+    return Promise.resolve({ ok: true, json: async () => [] });
+  });
+}
+
+test("the rate limit is shown and follows each conversion", async () => {
+  vi.stubGlobal(
+    "fetch",
+    routedFetch(() => ({ ok: true, json: async () => ({ ...RESULT, rateLimit: WINDOWS(19, 183) }) })),
+  );
+  render(
+    <I18nProvider lang="en">
+      <Converter direction="tpt-to-fundsxml" />
+    </I18nProvider>,
+  );
+  await waitFor(() =>
+    expect(screen.getByTestId("rate-limit")).toHaveTextContent(
+      "Limit per IP address: 20/minute, 200/hour · left: 20 this minute, 200 this hour",
+    ),
+  );
+  fireEvent.change(screen.getByTestId("file-input"), { target: { files: [new File(["x"], "a.csv")] } });
+  await waitFor(() => expect(screen.getByTestId("rate-limit")).toHaveTextContent("left: 19 this minute, 183 this hour"));
+});
+
+test("a 429 explains the limit and when the next conversion is possible", async () => {
+  const fetchMock = routedFetch(() => ({
+    ok: false,
+    status: 429,
+    statusText: "Too Many Requests",
+    json: async () => ({ detail: "rate limit exceeded" }),
+  }));
+  fetchMock.mockImplementationOnce(() => Promise.resolve({ ok: true, json: async () => ({ convert: WINDOWS(1, 50) }) }));
+  vi.stubGlobal("fetch", fetchMock);
+  render(
+    <I18nProvider lang="de">
+      <Converter direction="tpt-to-fundsxml" />
+    </I18nProvider>,
+  );
+  // After the 429 the limits are asked again: the minute is used up.
+  fetchMock.mockImplementation((url: string) =>
+    url === "/api/limits"
+      ? Promise.resolve({ ok: true, json: async () => ({ convert: WINDOWS(0, 50, 42) }) })
+      : url === "/api/convert"
+        ? Promise.resolve({ ok: false, status: 429, statusText: "", json: async () => ({ detail: "x" }) })
+        : Promise.resolve({ ok: true, json: async () => [] }),
+  );
+  fireEvent.change(screen.getByTestId("file-input"), { target: { files: [new File(["x"], "a.csv")] } });
+  await waitFor(() =>
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Zu viele Konvertierungen: das Limit ist 20/Minute, 200/Stunde je IP-Adresse.",
+    ),
+  );
+  expect(screen.getByText("Limit erreicht (20/Minute, 200/Stunde je IP-Adresse): nächste Konvertierung in 42 s.")).toBeInTheDocument();
+});

@@ -2,13 +2,13 @@
 title = "Automate TPT conversion: FundsXML ⇄ TPT via API"
 heading = "Automate TPT ⇄ FundsXML conversion"
 description = "Convert Tripartite Template files to FundsXML 4 and back from scripts and pipelines: one HTTP POST with curl, PowerShell or Python, the result file plus a JSON report. No account, no API key."
-lastmod = 2026-10-21
+lastmod = 2026-10-22
 cta_label = "Read the API documentation"
 cta_href = "/api-docs"
 
 [[faq]]
 q = "Do I need an API key?"
-a = "No. The API is the same endpoint the web page uses. It is limited to 20 conversions per minute per client, 25 MB per file and 10,000 positions per conversion."
+a = "No. The API is the same endpoint the web page uses. It is limited to 20 conversions per minute and 200 per hour per client, 25 MB per file and 10,000 positions per conversion. Every response says how many are left (`X-RateLimit-Remaining-Minute`, `X-RateLimit-Remaining-Hour`); `GET /api/limits` asks without using a conversion."
 
 [[faq]]
 q = "How do I know whether a conversion lost data?"

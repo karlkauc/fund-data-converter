@@ -1,4 +1,12 @@
-import type { ConvertOptions, ConvertResult, FaqEntry, Format, MappingField, OpenfundsMappingField } from "../types";
+import type {
+  ConvertOptions,
+  ConvertResult,
+  FaqEntry,
+  Format,
+  MappingField,
+  OpenfundsMappingField,
+  RateWindow,
+} from "../types";
 
 export class ApiError extends Error {
   constructor(
@@ -43,6 +51,14 @@ export async function convertFile(
   const res = await fetch("/api/convert", { method: "POST", body: form, headers: { "X-Client": "web" }, signal });
   if (!res.ok) throw await errorFrom(res);
   return res.json();
+}
+
+/** The caller's rate limit for /api/convert; asking does not count as a conversion. */
+export async function fetchLimits(): Promise<RateWindow[]> {
+  const res = await fetch("/api/limits");
+  if (!res.ok) throw await errorFrom(res);
+  const body = await res.json();
+  return Array.isArray(body?.convert) ? body.convert : [];
 }
 
 // Keep in sync with SAMPLES in backend/app/api/samples.py (titles and descriptions: SAMPLE_TEXT in i18n.tsx).

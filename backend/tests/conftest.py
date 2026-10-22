@@ -27,8 +27,9 @@ def client():
     from fastapi.testclient import TestClient
 
     from app.main import app
-    from app.rate_limit import limiter
+    from app.rate_limit import convert_quota, limiter
 
     limiter.reset()
+    convert_quota.reset()
     with TestClient(app) as c:
         yield c

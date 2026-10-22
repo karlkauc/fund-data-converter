@@ -131,7 +131,7 @@ then also downloads GeoLite2 into `backend/geoip/` and mounts the secrets. The D
 | `MAX_UPLOAD_MB` | 25 | request size; larger bodies get 413 without being buffered |
 | `MAX_POSITIONS` | 10000 | ~800 MB peak and ~11 s for 10,000 positions |
 | `MAX_CONCURRENT_CONVERSIONS` | 1 | conversions per instance; the next upload waits or goes to another instance |
-| `CONVERT_RATE_LIMIT` | 20/minute | per client IP (X-Forwarded-For, `TRUSTED_PROXY_HOPS`) |
+| `CONVERT_RATE_LIMIT` | 20/minute;200/hour | per client IP (X-Forwarded-For, `TRUSTED_PROXY_HOPS`); reported in `X-RateLimit-*` headers, the report's `rateLimit`, `GET /api/limits` and below the drop zone |
 | `ZIP_THRESHOLD_MB` | 8 | larger outputs are zipped (Cloud Run caps responses at 32 MiB) |
 
 Uploaded XML with a DOCTYPE or entity declaration is rejected, which rules out XXE and entity bombs.

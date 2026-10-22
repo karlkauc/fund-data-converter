@@ -44,7 +44,7 @@ def load_settings() -> Settings:
         trusted_proxy_hops=int(os.getenv("TRUSTED_PROXY_HOPS", "1")),
         # Conversions are CPU and memory bound; more in parallel only queue on one vCPU.
         max_concurrent_conversions=int(os.getenv("MAX_CONCURRENT_CONVERSIONS", "1")),
-        convert_rate_limit=os.getenv("CONVERT_RATE_LIMIT", "20/minute"),
+        convert_rate_limit=os.getenv("CONVERT_RATE_LIMIT", "20/minute;200/hour"),
         # Memory grows with the number of positions (≈ 50 KB each while converting).
         max_positions=int(os.getenv("MAX_POSITIONS", "10000")),
         # Larger outputs are delivered zipped (Cloud Run caps responses at 32 MiB).
