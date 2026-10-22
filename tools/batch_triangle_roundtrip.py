@@ -117,6 +117,8 @@ def main() -> None:
     print(f"{len(report)} done earlier, {len(todo)} to go", file=sys.stderr, flush=True)
     started = time.time()
     earlier = len(report)
+    # A report right away: the first snapshot would otherwise wait for --snapshot-every files.
+    _write_report(out, report, total, started, earlier)
     with (
         ProcessPoolExecutor(max_workers=args.workers) as pool,
         progress.open("a") as log,
