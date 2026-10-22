@@ -28,14 +28,19 @@ export interface HandoffTarget {
   prefix: string;
 }
 
+/** Development only: point the buttons at local instances of the sibling sites. */
+function devUrl(value: string | undefined, fallback: string): string {
+  return import.meta.env.DEV && value ? value : fallback;
+}
+
 export const XML_VIEWER: HandoffTarget = {
-  url: "https://www.xml-viewer.online/",
+  url: devUrl(import.meta.env.VITE_XML_VIEWER_URL, "https://www.xml-viewer.online/"),
   origins: ["https://www.xml-viewer.online", "https://xml-viewer.online"],
   prefix: "xml-viewer",
 };
 
 export const FINDATEX_VALIDATOR: HandoffTarget = {
-  url: "https://www.findatex-validator.eu/",
+  url: devUrl(import.meta.env.VITE_FINDATEX_VALIDATOR_URL, "https://www.findatex-validator.eu/"),
   origins: ["https://www.findatex-validator.eu", "https://findatex-validator.eu"],
   prefix: "findatex-validator",
 };
