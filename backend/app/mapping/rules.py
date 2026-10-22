@@ -429,6 +429,7 @@ def _foreign_bond(row) -> bool:
     """A bond quoted in another currency than the portfolio's: its amounts exist in both."""
     return _BOND(row) and bool(row.get("21")) and row.get("21") != row.get("4")
 
+
 _EQ_LIKE = asset_types("EQ", "PE")
 
 CORE_RULES: list[Rule] = [
@@ -584,6 +585,13 @@ CORE_RULES: list[Rule] = [
         when_text="bond",
     ),
     _r("33", "asset", "AssetDetails/Bond/InterestRate", t.PCT100, when=_BOND, when_text="bond"),
+    _ro(
+        "33",
+        "asset",
+        "AssetDetails/Bond/Coupon/Type",
+        t.ZERO_COUPON_RATE,
+        when_text="read only: zero coupon → 0",
+    ),
     _r("63", "asset", "AssetDetails/Bond/InterestsStartDate", when=_BOND, when_text="bond"),
     _r(
         "62",

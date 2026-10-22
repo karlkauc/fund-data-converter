@@ -198,6 +198,13 @@ def test_accrued_interest_from_market_values():
     equity = {"12": "DE31", "24": "10", "25": "8"}
     add_accrued_interest(equity)
     assert "126" not in equity
+    # In a foreign currency the quotation-currency amounts follow from 22/24.
+    foreign = {"12": "US21", "4": "EUR", "21": "USD", "22": "1100", "24": "1000", "25": "900"}
+    add_accrued_interest(foreign)
+    assert (foreign["126"], foreign["125"], foreign["23"]) == ("100", "110", "990")
+    domestic = {"12": "DE21", "4": "EUR", "21": "EUR", "22": "1000", "24": "1000", "25": "900"}
+    add_accrued_interest(domestic)
+    assert "125" not in domestic and "23" not in domestic
 
 
 def test_accrued_interest_reaches_fundsxml():

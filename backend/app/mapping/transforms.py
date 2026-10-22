@@ -90,11 +90,36 @@ def _rate_type_from(v: str, _ctx: dict[str, str]) -> str | None:
     return {"fix": "Fixed", "zero": "Fixed", "float": "Floating"}.get(v.strip().lower())
 
 
+_RATE_TYPE = _mapping("rate_type", {"Fixed": "fix", "Floating": "float"})
+
+
+def _rate_type_to(v: str, ctx: dict[str, str]) -> tuple[str | None, bool]:
+    value, lossless = _RATE_TYPE.to_xml(v, ctx)
+    # TPT has no zero-coupon type: a fixed rate of 0 % is one (read back as Fixed).
+    if value == "fix" and _is_zero(ctx.get("33", "")):
+        return "zero", lossless
+    return value, lossless
+
+
+def _is_zero(v: str) -> bool:
+    try:
+        return parse_decimal(v) == 0
+    except ValueError:
+        return False
+
+
 RATE_TYPE = Transform(
     "rate_type",
-    _mapping("rate_type", {"Fixed": "fix", "Floating": "float"}).to_xml,
+    _rate_type_to,
     _rate_type_from,
-    "Fixed ↔ fix (zero coupon read as Fixed), Floating ↔ float",
+    "Fixed ↔ fix (zero with a 0 % coupon, read back as Fixed), Floating ↔ float",
+)
+# A zero coupon bond without InterestRate: its coupon rate is 0 (so Fixed is written back as zero).
+ZERO_COUPON_RATE = Transform(
+    "zero_coupon_rate",
+    lambda _v, _c: (None, False),
+    lambda v, _c: "0" if v.strip() == "zero" else None,
+    "zero coupon → 0",
 )
 
 
@@ -235,31 +260,32 @@ def _convertible(cic: str) -> str | None:
 
 
 def _asset_type_from(v: str, _ctx: dict[str, str]) -> str | None:
-    # Without a CIC classification only the category can be guessed: "XT" + category + "9".
-    cat = {
-        "BO": "2",
-        "EQ": "3",
-        "PE": "3",
-        "SC": "4",
-        "AC": "7",
-        "FT": "7",
-        "LO": "8",
-        "RE": "9",
-        "FU": "A",
-        "OP": "B",
-        "SW": "D",
-        "FX": "E",
-        "CE": "0",
+    # Without a CIC classification only category and subcategory can be guessed: "XT" + both,
+    # chosen so that asset_type() gives the same AssetType back.
+    cic = {
+        "BO": "29",
+        "EQ": "39",
+        "PE": "34",
+        "SC": "49",
+        "AC": "79",
+        "FT": "73",
+        "LO": "89",
+        "RE": "99",
+        "FU": "A9",
+        "OP": "B9",
+        "SW": "D9",
+        "FX": "E2",
+        "CE": "09",
         # FundsXML types without a TPT counterpart in this converter's CIC mapping
-        "CP": "2",
-        "RT": "3",
-        "RI": "3",
-        "CM": "7",
-        "WA": "B",
-        "CO": "0",
-        "FE": "0",
+        "CP": "29",
+        "RT": "39",
+        "RI": "39",
+        "CM": "79",
+        "WA": "B9",
+        "CO": "09",
+        "FE": "09",
     }.get(v.strip())
-    return f"XT{cat}9" if cat else None
+    return f"XT{cic}" if cic else None
 
 
 ASSET_TYPE = Transform(

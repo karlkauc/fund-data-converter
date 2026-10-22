@@ -141,12 +141,21 @@ def add_accrued_interest(tpt: dict[str, str]) -> None:
 
     openfunds has no accrued interest column, but market value (24, OFPH000250) minus clean market
     value (25, OFPH000260) is exactly that amount; FundsXML keeps it as ``InterestClaimGross``.
+    In a foreign currency the quotation-currency amounts (125, 23) follow from the market value in
+    both currencies (22/24): 125 converted at that rate, 23 = 22 - 125.
     """
-    if tpt.get("126") or cic_category(tpt.get("12", "")) not in INTEREST_BEARING:
+    if cic_category(tpt.get("12", "")) not in INTEREST_BEARING:
         return
     market, clean = dec(tpt.get("24")), dec(tpt.get("25"))
-    if market is not None and clean is not None:
+    if not tpt.get("126") and market is not None and clean is not None:
         tpt["126"] = amount(market - clean)  # 0 for a zero coupon bond, as FundsXML states it
+    accrued, market_qc = dec(tpt.get("126")), dec(tpt.get("22"))
+    foreign = tpt.get("21") and tpt.get("21") != tpt.get("4")
+    if not foreign or tpt.get("125") or tpt.get("23") or accrued is None or market_qc is None or not market:
+        return
+    accrued_qc = accrued * market_qc / market
+    tpt["125"] = amount(accrued_qc)
+    tpt["23"] = amount(market_qc - dec(tpt["125"]))
 
 
 def tpt_to_holding(tpt: dict[str, str]) -> tuple[dict[str, str], set[str]]:

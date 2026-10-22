@@ -12,6 +12,7 @@ from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
 from app.ingest.tpt_reader import read_tpt
+from app.mapping.transforms import ASSET_TYPE, POSITION_ELEMENT, RATE_TYPE, ZERO_COUPON_RATE, asset_type
 from app.model.xmltree import parse_date, parse_decimal
 
 FILES = [
@@ -149,3 +150,36 @@ def test_values_real_files_carry_survive(fixture_bytes, block):
     rows[5]["21"] = "USD"
     result = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=block))
     assert _diffs(doc, extract_tpt(parse_fundsxml(result.xml)).rows) == []
+
+
+@pytest.mark.parametrize("kind", sorted(POSITION_ELEMENT))
+def test_asset_type_without_cic_comes_back(kind):
+    """A FundsXML without CIC: the CIC guessed for TPT gives the same AssetType back."""
+    assert asset_type(ASSET_TYPE.from_xml(kind, {})) == kind
+
+
+def test_zero_coupon_type_comes_back():
+    """TPT has no zero-coupon type: zero reads as Fixed, and Fixed with a 0 % coupon is zero again."""
+    assert RATE_TYPE.from_xml("zero", {}) == "Fixed"
+    assert RATE_TYPE.to_xml("Fixed", {"33": "0"}) == ("zero", True)
+    assert RATE_TYPE.to_xml("Fixed", {"33": "2.5"}) == ("fix", True)
+    assert RATE_TYPE.to_xml("Fixed", {}) == ("fix", True)
+    assert ZERO_COUPON_RATE.from_xml("zero", {}) == "0"
+    assert ZERO_COUPON_RATE.from_xml("fix", {}) is None
+
+
+def test_one_isin_in_two_currencies_is_two_assets(fixture_bytes):
+    """An instrument listed in two currencies keeps both asset currencies."""
+    from lxml import etree
+
+    doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
+    rows = [r.values for r in doc.rows]
+    rows[5].update({k: rows[4][k] for k in ("12", "14", "15", "17")})
+    rows[5]["21"] = "USD" if rows[4]["21"] != "USD" else "HKD"
+    root = etree.fromstring(convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=False)).xml)
+    currencies = {
+        a.findtext("Currency")
+        for a in root.iterfind("AssetMasterData/Asset")
+        if a.findtext("Identifiers/ISIN") == rows[4]["14"]
+    }
+    assert currencies == {rows[4]["21"], rows[5]["21"]}

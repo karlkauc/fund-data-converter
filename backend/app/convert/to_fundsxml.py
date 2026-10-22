@@ -363,7 +363,7 @@ class AssetRegistry:
     """``AssetMasterData`` built alongside the positions: one ``Asset`` per instrument."""
 
     node: Node = field(default_factory=lambda: Node("AssetMasterData"))
-    ids: dict[tuple[str, str, str], str] = field(default_factory=dict)
+    ids: dict[tuple[str, str, str, str], str] = field(default_factory=dict)
     used: set[str] = field(default_factory=set)
     written: set[str] = field(default_factory=set)
 
@@ -437,8 +437,9 @@ def _custom_attribute(node: Node, catalog, key: str, value: str, origin: str) ->
 _ID_SAFE = re.compile(r"[^A-Za-z0-9_.\-]")
 
 
-def _asset_id(row: TptRow, ids: dict[tuple[str, str, str], str], used: set[str]) -> str:
-    key = (row.get("15"), row.get("14"), "" if row.get("14") else row.get("17"))
+def _asset_id(row: TptRow, ids: dict[tuple[str, str, str, str], str], used: set[str]) -> str:
+    # The quotation currency is part of the key: one ISIN listed in two currencies is two assets.
+    key = (row.get("15"), row.get("14"), "" if row.get("14") else row.get("17"), row.get("21"))
     if key in ids:
         return ids[key]
     base = "A_" + _ID_SAFE.sub("_", row.get("14") or row.get("17") or f"row{row.source_row}")[:60]
