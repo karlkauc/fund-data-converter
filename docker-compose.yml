@@ -24,3 +24,15 @@ services:
       SITE_ORIGIN: ${SITE_ORIGIN:-https://converter.status20.net}
       INDEXNOW_KEY: ${INDEXNOW_KEY:-}
     mem_limit: 1g
+    memswap_limit: 1g  # no swap: an oversized conversion is killed, not slowing the host
+    # One conversion at a time needs one core; two leave room for the pages next to it.
+    cpus: 2
+    pids_limit: 128
+    # The app writes nothing but temporary files (openpyxl's write-only workbooks) to /tmp.
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

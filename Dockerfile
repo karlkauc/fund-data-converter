@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- Stage 1: build the frontend ----------
-FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS frontend
+FROM node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 AS frontend
 WORKDIR /src/frontend
 
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
@@ -12,7 +12,7 @@ RUN npm run build
 
 
 # ---------- Stage 2: python runtime ----------
-FROM python:3.12-slim@sha256:46cb7cc2877e60fbd5e21a9ae6115c30ace7a077b9f8772da879e4590c18c2e3 AS runtime
+FROM python:3.12-slim@sha256:cb33f7f771ecec2ef1225cf39b159591a040391bd73e4c01f00fdfc4c47611d2 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
