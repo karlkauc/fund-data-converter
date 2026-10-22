@@ -16,6 +16,10 @@ SAMPLES = {
     "tpt-v7": ("tpt_v7_sample.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
     "tpt-v8": ("tpt_v8_sample.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
     "fundsxml": ("fundsxml_sample.xml", "application/xml"),
+    "openfunds": (
+        "openfunds_sample.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ),
 }
 
 

@@ -22,7 +22,15 @@ from fastapi.responses import Response
 
 from app.config import settings
 from app.rate_limit import limiter
-from app.service import DIRECTIONS, InputError, OutputFile, TooLargeError, detect_kind
+from app.service import (
+    DEFAULT_TARGET,
+    DIRECTIONS,
+    FORMATS,
+    InputError,
+    OutputFile,
+    TooLargeError,
+    detect_kind,
+)
 from app.service import Request as ConvertRequest
 from app.service import convert as convert_request
 from app.usage.context import emit
@@ -49,8 +57,10 @@ REPORT_HEADERS = (
     "X-Conversion-Report",
 )
 
-DESCRIPTION = """Converts a TPT file (XLSX or CSV, V7 or V8) to FundsXML 4, or a FundsXML 4 document
-to TPT. The direction follows from the upload; pass `direction` to have a mismatch refused.
+DESCRIPTION = """Converts between TPT (XLSX or CSV, V7 or V8), FundsXML 4 and openfunds (XLSX, CSV or a
+ZIP of CSV files), in all six directions. The source format follows from the upload; `target` picks the
+output (default: TPT → FundsXML, FundsXML → TPT, openfunds → FundsXML). Pass `direction` instead to have
+an upload of another format refused.
 
 `response` picks the answer:
 
@@ -64,7 +74,7 @@ convertible) or 429 (rate limit, see `Retry-After`). Documentation: /api-docs.""
 
 
 # Upload extension -> usage ``source`` (what a successful conversion reports as the input format).
-_SOURCE_BY_SUFFIX = {".xlsx": "xlsx", ".xls": "xlsx", ".csv": "csv", ".xml": "xml"}
+_SOURCE_BY_SUFFIX = {".xlsx": "xlsx", ".xls": "xlsx", ".csv": "csv", ".xml": "xml", ".zip": "zip"}
 
 
 def _input_source(data: bytes, filename: str) -> str | None:
@@ -77,12 +87,16 @@ def _input_source(data: bytes, filename: str) -> str | None:
     return source
 
 
-def _direction(data: bytes, filename: str) -> str | None:
+def _direction(data: bytes, filename: str, wanted: str = "auto", target: str | None = None) -> str | None:
     """The direction ``run`` would take, or None when neither content nor name tell."""
+    if wanted in DIRECTIONS:
+        return wanted
     suffix = PurePath(filename).suffix.lower()
     if not data and suffix not in _SOURCE_BY_SUFFIX:
         return None
-    return "tpt-to-fundsxml" if detect_kind(data, filename) == "tpt" else "fundsxml-to-tpt"
+    kind = detect_kind(data, filename)
+    goal = target if target in FORMATS and target != kind else DEFAULT_TARGET[kind]
+    return f"{kind}-to-{goal}"
 
 
 def _reject(
@@ -119,7 +133,7 @@ def _text(value: str | None) -> str | None:
 @router.post(
     "/convert",
     tags=["convert"],
-    summary="Convert TPT ⇄ FundsXML",
+    summary="Convert TPT ⇄ FundsXML ⇄ openfunds",
     response_model=None,
     description=DESCRIPTION,
     responses={
@@ -136,18 +150,38 @@ def _text(value: str | None) -> str | None:
 @limiter.limit(settings.convert_rate_limit)
 async def convert(
     request: Request,
-    file: UploadFile = File(..., description="TPT (.xlsx, .csv) or FundsXML 4 (.xml)"),
+    file: UploadFile = File(
+        ..., description="TPT (.xlsx, .csv), FundsXML 4 (.xml) or openfunds (.xlsx, .csv, .zip)"
+    ),
     tpt_version: str | None = Form(
         None, description="V7 or V8. TPT input: overrides the detected version; FundsXML input: TPT version"
     ),
     include_block: str | None = Form(None, description="TPT → FundsXML: write the TPT block (default true)"),
     include_core: str | None = Form(None, description="TPT → FundsXML: write core structures (default true)"),
-    output_format: str | None = Form(None, description="FundsXML → TPT: xlsx (default) or csv"),
+    output_format: str | None = Form(None, description="TPT or openfunds output: xlsx (default) or csv"),
     delimiter: str | None = Form(None, description="CSV output: semicolon (default), comma, pipe or tab"),
-    all_columns: str | None = Form(None, description="FundsXML → TPT: write every TPT column (default true)"),
+    all_columns: str | None = Form(
+        None,
+        description="TPT output: every TPT column (default true); "
+        "openfunds output: every OFST/OFPH column (default false)",
+    ),
     response: str | None = Form(None, description="json (default), file or zip"),
     direction: str | None = Form(
-        None, description="auto (default), tpt-to-fundsxml or fundsxml-to-tpt; a mismatch is refused with 422"
+        None,
+        description="auto (default) or <source>-to-<target> with tpt, fundsxml, openfunds; "
+        "an upload of another format is refused with 422",
+    ),
+    target: str | None = Form(
+        None,
+        description="With direction auto: tpt, fundsxml or openfunds (the upload's own format: the default)",
+    ),
+    of_header_names: str | None = Form(
+        None, description="openfunds output: a second header row with the field names (default false)"
+    ),
+    non_openfunds_columns: str | None = Form(
+        None,
+        description="TPT → openfunds: TPT fields without an openfunds column as columns TPT_<field> "
+        "(default true; false drops them)",
     ),
     preview: str | None = Form(None, description="json: include the table and XML previews (default true)"),
     data_supplier_name: str | None = Form(
@@ -175,8 +209,13 @@ async def convert(
         raise _reject(400, "response must be json, file or zip", "bad_response", data, filename, requested)
     wanted = (direction or "auto").lower()
     if wanted not in ("auto", *DIRECTIONS):
-        detail = "direction must be auto, tpt-to-fundsxml or fundsxml-to-tpt"
+        detail = "direction must be auto or one of " + ", ".join(DIRECTIONS)
         raise _reject(400, detail, "bad_direction", data, filename, requested)
+    goal = (target or "").lower() or None
+    if goal is not None and goal not in FORMATS:
+        raise _reject(
+            400, "target must be tpt, fundsxml or openfunds", "bad_target", data, filename, requested
+        )
     req = ConvertRequest(
         data=data,
         filename=filename,
@@ -185,8 +224,11 @@ async def convert(
         include_core=_flag(include_core, True),
         output_format=(output_format or "xlsx").lower(),
         delimiter=(delimiter or "semicolon").lower(),
-        all_columns=_flag(all_columns, True),
+        all_columns=None if not all_columns else _flag(all_columns, True),
         direction=wanted,
+        target=goal,
+        of_header_names=_flag(of_header_names, False),
+        non_openfunds_columns=_flag(non_openfunds_columns, True),
         preview=_flag(preview, True),
         data_supplier_name=_text(data_supplier_name),
         data_supplier_short=_text(data_supplier_short),
@@ -205,7 +247,7 @@ async def convert(
             status="rejected" if isinstance(exc, TooLargeError) else "parse_error",
             status_code=422,
             error_detail=type(exc.__cause__ or exc).__name__,
-            direction=_direction(data, req.filename),
+            direction=_safe_direction(data, req.filename, wanted, goal),
             source=_input_source(data, req.filename),
             tpt_version=version,
             input_bytes=len(data),
@@ -228,6 +270,13 @@ async def convert(
         return _zip_response(report, out)
     report["output"]["base64"] = base64.b64encode(out.data).decode("ascii")
     return report
+
+
+def _safe_direction(data: bytes, filename: str, wanted: str, target: str | None) -> str | None:
+    try:
+        return _direction(data, filename, wanted, target)
+    except Exception:  # noqa: BLE001 – a sniff of an unreadable file must not hide the real error
+        return None
 
 
 def _elapsed_ms(start: float) -> int:

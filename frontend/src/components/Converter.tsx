@@ -1,10 +1,11 @@
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, convertFile, fetchSample } from "../lib/api";
+import { ApiError, convertFile, fetchSample, type SampleName } from "../lib/api";
+import { ACCEPT, FORMAT_LABEL, FORMATS, guessSource, makeDirection, parseDirection, routeOf } from "../lib/directions";
 import { openFeedback, setFeedbackContext } from "../lib/feedback";
-import { useI18n } from "../lib/i18n";
+import { useI18n, type MessageKey } from "../lib/i18n";
 import { navigate } from "../lib/router";
-import type { ConvertOptions, ConvertResult, Direction } from "../types";
+import type { ConvertOptions, ConvertResult, Direction, Format } from "../types";
 import { DropZone } from "./DropZone";
 import { Faq } from "./Faq";
 import { OptionsPanel } from "./OptionsPanel";
@@ -16,11 +17,23 @@ const DEFAULTS: ConvertOptions = {
   includeCore: true,
   outputFormat: "xlsx",
   delimiter: "semicolon",
+  ofHeaderNames: false,
+  nonOpenfundsColumns: true,
 };
 
-function directionOf(file: File): Direction {
-  return file.name.toLowerCase().endsWith(".xml") ? "fundsxml-to-tpt" : "tpt-to-fundsxml";
-}
+const DROP_HINT: Record<Format, MessageKey> = {
+  tpt: "dropHintTpt",
+  fundsxml: "dropHintXml",
+  openfunds: "dropHintOpenfunds",
+};
+const SAMPLES: Record<Format, { name: SampleName; label: MessageKey }[]> = {
+  tpt: [
+    { name: "tpt-v7", label: "sampleV7" },
+    { name: "tpt-v8", label: "sampleV8" },
+  ],
+  fundsxml: [{ name: "fundsxml", label: "sampleXml" }],
+  openfunds: [{ name: "openfunds", label: "sampleOpenfunds" }],
+};
 
 export function Converter({ direction }: { direction: Direction }) {
   const { t } = useI18n();
@@ -30,16 +43,28 @@ export function Converter({ direction }: { direction: Direction }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const abort = useRef<AbortController | null>(null);
+  // The format of the current file as far as the browser can tell, and whether the next change of
+  // direction only follows the server (which detected another format than guessed).
+  const fileSource = useRef<Format | null>(null);
+  const following = useRef(false);
+  const { source, target } = parseDirection(direction);
 
-  const run = useCallback(async (f: File, opts: ConvertOptions) => {
+  const run = useCallback(async (f: File, opts: ConvertOptions, to: Format) => {
     abort.current?.abort();
     const ctrl = new AbortController();
     abort.current = ctrl;
     setBusy(true);
     setError(null);
     try {
-      const res = await convertFile(f, opts, ctrl.signal);
-      if (!ctrl.signal.aborted) setResult(res);
+      const res = await convertFile(f, opts, to, ctrl.signal);
+      if (ctrl.signal.aborted) return;
+      setResult(res);
+      // The server knows the format for sure (an XLSX may be TPT or openfunds): follow it.
+      fileSource.current = parseDirection(res.direction).source;
+      if (routeOf(res.direction) !== window.location.pathname.replace(/^\/+|\/+$/g, "")) {
+        following.current = true;
+        navigate(routeOf(res.direction));
+      }
     } catch (e) {
       if (ctrl.signal.aborted) return;
       setResult(null);
@@ -51,23 +76,29 @@ export function Converter({ direction }: { direction: Direction }) {
 
   const onFile = useCallback(
     (f: File) => {
-      // The file decides the direction: a .xml dropped on the TPT tab is converted to TPT.
-      const dir = directionOf(f);
-      if (dir !== direction) navigate(dir === "tpt-to-fundsxml" ? "" : "fundsxml-to-tpt");
+      // The file decides the source: a .xml dropped on the TPT page is converted from FundsXML.
+      const from = guessSource(f, source);
+      const dir = makeDirection(from, target);
+      fileSource.current = from;
+      if (dir !== direction) {
+        following.current = true;
+        navigate(routeOf(dir));
+      }
       setFile(f);
       setResult(null);
-      void run(f, options);
+      void run(f, options, parseDirection(dir).target);
     },
-    [direction, options, run],
+    [direction, source, target, options, run],
   );
 
   const onOptions = (next: ConvertOptions) => {
     setOptions(next);
-    if (file) void run(file, next);
+    if (file) void run(file, next, target);
   };
 
   const reset = () => {
     abort.current?.abort();
+    fileSource.current = null;
     setFile(null);
     setResult(null);
     setError(null);
@@ -80,21 +111,25 @@ export function Converter({ direction }: { direction: Direction }) {
     return () => setFeedbackContext({});
   }, [file, direction, result, options.tptVersion]);
 
-  // Switching tabs without a file in progress starts over.
+  // Another target converts the file again; another source starts over.
   useEffect(() => {
-    if (file && directionOf(file) !== direction) reset();
+    if (following.current) {
+      following.current = false;
+      return;
+    }
+    if (!file) return;
+    if (fileSource.current === source) void run(file, options, target);
+    else reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [direction]);
 
-  const loadSample = async (name: "tpt-v7" | "tpt-v8" | "fundsxml") => {
+  const loadSample = async (name: SampleName) => {
     try {
       onFile(await fetchSample(name));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
   };
-
-  const toFundsxml = direction === "tpt-to-fundsxml";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:py-10">
@@ -107,25 +142,22 @@ export function Converter({ direction }: { direction: Direction }) {
 
       <div className={clsx("mx-auto space-y-4", !file && "max-w-3xl")}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="inline-flex rounded-full bg-slate-100 p-1 dark:bg-slate-900" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={toFundsxml}
-              className={clsx("pill", toFundsxml && "pill-active")}
-              onClick={() => navigate("")}
-            >
-              {t("dirToFundsxml")}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!toFundsxml}
-              className={clsx("pill", !toFundsxml && "pill-active")}
-              onClick={() => navigate("fundsxml-to-tpt")}
-            >
-              {t("dirToTpt")}
-            </button>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <FormatPicker
+              label={t("from")}
+              formats={FORMATS}
+              current={source}
+              onPick={(f) => navigate(routeOf(makeDirection(f, target)))}
+            />
+            <span aria-hidden className="text-slate-400">
+              →
+            </span>
+            <FormatPicker
+              label={t("to")}
+              formats={FORMATS.filter((f) => f !== source)}
+              current={target}
+              onPick={(f) => navigate(routeOf(makeDirection(source, f)))}
+            />
           </div>
           {file && (
             <button type="button" className="btn" onClick={reset}>
@@ -136,27 +168,14 @@ export function Converter({ direction }: { direction: Direction }) {
 
         {!file && (
           <>
-            <DropZone
-              accept={toFundsxml ? ".xlsx,.xlsm,.csv,.txt,.tsv" : ".xml"}
-              hint={toFundsxml ? t("dropHintTpt") : t("dropHintXml")}
-              onFile={onFile}
-            />
+            <DropZone accept={ACCEPT[source]} hint={t(DROP_HINT[source])} onFile={onFile} />
             <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-400">
               {t("trySample")}
-              {toFundsxml ? (
-                <>
-                  <button type="button" className="btn" onClick={() => loadSample("tpt-v7")}>
-                    {t("sampleV7")}
-                  </button>
-                  <button type="button" className="btn" onClick={() => loadSample("tpt-v8")}>
-                    {t("sampleV8")}
-                  </button>
-                </>
-              ) : (
-                <button type="button" className="btn" onClick={() => loadSample("fundsxml")}>
-                  {t("sampleXml")}
+              {SAMPLES[source].map((sample) => (
+                <button key={sample.name} type="button" className="btn" onClick={() => loadSample(sample.name)}>
+                  {t(sample.label)}
                 </button>
-              )}
+              ))}
             </p>
           </>
         )}
@@ -176,7 +195,7 @@ export function Converter({ direction }: { direction: Direction }) {
             <p className="mt-1">{error}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {file && (
-                <button type="button" className="btn" onClick={() => run(file, options)}>
+                <button type="button" className="btn" onClick={() => run(file, options, target)}>
                   {t("retry")}
                 </button>
               )}
@@ -190,6 +209,38 @@ export function Converter({ direction }: { direction: Direction }) {
         {result && !busy && <ResultView result={result} />}
       </div>
       {!file && <Faq />}
+    </div>
+  );
+}
+
+function FormatPicker({
+  label,
+  formats,
+  current,
+  onPick,
+}: {
+  label: string;
+  formats: Format[];
+  current: Format;
+  onPick: (f: Format) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>
+      <div className="inline-flex rounded-full bg-slate-100 p-1 dark:bg-slate-900" role="radiogroup" aria-label={label}>
+        {formats.map((f) => (
+          <button
+            key={f}
+            type="button"
+            role="radio"
+            aria-checked={current === f}
+            className={clsx("pill", current === f && "pill-active")}
+            onClick={() => onPick(f)}
+          >
+            {FORMAT_LABEL[f]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

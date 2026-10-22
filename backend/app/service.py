@@ -12,19 +12,30 @@ from pathlib import PurePath
 
 from app import __version__
 from app.config import settings
-from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
-from app.convert.to_tpt import extract_tpt
+from app.convert.fundsxml_to_openfunds import OfExtract, extract_openfunds
+from app.convert.hub import not_carried_to_tpt, tpt_fields_without_column
+from app.convert.openfunds_to_fundsxml import OfConvertOptions, convert_openfunds_to_fundsxml
+from app.convert.to_fundsxml import ConversionResult, ConvertOptions, convert_tpt_to_fundsxml
+from app.convert.to_tpt import TptExtract, extract_tpt
 from app.ingest.fundsxml_reader import FundsXmlReadError, parse_fundsxml
-from app.ingest.tpt_reader import TptReadError, read_tpt
+from app.ingest.openfunds_reader import OfDocument, OpenfundsReadError, looks_like_openfunds, read_openfunds
+from app.ingest.tpt_reader import TptDocument, TptReadError, read_tpt
 from app.model.issues import Issue
 from app.schema.model import fundsxml_version
 from app.spec.catalog import load_catalog
+from app.spec.openfunds import load_openfunds
+from app.writers.openfunds_writer import write_openfunds
 from app.writers.tpt_writer import CSV_DELIMITERS, write_csv, write_xlsx
 
 PREVIEW_ROWS = 200
 PREVIEW_KEYS = ("1", "6", "12", "14", "17", "21", "22", "24", "26")
+OF_PREVIEW_KEYS = ("OFST020000", "OFST020060", "OFST020540", "OFDY000036", "OFDY000035", "OFDY000070")
 XML_PREVIEW_BYTES = 60_000
-DIRECTIONS = ("tpt-to-fundsxml", "fundsxml-to-tpt")
+FORMATS = ("tpt", "fundsxml", "openfunds")
+DIRECTIONS = tuple(f"{a}-to-{b}" for a in FORMATS for b in FORMATS if a != b)
+# Target when the request names none: the first two keep the behaviour of the TPT ⇄ FundsXML converter.
+DEFAULT_TARGET = {"tpt": "fundsxml", "fundsxml": "tpt", "openfunds": "fundsxml"}
+KIND_TEXT = {"tpt": "a TPT file", "fundsxml": "a FundsXML document", "openfunds": "an openfunds file"}
 
 
 class InputError(ValueError):
@@ -44,8 +55,11 @@ class Request:
     include_core: bool = True
     output_format: str = "xlsx"  # FundsXML → TPT: xlsx | csv
     delimiter: str = "semicolon"
-    all_columns: bool = True
-    direction: str = "auto"  # auto | tpt-to-fundsxml | fundsxml-to-tpt (refused on a mismatch)
+    all_columns: bool | None = None  # every column: TPT output by default, openfunds output on request
+    direction: str = "auto"  # auto | one of DIRECTIONS (refused when the upload is another format)
+    target: str | None = None  # with direction auto: tpt | fundsxml | openfunds (default DEFAULT_TARGET)
+    of_header_names: bool = False  # openfunds output: second header row with the field names
+    non_openfunds_columns: bool = True  # TPT → openfunds: TPT fields without a column as TPT_<field>
     preview: bool = True  # False drops the table and XML previews (API callers rarely want them)
     data_supplier_name: str | None = None  # TPT → FundsXML: ControlData/DataSupplier overrides
     data_supplier_short: str | None = None
@@ -68,7 +82,26 @@ def detect_kind(data: bytes, filename: str) -> str:
         return "fundsxml"
     if filename.lower().endswith(".xml"):
         return "fundsxml"
+    if looks_like_openfunds(data, filename):
+        return "openfunds"
     return "tpt"
+
+
+def resolve_direction(req: Request, kind: str) -> str:
+    """The direction for an upload of ``kind``; InputError if the request asks for another one."""
+    if req.direction != "auto":
+        source, _, target = req.direction.partition("-to-")
+        if source != kind:
+            raise InputError(f"direction is {req.direction}, but the upload is {KIND_TEXT[kind]}")
+    else:
+        # The browser cannot tell a TPT from an openfunds XLSX; a target equal to the format of the
+        # upload means "the other format", i.e. the default target.
+        target = (req.target or "").lower()
+        if not target or target == kind:
+            target = DEFAULT_TARGET[kind]
+    if target not in FORMATS or target == kind:
+        raise InputError(f"the upload is {KIND_TEXT[kind]}; target must be one of the other formats")
+    return f"{kind}-to-{target}"
 
 
 def run(req: Request) -> dict:
@@ -80,15 +113,8 @@ def run(req: Request) -> dict:
 
 def convert(req: Request) -> tuple[dict, OutputFile]:
     """The report (``output`` holds metadata only) and the converted file."""
-    direction = "tpt-to-fundsxml" if detect_kind(req.data, req.filename) == "tpt" else "fundsxml-to-tpt"
-    if req.direction not in ("auto", direction):
-        kind = "a TPT file" if direction == "tpt-to-fundsxml" else "a FundsXML document"
-        raise InputError(f"direction is {req.direction}, but the upload is {kind}")
-    if direction == "tpt-to-fundsxml":
-        report, out, totals = _tpt_to_fundsxml(req)
-    else:
-        report, out = _fundsxml_to_tpt(req)
-        totals = None
+    direction = resolve_direction(req, detect_kind(req.data, req.filename))
+    report, out, loss = HANDLERS[direction](req)
     report["output"] = {
         "filename": out.filename,
         "mimeType": out.mime,
@@ -100,7 +126,7 @@ def convert(req: Request) -> tuple[dict, OutputFile]:
     report["issueCounts"] = {
         level: sum(1 for i in issues if i["level"] == level) for level in ("error", "warning", "info")
     }
-    report["dataLoss"] = _data_loss(issues, totals) if totals is not None else None
+    report["dataLoss"] = loss
     report["meta"] = {
         "converterVersion": __version__,
         "fundsxmlSchema": fundsxml_version(),
@@ -132,56 +158,322 @@ def _data_loss(issues: list[dict], totals: dict[str, int]) -> dict:
     }
 
 
-def _tpt_to_fundsxml(req: Request) -> tuple[dict, OutputFile, dict[str, int]]:
+# -- reading -----------------------------------------------------------------------
+
+
+def _read_tpt(req: Request) -> TptDocument:
     try:
         doc = read_tpt(req.data, req.filename, req.tpt_version or None)
     except TptReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
-    result = convert_tpt_to_fundsxml(
-        doc,
-        ConvertOptions(
-            include_block=req.include_block,
-            include_core=req.include_core,
-            data_supplier_name=req.data_supplier_name,
-            data_supplier_short=req.data_supplier_short,
-            data_supplier_country=req.data_supplier_country,
-        ),
+    return doc
+
+
+def _read_openfunds(req: Request) -> OfDocument:
+    try:
+        doc = read_openfunds(req.data, req.filename)
+    except OpenfundsReadError as exc:
+        raise InputError(str(exc)) from exc
+    _check_size(len(doc.holdings))
+    return doc
+
+
+def _parse_fundsxml(req: Request):
+    try:
+        root = parse_fundsxml(req.data)
+    except FundsXmlReadError as exc:
+        raise InputError(str(exc)) from exc
+    _check_fundsxml_size(root)
+    return root
+
+
+def _tpt_input(req: Request, doc: TptDocument) -> dict:
+    return {
+        "filename": req.filename,
+        "kind": "tpt",
+        "format": doc.file_format,
+        "delimiter": doc.delimiter,
+        "version": doc.version,
+        "versionSource": doc.version_source,
+        "columns": len(doc.columns),
+        "unmappedColumns": doc.unmapped_headers,
+    }
+
+
+def _openfunds_input(req: Request, doc: OfDocument) -> dict:
+    return {
+        "filename": req.filename,
+        "kind": "openfunds",
+        "format": doc.file_format,
+        "delimiter": doc.delimiter,
+        "version": load_openfunds().version,
+        "layout": doc.layout,
+        "columns": len(doc.columns),
+        "unmappedColumns": doc.extra_columns,
+    }
+
+
+def _tpt_options(req: Request) -> ConvertOptions:
+    return ConvertOptions(
+        include_block=req.include_block,
+        include_core=req.include_core,
+        data_supplier_name=req.data_supplier_name,
+        data_supplier_short=req.data_supplier_short,
+        data_supplier_country=req.data_supplier_country,
     )
+
+
+def _of_options(req: Request) -> OfConvertOptions:
+    return OfConvertOptions(
+        data_supplier_name=req.data_supplier_name,
+        data_supplier_short=req.data_supplier_short,
+        data_supplier_country=req.data_supplier_country,
+    )
+
+
+# -- writing -----------------------------------------------------------------------
+
+
+def _write_tpt(req: Request, extract: TptExtract) -> OutputFile:
+    stem = _stem(req.filename)
+    if req.output_format == "csv":
+        delim = CSV_DELIMITERS.get(req.delimiter, ";")
+        data = write_csv(extract.rows, extract.version, delim, req.all_columns is not False)
+        return _package(f"{stem}_TPT_{extract.version}.csv", "text/csv", data)
+    data = write_xlsx(extract.rows, extract.version, req.all_columns is not False)
+    return _package(
+        f"{stem}_TPT_{extract.version}.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        data,
+    )
+
+
+def _write_openfunds(req: Request, extract: OfExtract) -> OutputFile:
+    if not extract.shareclasses and not extract.holdings:
+        raise InputError("; ".join(i.message for i in extract.issues) or "no share classes found")
+    data, name, mime = write_openfunds(
+        extract.shareclasses,
+        extract.holdings,
+        "csv" if req.output_format == "csv" else "xlsx",
+        CSV_DELIMITERS.get(req.delimiter, ";"),
+        header_names=req.of_header_names,
+        all_columns=bool(req.all_columns),
+        stem=_stem(req.filename),
+    )
+    return _package(name, mime, data)
+
+
+def _extract_tpt(root, version: str | None) -> TptExtract:
+    extract = extract_tpt(root, version)
+    if not extract.rows:
+        raise InputError("; ".join(i.message for i in extract.issues) or "no positions found")
+    return extract
+
+
+# -- the six directions -------------------------------------------------------------
+
+
+def _tpt_to_fundsxml(req: Request):
+    doc = _read_tpt(req)
+    result = convert_tpt_to_fundsxml(doc, _tpt_options(req))
     catalog = load_catalog(doc.version)
-    portfolios = _portfolio_summary([r.values for r in doc.rows])
-    name = f"{_stem(req.filename)}_FundsXML.xml"
     report = {
         "direction": "tpt-to-fundsxml",
-        "input": {
-            "filename": req.filename,
-            "kind": "tpt",
-            "format": doc.file_format,
-            "delimiter": doc.delimiter,
-            "version": doc.version,
-            "versionSource": doc.version_source,
-            "columns": len(doc.columns),
-            "unmappedColumns": doc.unmapped_headers,
-        },
+        "input": _tpt_input(req, doc),
         "summary": {
             **{k: v for k, v in result.stats.items() if k != "coverage"},
-            "portfolioList": portfolios,
+            "portfolioList": _portfolio_summary([r.values for r in doc.rows]),
         },
         "coverage": _coverage_summary(result.stats["coverage"], catalog),
         "issues": [i.to_dict() for i in result.issues],
         "validation": {"valid": result.valid, "errors": result.validation_errors},
         "preview": _preview([r.values for r in doc.rows], catalog),
-        "xmlPreview": _xml_preview(result.xml),
-        "xmlPreviewTruncated": len(result.xml) > XML_PREVIEW_BYTES,
+        **_xml_report(result.xml),
     }
-    return report, _package(name, "application/xml", result.xml), result.issue_totals
+    out = _package(f"{_stem(req.filename)}_FundsXML.xml", "application/xml", result.xml)
+    return report, out, _data_loss(report["issues"], result.issue_totals)
 
 
-def _fundsxml_to_tpt(req: Request) -> tuple[dict, OutputFile]:
-    try:
-        root = parse_fundsxml(req.data)
-    except FundsXmlReadError as exc:
-        raise InputError(str(exc)) from exc
+def _openfunds_to_fundsxml(req: Request):
+    doc = _read_openfunds(req)
+    result = convert_openfunds_to_fundsxml(doc, _of_options(req))
+    report = {
+        "direction": "openfunds-to-fundsxml",
+        "input": _openfunds_input(req, doc),
+        "summary": {
+            **{k: v for k, v in result.stats.items() if k != "coverage"},
+            "portfolioList": _shareclass_summary(
+                [r.values for r in doc.shareclasses], [h.values for h in doc.holdings]
+            ),
+        },
+        "coverage": _of_coverage(result.stats["coverage"]),
+        "issues": [i.to_dict() for i in result.issues],
+        "validation": {"valid": result.valid, "errors": result.validation_errors},
+        "preview": _of_preview([r.values for r in doc.shareclasses]),
+        **_xml_report(result.xml),
+    }
+    out = _package(f"{_stem(req.filename)}_FundsXML.xml", "application/xml", result.xml)
+    return report, out, _of_data_loss(result)
+
+
+def _fundsxml_to_tpt(req: Request):
+    root = _parse_fundsxml(req)
+    extract = _extract_tpt(root, req.tpt_version or None)
+    report = _tpt_output_report(
+        req, "fundsxml-to-tpt", {"filename": req.filename, "kind": "fundsxml"}, extract
+    )
+    return report, _write_tpt(req, extract), None
+
+
+def _fundsxml_to_openfunds(req: Request):
+    root = _parse_fundsxml(req)
+    extract = extract_openfunds(root, req.non_openfunds_columns)
+    out = _write_openfunds(req, extract)
+    report = _of_output_report(
+        "fundsxml-to-openfunds", {"filename": req.filename, "kind": "fundsxml"}, extract
+    )
+    return report, out, None
+
+
+def _tpt_to_openfunds(req: Request):
+    doc = _read_tpt(req)
+    hop = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=True, include_core=True, validate=False))
+    extract = extract_openfunds(parse_fundsxml(hop.xml), req.non_openfunds_columns)
+    out = _write_openfunds(req, extract)
+    report = _of_output_report("tpt-to-openfunds", _tpt_input(req, doc), extract, _hop_issues(hop))
+    lost = [] if req.non_openfunds_columns else tpt_fields_without_column([r.values for r in doc.rows])
+    catalog = load_catalog(doc.version)
+    names = [catalog.by_key[k].num_data if k in catalog.by_key else k for k in lost]
+    report["issues"] += _not_carried("TPT", "openfunds", names)
+    return report, out, _hop_loss(names)
+
+
+def _openfunds_to_tpt(req: Request):
+    doc = _read_openfunds(req)
+    hop = convert_openfunds_to_fundsxml(doc, OfConvertOptions(validate=False))
+    extract = _extract_tpt(parse_fundsxml(hop.xml), req.tpt_version or None)
+    report = _tpt_output_report(req, "openfunds-to-tpt", _openfunds_input(req, doc), extract)
+    report["issues"] = _hop_issues(hop) + report["issues"]
+    extra = [h for r in doc.shareclasses + doc.holdings for h in r.extra]
+    lost = not_carried_to_tpt([r.values for r in doc.shareclasses], [r.values for r in doc.holdings], extra)
+    report["issues"] += _not_carried("openfunds", "TPT", lost)
+    return report, _write_tpt(req, extract), _hop_loss(lost)
+
+
+HANDLERS = {
+    "tpt-to-fundsxml": _tpt_to_fundsxml,
+    "fundsxml-to-tpt": _fundsxml_to_tpt,
+    "openfunds-to-fundsxml": _openfunds_to_fundsxml,
+    "fundsxml-to-openfunds": _fundsxml_to_openfunds,
+    "tpt-to-openfunds": _tpt_to_openfunds,
+    "openfunds-to-tpt": _openfunds_to_tpt,
+}
+
+
+# -- reports -----------------------------------------------------------------------
+
+
+def _xml_report(xml: bytes) -> dict:
+    return {"xmlPreview": _xml_preview(xml), "xmlPreviewTruncated": len(xml) > XML_PREVIEW_BYTES}
+
+
+def _tpt_output_report(req: Request, direction: str, inp: dict, extract: TptExtract) -> dict:
+    catalog = load_catalog(extract.version)
+    return {
+        "direction": direction,
+        "input": {**inp, "source": extract.source, "outputVersion": extract.version}
+        if inp.get("kind") != "fundsxml"
+        else {**inp, "source": extract.source, "version": extract.version},
+        "summary": {**extract.stats, "portfolioList": _portfolio_summary(extract.rows)},
+        "coverage": _coverage_from_rows(extract.rows, catalog),
+        "issues": [i.to_dict() for i in extract.issues],
+        "validation": None,
+        "preview": _preview(extract.rows, catalog),
+        "xmlPreview": None,
+    }
+
+
+def _of_output_report(
+    direction: str, inp: dict, extract: OfExtract, before: list[dict] | None = None
+) -> dict:
+    return {
+        "direction": direction,
+        "input": {**inp, "outputVersion": load_openfunds().version},
+        "summary": {
+            **extract.stats,
+            "portfolioList": _shareclass_summary(extract.shareclasses, extract.holdings),
+        },
+        "coverage": _of_coverage_from_rows(extract.shareclasses + extract.holdings),
+        "issues": (before or []) + [i.to_dict() for i in extract.issues],
+        "validation": None,
+        "preview": _of_preview(extract.shareclasses),
+        "xmlPreview": None,
+    }
+
+
+# How the intermediate FundsXML document was written: no concern of a TPT or openfunds target, whose
+# losses are reported as hop_data_loss.
+_INTERMEDIATE_CODES = {
+    "block_value_rejected",
+    "core_value_rejected",
+    "core_value_skipped",
+    "schema_incomplete",
+    "xsd_invalid",
+    "control_data",
+    "v8_in_v7_block",
+    "of_template_incomplete",
+    "of_template_rejected",
+    "more_messages",
+}
+
+
+def _hop_issues(result: ConversionResult) -> list[dict]:
+    """Issues of the conversion into the intermediate FundsXML document that concern the output."""
+    return [
+        {**i.to_dict(), "hop": "fundsxml"}
+        for i in result.issues
+        if i.level == "error" or i.code not in _INTERMEDIATE_CODES
+    ]
+
+
+def _not_carried(source: str, target: str, names: list[str]) -> list[dict]:
+    if not names:
+        return []
+    shown = ", ".join(names[:12]) + ("…" if len(names) > 12 else "")
+    return [
+        Issue(
+            "warning",
+            "hop_data_loss",
+            f"{len(names)} {source} field(s) have no place in {target} and are not in the output: {shown}",
+            params={"n": len(names), "columns": shown, "source": source, "target": target},
+        ).to_dict()
+    ]
+
+
+def _hop_loss(names: list[str]) -> dict:
+    return {
+        "lost": len(names),
+        "keptAsCustomAttribute": 0,
+        "notInCoreStructures": 0,
+        "codes": ["hop_data_loss"] if names else [],
+    }
+
+
+def _of_data_loss(result: ConversionResult) -> dict:
+    totals = result.issue_totals
+    lost = totals.get("of_value_lost", 0) + totals.get("of_holding_unassigned", 0)
+    return {
+        "lost": lost,
+        "keptAsCustomAttribute": result.stats.get("custom_attributes", 0),
+        "notInCoreStructures": 0,
+        "codes": sorted(
+            c for c in ("of_value_lost", "of_holding_unassigned", "core_value_rejected") if totals.get(c)
+        ),
+    }
+
+
+def _check_fundsxml_size(root) -> None:
     _check_size(
         max(
             int(root.xpath("count(Funds/Fund/FundDynamicData/Portfolios/Portfolio/Positions/Position)")),
@@ -193,38 +485,6 @@ def _fundsxml_to_tpt(req: Request) -> tuple[dict, OutputFile]:
             int(root.xpath("count(RegulatoryReportings/IndirectReporting/*/Portfolio/Positions/Position)")),
         )
     )
-    extract = extract_tpt(root, req.tpt_version or None)
-    if not extract.rows:
-        raise InputError("; ".join(i.message for i in extract.issues) or "no positions found")
-    catalog = load_catalog(extract.version)
-    stem = _stem(req.filename)
-    if req.output_format == "csv":
-        delim = CSV_DELIMITERS.get(req.delimiter, ";")
-        data = write_csv(extract.rows, extract.version, delim, req.all_columns)
-        out = _package(f"{stem}_TPT_{extract.version}.csv", "text/csv", data)
-    else:
-        data = write_xlsx(extract.rows, extract.version, req.all_columns)
-        out = _package(
-            f"{stem}_TPT_{extract.version}.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            data,
-        )
-    report = {
-        "direction": "fundsxml-to-tpt",
-        "input": {
-            "filename": req.filename,
-            "kind": "fundsxml",
-            "source": extract.source,
-            "version": extract.version,
-        },
-        "summary": {**extract.stats, "portfolioList": _portfolio_summary(extract.rows)},
-        "coverage": _coverage_from_rows(extract.rows, catalog),
-        "issues": [i.to_dict() for i in extract.issues],
-        "validation": None,
-        "preview": _preview(extract.rows, catalog),
-        "xmlPreview": None,
-    }
-    return report, out
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +546,71 @@ def _preview(rows: list[dict[str, str]], catalog) -> dict:
         "columns": [{"key": k, "name": catalog.by_key[k].num_data} for k in keys],
         "rows": [[r.get(k, "") for k in keys] for r in rows[:PREVIEW_ROWS]],
         "total": len(rows),
+    }
+
+
+def _shareclass_summary(shareclasses: list[dict[str, str]], holdings: list[dict[str, str]]) -> list[dict]:
+    """The share classes of an openfunds file in the shape of ``_portfolio_summary``."""
+    positions: dict[str, int] = {}
+    for h in holdings:
+        key = h.get("OFST020000") or h.get("OFST020001") or ""
+        positions[key] = positions.get(key, 0) + 1
+    out = []
+    for r in shareclasses:
+        key = r.get("OFST020000") or r.get("OFST020001") or ""
+        out.append(
+            {
+                "id": key,
+                "date": r.get("OFDY000036") or r.get("OFDY000071") or r.get("OFDY100000", ""),
+                "name": r.get("OFST020060") or r.get("OFST010020", ""),
+                "currency": r.get("OFST020540", ""),
+                "nav": r.get("OFDY000070", ""),
+                "positions": positions.get(key, 0) or (positions.get("", 0) if len(shareclasses) == 1 else 0),
+            }
+        )
+    return out
+
+
+def _of_preview(rows: list[dict[str, str]]) -> dict:
+    catalog = load_openfunds()
+    return {
+        "columns": [{"key": k, "name": catalog.by_id[k].name} for k in OF_PREVIEW_KEYS],
+        "rows": [[r.get(k, "") for k in OF_PREVIEW_KEYS] for r in rows[:PREVIEW_ROWS]],
+        "total": len(rows),
+    }
+
+
+def _of_name(col: str) -> str:
+    catalog = load_openfunds()
+    match = catalog.match_header(col)
+    f = catalog.by_id.get(match.of_id) if match else None
+    return f.name if f else col
+
+
+def _of_coverage(coverage: dict[str, dict[str, bool]]) -> dict:
+    """Where the openfunds columns of the input ended up (``block`` is always false)."""
+    fields = [{"key": k, "name": _of_name(k), "block": False, **c} for k, c in coverage.items()]
+    return {
+        "present": len(fields),
+        "block": 0,
+        "core": sum(1 for f in fields if f["core"]),
+        "custom": sum(1 for f in fields if f["custom"] and not f["core"]),
+        "fields": fields,
+    }
+
+
+def _of_coverage_from_rows(rows: list[dict[str, str]]) -> dict:
+    present = list(dict.fromkeys(k for r in rows for k, v in r.items() if v))
+    fields = [
+        {"key": k, "name": _of_name(k), "block": False, "core": False, "custom": False} for k in present
+    ]
+    return {
+        "present": len(fields),
+        "block": 0,
+        "core": 0,
+        "custom": 0,
+        "fields": fields,
+        "total": sum(1 for f in load_openfunds().fields if f.active),
     }
 
 

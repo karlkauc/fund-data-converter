@@ -1,7 +1,8 @@
 # TPT ⇄ FundsXML Converter
 
-Public web app (no login) that converts **FinDatEx TPT** files (Tripartite Template **V7** and **V8**,
-XLSX or CSV) to **FundsXML 4.2.11** and back. Runs as a single container on Google Cloud Run.
+Public web app (no login) that converts between **FinDatEx TPT** files (Tripartite Template **V7** and
+**V8**, XLSX or CSV), **FundsXML 4.2.11** and **openfunds 2.13** (XLSX, CSV or a ZIP of CSV files), in all
+six directions. Runs as a single container on Google Cloud Run.
 
 - **TPT → FundsXML**
   - Writes the core structures: `Funds/Fund` (identifiers, name, NAV), `Portfolio/Positions/Position`
@@ -15,6 +16,16 @@ XLSX or CSV) to **FundsXML 4.2.11** and back. Runs as a single container on Goog
 - **Lossless round trip**: values that have no element in FundsXML, or that the schema rejects, are not
   dropped. They are stored as `Position/CustomAttributes/Attribute[Name=TPT_<field>]`. Examples: 17b, 114,
   V8 fields 150/151, V8 codes e1/e2/e3 in field 56.
+- **openfunds ⇄ FundsXML**
+  - Share class rows are grouped into funds. Static and dynamic data use the rules in
+    `app/mapping/openfunds_rules.py`.
+  - `OFPH` holdings become positions: they are translated to TPT fields
+    (`app/mapping/openfunds_holdings.py`) and written with the TPT core rules.
+  - The EMT/EPT/EET/EFT fields go to the FundsXML template blocks (`app/mapping/openfunds_templates.json`,
+    generated).
+  - Every other value is kept as `CustomAttributes/Attribute[Name=OF_<OF-ID>]`.
+- **TPT ⇄ openfunds** goes through FundsXML. TPT fields without an openfunds column travel as columns
+  `TPT_<field>`, so TPT → openfunds → TPT is lossless.
 - **Privacy**: files are processed in memory and never stored. No cookies, no client-side tracking.
   Anonymous usage statistics (counts, sizes, durations, issue codes – never file content, file names
   or IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`.
@@ -28,6 +39,8 @@ Scripts use the same endpoint as the web interface. No account, no API key; the 
 curl -F file=@fund.xlsx -F response=file -OJ -D - https://<host>/api/convert
 # FundsXML → TPT CSV, plus report.json and issues.csv, in one zip
 curl -F file=@fundsxml.xml -F output_format=csv -F response=zip -OJ https://<host>/api/convert
+# TPT → openfunds (the source format is detected, target picks the output)
+curl -F file=@fund.xlsx -F target=openfunds -F response=file -OJ https://<host>/api/convert
 ```
 
 `response=json` (the default) returns the report with the file base64-encoded. Besides the conversion
@@ -41,13 +54,16 @@ PowerShell and Python examples is at `/api-docs`, and the OpenAPI description at
 backend/   FastAPI app (Python 3.12, lxml, openpyxl)
   app/schema/      bundled FundsXML4.xsd + compact schema model (child order, required, facets)
   app/model/       schema-guided XML builder (ordering, value normalisation, pruning, reporting)
-  app/mapping/     rules.py: every TPT field → block path + core path(s); transforms.py
-  app/convert/     to_fundsxml.py, to_tpt.py
-  app/ingest/      TPT reader (XLSX/CSV, header + delimiter + version detection), hardened XML parser
-  app/spec/        TPT V7/V8 field catalogs (from findatex-validator, tools/sync_specs.py)
+  app/mapping/     rules.py: every TPT field → block path + core path(s); transforms.py;
+                   openfunds_rules.py, openfunds_holdings.py, openfunds_templates.(py|json)
+  app/convert/     to_fundsxml.py, to_tpt.py, openfunds_to_fundsxml.py, fundsxml_to_openfunds.py, hub.py
+  app/ingest/      TPT and openfunds readers (XLSX/CSV, header + delimiter detection), hardened XML parser
+  app/writers/     TPT and openfunds writers
+  app/spec/        TPT V7/V8 field catalogs (tools/sync_specs.py), openfunds catalog (tools/sync_openfunds.py)
   app/samples/     example files behind "Try an example" (tools/make_samples.py)
   app/usage/       anonymous usage statistics + feedback store (docs/USAGE_STATS.md)
-  app/content/     server-rendered guides (pages/*.md), one page per TPT field (fields.py), home FAQ
+  app/content/     server-rendered guides (pages/*.md), one page per TPT field (fields.py) and per mapped
+                   openfunds field (openfunds_fields.py), home FAQ
   sql/             DDL of the usage-statistics database
 frontend/  React 18 + Vite + Tailwind SPA (DE/EN, dark mode), served by FastAPI in production
 e2e/       Playwright (desktop, phone, tablet)
@@ -122,4 +138,9 @@ Uploaded XML with a DOCTYPE or entity declaration is rejected, which rules out X
   `core/target/classes/spec/tpt/*.catalog.json`).
 - FundsXML: replace `backend/app/schema/FundsXML4.xsd`, then run the tests. Rule paths that no longer
   exist show up as "element not in schema" messages.
-- Samples: `python tools/make_samples.py ../findatex-validator`.
+- Samples: `python tools/make_samples.py ../findatex-validator` (`--openfunds` rebuilds only the openfunds
+  sample from `tpt_v7_sample.xlsx`).
+- openfunds catalog: `python tools/sync_openfunds.py [pdf-or-url]` (needs `pdftotext` from poppler-utils;
+  default: the 2.13.0 field list on openfunds.org), then `python tools/build_openfunds_templates.py` to rejoin
+  the template fields with the FundsXML schema. Check its "unmatched" list; `MANUAL`/`MANUAL_IDS` in the
+  script take what the schema documents without (or with a wrong) number.

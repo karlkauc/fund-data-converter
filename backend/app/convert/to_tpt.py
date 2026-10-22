@@ -61,6 +61,8 @@ class TptExtract:
     source: str  # "block", "core", "block+core"
     issues: list[Issue] = field(default_factory=list)
     stats: dict = field(default_factory=dict)
+    # Core ``Position`` element of each row (None for a TPT block position without one).
+    positions: list[etree._Element | None] = field(default_factory=list)
 
 
 def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
@@ -80,6 +82,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
             )
 
     rows: list[dict[str, str]] = []
+    positions: list[etree._Element | None] = []
     if block is not None:
         source = "block"
         used_core: set[int] = set()
@@ -116,6 +119,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
                         source = "block+core"
                         values.update(custom)
                 rows.append(values)
+                positions.append(core_positions[idx] if core_positions else None)
     else:
         source = "core"
         for core in core_portfolios:
@@ -133,6 +137,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
                 _qc_value(values, pos, _pc_per_qc(values, pos, rates))
                 complete_position(values, fx.exposure(pos), _pc_per_qc(values, pos, rates))
                 pf_rows.append(values)
+                positions.append(pos)
             complete_portfolio(pf_rows)
             rows += pf_rows
             fx.report(base, issues)
@@ -163,7 +168,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
         "positions": len(rows),
         "source": source,
     }
-    return TptExtract(out_version, rows, source, issues, stats)
+    return TptExtract(out_version, rows, source, issues, stats, positions)
 
 
 # ---------------------------------------------------------------------------

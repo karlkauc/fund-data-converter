@@ -1,6 +1,13 @@
 // Mirrors the JSON built in backend/app/service.py (keep in sync by hand).
 
-export type Direction = "tpt-to-fundsxml" | "fundsxml-to-tpt";
+export type Format = "tpt" | "fundsxml" | "openfunds";
+export type Direction =
+  | "tpt-to-fundsxml"
+  | "fundsxml-to-tpt"
+  | "openfunds-to-fundsxml"
+  | "fundsxml-to-openfunds"
+  | "tpt-to-openfunds"
+  | "openfunds-to-tpt";
 
 export interface Issue {
   level: "error" | "warning" | "info";
@@ -12,6 +19,8 @@ export interface Issue {
   value?: string;
   detail?: string;
   params?: Record<string, string | number>;
+  /** Set for issues of the intermediate FundsXML step of TPT ⇄ openfunds. */
+  hop?: "fundsxml";
 }
 
 export interface PortfolioSummary {
@@ -35,17 +44,23 @@ export interface ConvertResult {
   direction: Direction;
   input: {
     filename: string;
-    kind: "tpt" | "fundsxml";
+    kind: Format;
     format?: string;
     delimiter?: string | null;
-    version: string;
+    /** TPT version (TPT input, or FundsXML → TPT output) or openfunds version (openfunds input). */
+    version?: string;
+    /** Version written when the output is TPT or openfunds and the input is not FundsXML. */
+    outputVersion?: string;
     versionSource?: string;
+    layout?: "flat" | "narrow";
     columns?: number;
     unmappedColumns?: string[];
     source?: string;
   };
   summary: {
-    portfolios: number;
+    portfolios?: number;
+    funds?: number;
+    shareclasses?: number;
     positions: number;
     assets?: number;
     custom_attributes?: number;
@@ -67,7 +82,7 @@ export interface ConvertResult {
   xmlPreviewTruncated?: boolean;
   output: { filename: string; mimeType: string; size: number; zipped: boolean; sha256: string; base64: string };
   issueCounts: { error: number; warning: number; info: number };
-  /** TPT → FundsXML only: values FundsXML did not take where they belong (counted before capping). */
+  /** Values that did not reach the output where they belong (counted before capping); null if not tracked. */
   dataLoss: { lost: number; keptAsCustomAttribute: number; notInCoreStructures: number; codes: string[] } | null;
   meta: {
     converterVersion: string;
@@ -83,6 +98,10 @@ export interface ConvertOptions {
   includeCore: boolean;
   outputFormat: "xlsx" | "csv";
   delimiter: "semicolon" | "comma" | "pipe" | "tab";
+  /** openfunds output: a second header row with the field names. */
+  ofHeaderNames: boolean;
+  /** TPT → openfunds: TPT fields without an openfunds column as TPT_<field> columns. */
+  nonOpenfundsColumns: boolean;
 }
 
 export interface MappingRule {
@@ -105,4 +124,17 @@ export interface MappingField {
   block: MappingRule[];
   core: MappingRule[];
   status: "block+core" | "block" | "core" | "custom";
+}
+
+/** GET /api/mapping/openfunds (backend/app/api/mapping.py). */
+export interface OpenfundsMappingField {
+  key: string;
+  name: string;
+  level: string;
+  tags: string[];
+  type: string;
+  core: MappingRule[];
+  template: (MappingRule & { template: string })[];
+  holding: string[];
+  status: "core" | "template" | "holding" | "custom";
 }

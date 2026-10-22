@@ -1,8 +1,9 @@
 import clsx from "clsx";
 import { useMemo, useState } from "react";
+import { parseDirection } from "../lib/directions";
 import { downloadBase64, formatBytes } from "../lib/download";
 import { issueText, useI18n, type MessageKey } from "../lib/i18n";
-import type { ConvertResult, CoverageField, Issue } from "../types";
+import type { ConvertResult, CoverageField, Format, Issue } from "../types";
 import { XmlCode } from "./XmlCode";
 
 export function ResultView({ result }: { result: ConvertResult }) {
@@ -21,9 +22,19 @@ export function ResultView({ result }: { result: ConvertResult }) {
   );
 }
 
+/** "TPT V7", "openfunds 2.13.0", "FundsXML 4.2.11". */
+function formatLabel(format: Format, version: string | undefined, schema: string): string {
+  if (format === "fundsxml") return `FundsXML ${schema}`;
+  return `${format === "tpt" ? "TPT" : "openfunds"}${version ? ` ${version}` : ""}`;
+}
+
 function InputLine({ result }: { result: ConvertResult }) {
   const { t } = useI18n();
   const { input } = result;
+  const { source: from, target: to } = parseDirection(result.direction);
+  const schema = result.meta?.fundsxmlSchema ?? "4";
+  const inLabel = formatLabel(from, from === "fundsxml" ? undefined : input.version, schema);
+  const outLabel = formatLabel(to, from === "fundsxml" ? input.version : input.outputVersion, schema);
   const source =
     input.kind === "fundsxml"
       ? input.source === "core"
@@ -35,9 +46,18 @@ function InputLine({ result }: { result: ConvertResult }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
       <span className="font-medium">{input.filename}</span>
-      <span className="chip bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
-        TPT {input.version}
+      <span className="chip bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">{inLabel}</span>
+      <span aria-hidden className="text-slate-400">
+        →
       </span>
+      <span className="chip bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">{outLabel}</span>
+      {input.kind === "openfunds" && (
+        <span className="text-slate-500 dark:text-slate-400">
+          {input.format?.toUpperCase()}
+          {input.delimiter ? ` (${input.delimiter === "\t" ? "Tab" : input.delimiter})` : ""} · {input.layout} · {input.columns}{" "}
+          {t("columnsLabel")}
+        </span>
+      )}
       {input.kind === "tpt" && (
         <span className="text-slate-500 dark:text-slate-400">
           {t("detected")} {t("via")} {sourceLabel(input.versionSource, t)} · {input.format?.toUpperCase()}
@@ -75,7 +95,11 @@ function SummaryCard({ result }: { result: ConvertResult }) {
         {t("overview")}
       </h2>
       <dl className="divide-y divide-slate-100 dark:divide-slate-800">
-        <Stat label={t("portfolios")} value={result.summary.portfolios} />
+        {result.summary.funds !== undefined && <Stat label={t("funds")} value={result.summary.funds} />}
+        {result.summary.shareclasses !== undefined && (
+          <Stat label={t("shareclasses")} value={result.summary.shareclasses} />
+        )}
+        {result.summary.portfolios !== undefined && <Stat label={t("portfolios")} value={result.summary.portfolios} />}
         <Stat label={t("positions")} value={result.summary.positions} />
         {result.summary.assets !== undefined && <Stat label={t("assets")} value={result.summary.assets} />}
         <Stat label={t("valuationDate")} value={dates.join(", ") || "–"} />
@@ -98,7 +122,8 @@ function CoverageCard({ result }: { result: ConvertResult }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const cov = result.coverage;
-  if (result.direction === "fundsxml-to-tpt") {
+  const { source: from, target: to } = parseDirection(result.direction);
+  if (to !== "fundsxml") {
     const total = cov.total ?? cov.present;
     return (
       <section className="panel p-4" aria-labelledby="coverage-title">
@@ -137,9 +162,11 @@ function CoverageCard({ result }: { result: ConvertResult }) {
         <strong className="tabular-nums">{cov.present}</strong> {t("fieldsInFile")}
       </p>
       <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
-        <li>
-          <Dot className="bg-accent dark:bg-accent-dark" /> {t("inBlock")}: <strong>{cov.block}</strong>
-        </li>
+        {from === "tpt" && (
+          <li>
+            <Dot className="bg-accent dark:bg-accent-dark" /> {t("inBlock")}: <strong>{cov.block}</strong>
+          </li>
+        )}
         <li>
           <Dot className="bg-accent dark:bg-accent-dark" /> {t("inCore")}: <strong>{cov.core}</strong>
         </li>
@@ -147,12 +174,12 @@ function CoverageCard({ result }: { result: ConvertResult }) {
           <Dot className="bg-amber-400" /> {t("asCustom")}: <strong>{cov.custom}</strong>
         </li>
       </ul>
-      {open && <CoverageTable fields={cov.fields} />}
+      {open && <CoverageTable fields={cov.fields} block={from === "tpt"} />}
     </section>
   );
 }
 
-function CoverageTable({ fields }: { fields: CoverageField[] }) {
+function CoverageTable({ fields, block }: { fields: CoverageField[]; block: boolean }) {
   const { t } = useI18n();
   const mark = (on: boolean) => (on ? "✓" : "");
   return (
@@ -161,7 +188,7 @@ function CoverageTable({ fields }: { fields: CoverageField[] }) {
         <thead className="sticky top-0 bg-slate-100 text-left dark:bg-slate-800">
           <tr>
             <th className="px-2 py-1">{t("colField")}</th>
-            <th className="px-2 py-1 text-center">{t("inBlock")}</th>
+            {block && <th className="px-2 py-1 text-center">{t("inBlock")}</th>}
             <th className="px-2 py-1 text-center">{t("inCore")}</th>
             <th className="px-2 py-1 text-center">{t("asCustom")}</th>
           </tr>
@@ -169,8 +196,8 @@ function CoverageTable({ fields }: { fields: CoverageField[] }) {
         <tbody>
           {fields.map((f) => (
             <tr key={f.key} className="border-t border-slate-100 dark:border-slate-800">
-              <td className="px-2 py-0.5 font-mono">{f.name}</td>
-              <td className="px-2 py-0.5 text-center text-blue-600 dark:text-blue-300">{mark(f.block)}</td>
+              <td className="px-2 py-0.5 font-mono">{f.name.startsWith(f.key) ? f.name : `${f.key} ${f.name}`}</td>
+              {block && <td className="px-2 py-0.5 text-center text-blue-600 dark:text-blue-300">{mark(f.block)}</td>}
               <td className="px-2 py-0.5 text-center text-blue-600 dark:text-blue-300">{mark(f.core)}</td>
               <td className="px-2 py-0.5 text-center text-amber-600">{mark(f.custom)}</td>
             </tr>
@@ -245,6 +272,11 @@ function IssuesPanel({ issues }: { issues: Issue[] }) {
                   {LEVEL_STYLE[i.level].icon}
                 </span>
                 <span className="min-w-0">
+                  {i.hop && (
+                    <span className="chip mr-1 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {t("hopStep")}
+                    </span>
+                  )}
                   {i.row !== undefined && (
                     <span className="mr-1 font-medium">
                       {t("row")} {i.row}

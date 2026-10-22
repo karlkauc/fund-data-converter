@@ -5,7 +5,8 @@ import { Header } from "./components/Header";
 import { MappingPage } from "./components/MappingPage";
 import { openFeedback } from "./lib/feedback";
 import { useI18n } from "./lib/i18n";
-import { FAMILY, FIELDS_URL, GUIDES_URL, MESSAGES_URL } from "./lib/links";
+import { FAMILY, FIELDS_URL, GUIDES_URL, MESSAGES_URL, OPENFUNDS_FIELDS_URL } from "./lib/links";
+import { directionOf } from "./lib/directions";
 import { useRoute } from "./lib/router";
 
 export default function App() {
@@ -20,12 +21,12 @@ export default function App() {
         ) : route === "api-docs" ? (
           <ApiDocsPage />
         ) : (
-          <Converter direction={route === "fundsxml-to-tpt" ? "fundsxml-to-tpt" : "tpt-to-fundsxml"} />
+          <Converter direction={directionOf(route) ?? "tpt-to-fundsxml"} />
         )}
       </main>
       <footer className="space-y-1.5 border-t border-slate-200 py-5 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
         <p>
-          {t("footer")} · FinDatEx TPT V7/V8 · FundsXML 4.2.11 ·{" "}
+          {t("footer")} · FinDatEx TPT V7/V8 · FundsXML 4.2.11 · openfunds 2.13 ·{" "}
           <button type="button" className="underline hover:text-slate-700 dark:hover:text-slate-200" onClick={() => openFeedback()}>
             {t("feedback")}
           </button>
@@ -33,6 +34,7 @@ export default function App() {
         <p>
           <a className="underline" href={GUIDES_URL}>{t("guides")}</a> ·{" "}
           <a className="underline" href={FIELDS_URL}>{t("allFields")}</a> ·{" "}
+          <a className="underline" href={OPENFUNDS_FIELDS_URL}>{t("allOpenfundsFields")}</a> ·{" "}
           <a className="underline" href={MESSAGES_URL}>{t("messages")}</a>
         </p>
         <p>

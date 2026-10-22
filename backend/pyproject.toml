@@ -39,7 +39,7 @@ where = ["."]
 include = ["app*"]
 
 [tool.setuptools.package-data]
-app = ["schema/*.xsd", "spec/*.json", "samples/*", "content/template.html", "content/faq.toml", "content/pages/**/*.md"]
+app = ["schema/*.xsd", "spec/*.json", "mapping/*.json", "samples/*", "content/template.html", "content/faq.toml", "content/pages/**/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

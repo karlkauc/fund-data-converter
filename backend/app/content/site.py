@@ -25,10 +25,10 @@ FAMILY: tuple[tuple[str, str, str], ...] = (
 
 # /guides lists these sections in this order (app/content/pages.py, _hub). A prefix
 # ending in "/" takes every page below it; pages in no section are not listed.
-# The single field pages are linked from tpt/fields.
+# The single field pages are linked from tpt/fields and openfunds/fields.
 HUB_INTRO = (
-    "Guides for the FinDatEx Tripartite Template (TPT) and FundsXML: what TPT is, what changed in V8, "
-    "how each TPT field maps to FundsXML 4, and how to automate the conversion."
+    "Guides for the FinDatEx Tripartite Template (TPT), openfunds and FundsXML: what TPT and openfunds are, "
+    "what changed in TPT V8, how each field maps to FundsXML 4, and how to automate the conversion."
 )
 HUB_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Tripartite Template", ("guides/what-is-tpt", "guides/tpt-v7-vs-v8", "guides/tpt-file-format")),
@@ -36,5 +36,14 @@ HUB_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "Conversion",
         ("guides/tpt-to-fundsxml", "guides/fundsxml-to-tpt", "guides/automate-tpt-conversion"),
     ),
-    ("Reference", ("tpt/fields", "tpt/issues")),
+    (
+        "openfunds",
+        (
+            "guides/what-is-openfunds",
+            "guides/openfunds-to-fundsxml",
+            "guides/fundsxml-to-openfunds",
+            "guides/tpt-to-openfunds",
+        ),
+    ),
+    ("Reference", ("tpt/fields", "openfunds/fields", "tpt/issues")),
 )

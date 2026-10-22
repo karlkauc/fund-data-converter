@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS usage_event (
   utm_source       text,
   utm_medium       text,
   utm_campaign     text,
-  direction        text,                 -- tpt-to-fundsxml | fundsxml-to-tpt
+  direction        text,                 -- <source>-to-<target> with tpt, fundsxml, openfunds
   tpt_version      text,                 -- V7 | V8 (convert, mapping_view)
   version_source   text,                 -- TPT input: how the version was found (field, header, user, default)
   output_format    text,                 -- xml | xlsx | csv

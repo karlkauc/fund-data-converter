@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS feedback (
   message       text        NOT NULL,   -- ≤ 4000 chars, enforced by the API
   email         text,                   -- optional reply address, user-provided
   page          text,                   -- SPA path the dialog was opened from
-  direction     text,                   -- tpt-to-fundsxml | fundsxml-to-tpt, if a conversion was open
+  direction     text,                   -- <source>-to-<target> (tpt, fundsxml, openfunds), if a conversion was open
   tpt_version   text,                   -- TPT version of that conversion, if any
   error_detail  text,                   -- error message the user was looking at, if any
   visitor_hash  text,                   -- daily-salted hash, no raw IP

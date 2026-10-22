@@ -26,6 +26,7 @@ from app.api.mapping import router as mapping_router
 from app.api.samples import router as samples_router
 from app.config import settings
 from app.content.fields import field_pages
+from app.content.openfunds_fields import openfunds_field_pages
 from app.content.pages import register_provider
 from app.rate_limit import client_ip, limiter
 from app.spa import mount_spa
@@ -236,6 +237,7 @@ app.include_router(mapping_router, prefix="/api")
 app.include_router(samples_router, prefix="/api")
 
 register_provider(field_pages)
+register_provider(openfunds_field_pages)
 
 _static = Path(settings.static_dir)
 if (_static / "index.html").is_file():

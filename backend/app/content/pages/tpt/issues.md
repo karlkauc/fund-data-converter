@@ -1,8 +1,8 @@
 +++
-title = "TPT ⇄ FundsXML conversion messages explained"
+title = "TPT ⇄ FundsXML ⇄ openfunds conversion messages explained"
 heading = "Conversion messages explained"
 description = "What the messages in a TPT ⇄ FundsXML conversion report mean — missing mandatory fields, values kept as custom attributes, V8 data in the V7 block, share classes without a portfolio — and what to do about them."
-lastmod = 2026-10-21
+lastmod = 2026-10-22
 cta_label = "Convert a file"
 cta_href = "/"
 +++
@@ -66,3 +66,47 @@ so it is treated as inactive and skipped.
 **Market values converted** (`fx_derived`) — positions lack a market value in portfolio currency (field 24);
 it was converted from the fund currency at the rate the share class NAV implies.
 **Market values missing** (`fx_missing`) — the same, but the NAV gives no rate, so field 24 stays empty.
+
+## Reading openfunds
+
+**OF-ID not in openfunds** (`of_unknown_field`) — a column header looks like an OF-ID that the current openfunds
+version does not define. The values are kept as they are (custom attribute `OF_<column>`).
+
+**Revoked field** (`of_revoked_field`) — the field was withdrawn in a newer openfunds version. Its values are kept.
+
+**Not an openfunds field** (`of_non_openfunds_column`) — the column has no OF-ID (openfunds `OFST999990`). It is
+kept under its header name and written back unchanged.
+
+**[IGNORE] values** (`of_ignore_value`) — openfunds uses `[IGNORE]` for "do not overwrite". These cells are treated
+as not delivered.
+
+**Value given twice** (`of_value_conflict`) — rows of the same share class (narrow layout) give different values
+for one field. The first one is used.
+
+**Value does not fit the field** (`of_value_invalid`) — not a number, date, yes/no or code of the field's list. The
+value is still converted; the receiver may reject it.
+
+**Holding without share class** (`of_holding_unassigned`) — a holding names no share class of the file in
+`OFST020000`, and the file has several share classes. It cannot be placed and is not converted.
+
+## Writing FundsXML from openfunds
+
+**Differs from the fund's first share class** (`of_fund_value_differs`) — a fund-level field (for example the
+domicile) differs between share classes of one fund. The first share class's value goes to the fund; the other
+is kept as custom attribute of its share class.
+
+**Template data incomplete** (`of_template_incomplete`) — the EMT, EPT, EET or EFT block needs fields the file does
+not have. The block is not written; its values are kept as custom attributes. The message names the missing
+elements.
+
+**Not accepted by the template block** (`of_template_rejected`) and **lost** (`of_value_lost`) — the schema refused
+a value; it is kept as custom attribute, or, if even that is refused (an over-long column name), lost.
+
+## Converting between TPT and openfunds
+
+**Fields the other format has no place for** (`hop_data_loss`) — TPT ⇄ openfunds goes through FundsXML. openfunds
+static data without a TPT field, or TPT fields without an openfunds column (when the `TPT_<field>` columns are
+switched off), are not in the output. See [TPT ⇄ openfunds](/guides/tpt-to-openfunds).
+
+**Umbrella structures not read** (`of_subfunds_skipped`) — FundsXML `Fund/Subfunds` are not converted to openfunds;
+single funds and their share classes are.

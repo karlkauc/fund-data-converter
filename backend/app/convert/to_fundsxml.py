@@ -358,12 +358,44 @@ def _shared_values(groups: list[PortfolioGroup], position_nodes, block: bool) ->
     return out
 
 
+@dataclass
+class AssetRegistry:
+    """``AssetMasterData`` built alongside the positions: one ``Asset`` per instrument."""
+
+    node: Node = field(default_factory=lambda: Node("AssetMasterData"))
+    ids: dict[tuple[str, str, str], str] = field(default_factory=dict)
+    used: set[str] = field(default_factory=set)
+    written: set[str] = field(default_factory=set)
+
+
+def build_positions(
+    positions: Node,
+    rows: list[TptRow],
+    assets: AssetRegistry,
+    ctx_values,
+    core_kept: dict[int, set[str]],
+    position_nodes: list[tuple[TptRow, Node]],
+) -> None:
+    """``Position`` elements for TPT rows, each referencing its ``AssetMasterData/Asset``."""
+    for row in rows:
+        aid = _asset_id(row, assets.ids, assets.used)
+        pos = positions.add("Position")
+        pos.set("UniqueID", aid)
+        _apply(pos, row, rules_for("position"), ctx_values(row), core_kept)
+        element = POSITION_ELEMENT.get(asset_type(row.get("12")) or "")
+        if element:
+            pos.ensure(element)
+        position_nodes.append((row, pos))
+        if aid not in assets.written:
+            assets.written.add(aid)
+            asset = assets.node.add("Asset")
+            asset.set("UniqueID", aid)
+            _apply(asset, row, rules_for("asset"), ctx_values(row), core_kept)
+
+
 def _build_core(groups: list[PortfolioGroup], ctx_values, core_kept: dict[int, set[str]]):
     funds = Node("Funds")
-    assets = Node("AssetMasterData")
-    asset_ids: dict[tuple[str, str, str], str] = {}
-    used_ids: set[str] = set()
-    written_assets: set[str] = set()
+    assets = AssetRegistry()
     position_nodes: list[tuple[TptRow, Node]] = []
     for group in groups:
         first = group.rows[0]
@@ -388,22 +420,10 @@ def _build_core(groups: list[PortfolioGroup], ctx_values, core_kept: dict[int, s
         nav.set("TotalAssetNature", "OFFICIAL")
         portfolio = share_class.ensure("Portfolios").add("Portfolio")
         portfolio.set("NavDate", first.get("6"), _Origins.tag(first, "6"))
-        positions = portfolio.ensure("Positions")
-        for row in group.rows:
-            aid = _asset_id(row, asset_ids, used_ids)
-            pos = positions.add("Position")
-            pos.set("UniqueID", aid)
-            _apply(pos, row, rules_for("position"), ctx_values(row), core_kept)
-            element = POSITION_ELEMENT.get(asset_type(row.get("12")) or "")
-            if element:
-                pos.ensure(element)
-            position_nodes.append((row, pos))
-            if aid not in written_assets:
-                written_assets.add(aid)
-                asset = assets.add("Asset")
-                asset.set("UniqueID", aid)
-                _apply(asset, row, rules_for("asset"), ctx_values(row), core_kept)
-    return funds, assets, position_nodes
+        build_positions(
+            portfolio.ensure("Positions"), group.rows, assets, ctx_values, core_kept, position_nodes
+        )
+    return funds, assets.node, position_nodes
 
 
 def _custom_attribute(node: Node, catalog, key: str, value: str, origin: str) -> None:

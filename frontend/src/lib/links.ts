@@ -13,4 +13,5 @@ export const FAMILY: { key: string; label: string; href: string }[] = [
 /** Server-rendered content pages (backend/app/content); plain links, not SPA routes. */
 export const GUIDES_URL = "/guides";
 export const FIELDS_URL = "/tpt/fields";
+export const OPENFUNDS_FIELDS_URL = "/openfunds/fields";
 export const MESSAGES_URL = "/tpt/issues";

@@ -31,6 +31,23 @@ test("dropping an XML on the TPT tab switches direction", async ({ page }) => {
   await expect(page.getByRole("button", { name: /Download/ })).toContainText(".xlsx");
 });
 
+test("openfunds sample → FundsXML, then → TPT by switching the target", async ({ page }) => {
+  await page.goto("/openfunds-to-fundsxml");
+  await page.getByRole("button", { name: "openfunds", exact: true }).click();
+  await expect(page.getByText("valid against FundsXML 4.2.11 XSD")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Download/ })).toContainText("openfunds_sample_FundsXML.xml");
+  await page.getByRole("radiogroup", { name: "To" }).getByRole("radio", { name: "TPT" }).click();
+  await expect(page).toHaveURL(/openfunds-to-tpt/);
+  await expect(page.getByRole("button", { name: /Download/ })).toContainText("openfunds_sample_TPT_V7.xlsx");
+});
+
+test("TPT → openfunds", async ({ page }) => {
+  await page.goto("/tpt-to-openfunds");
+  await page.getByTestId("file-input").setInputFiles(path.join(SAMPLES, "tpt_v7_sample.xlsx"));
+  await expect(page.getByRole("button", { name: /Download/ })).toContainText("tpt_v7_sample_openfunds.xlsx");
+  await expect(page.getByText("openfunds 2.13.0", { exact: true })).toBeVisible();
+});
+
 test("unreadable file shows an error", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("file-input").setInputFiles({ name: "junk.csv", mimeType: "text/csv", buffer: Buffer.from("a;b\n1;2\n") });

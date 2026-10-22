@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from app import spa
 from app.config import settings
 from app.content.fields import field_pages
+from app.content.openfunds_fields import openfunds_field_pages
 from app.content.pages import all_pages, register_provider
 
 SHELL = """<!doctype html><html><head>
@@ -30,6 +31,8 @@ def _field_pages():
     # app.main registers the provider; make sure it is there when this module runs alone.
     if not any(slug.startswith("tpt/fields/") for slug in all_pages()):
         register_provider(field_pages)
+    if not any(slug.startswith("openfunds/fields/") for slug in all_pages()):
+        register_provider(openfunds_field_pages)
 
 
 @pytest.fixture
@@ -98,6 +101,9 @@ def test_sitemap_lists_routes_and_every_field(site):
     assert "https://tpt.example/tpt/fields/1000-tpt-version" in locs
     assert sum(loc.startswith("https://tpt.example/tpt/fields/") for loc in locs) == 154  # TPT V8
     assert "https://tpt.example/tpt/fields" in locs
+    assert "https://tpt.example/openfunds/fields/ofst020000-isin" in locs
+    assert "https://tpt.example/openfunds/fields" in locs
+    assert "https://tpt.example/openfunds-to-fundsxml" in locs
     assert len(locs) == len(set(locs))
 
 

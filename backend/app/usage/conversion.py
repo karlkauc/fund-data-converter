@@ -30,22 +30,30 @@ def is_sample(data: bytes) -> bool:
     return hashlib.sha256(data).hexdigest() in _sample_digests()
 
 
+def _format_name(kind: str, version: str | None) -> str:
+    return {"tpt": f"TPT {version}", "fundsxml": "FundsXML 4", "openfunds": f"openfunds {version}"}.get(
+        kind, kind
+    )
+
+
 def conversion_fields(req: ConvertRequest, result: dict) -> dict:
     inp = result.get("input") or {}
     summary = result.get("summary") or {}
     issues = result.get("issues") or []
     validation = result.get("validation")
     output = result.get("output") or {}
-    to_fundsxml = result.get("direction") == "tpt-to-fundsxml"
+    source, _, target = (result.get("direction") or "").partition("-to-")
+    in_version = inp.get("version")
+    out_version = inp.get("outputVersion") or (in_version if source == "fundsxml" else None)
     fields: dict = {
         "direction": result.get("direction"),
         "source": "sample" if is_sample(req.data) else inp.get("format") or "xml",
-        "tpt_version": inp.get("version"),
-        "schema_name": f"TPT {inp.get('version')}" if to_fundsxml else "FundsXML 4",
-        "target_namespace": "FundsXML 4" if to_fundsxml else f"TPT {inp.get('version')}",
-        "output_format": "xml" if to_fundsxml else req.output_format,
+        "tpt_version": in_version if source == "tpt" else (out_version if target == "tpt" else None),
+        "schema_name": _format_name(source, in_version),
+        "target_namespace": _format_name(target, out_version),
+        "output_format": "xml" if target == "fundsxml" else req.output_format,
         "input_bytes": len(req.data),
-        "file_count": summary.get("portfolios"),
+        "file_count": summary.get("portfolios", summary.get("shareclasses")),
         "element_count": summary.get("positions"),
         "diagnostic_count": len(issues),
         "error_count": len(validation["errors"])
@@ -56,23 +64,22 @@ def conversion_fields(req: ConvertRequest, result: dict) -> dict:
         "zipped": output.get("zipped"),
         "output_bytes": output.get("size"),
     }
-    if to_fundsxml:
-        fields |= {
-            "version_source": inp.get("versionSource"),
-            "type_count": inp.get("columns"),
-            "include_block": req.include_block,
-            "include_core": req.include_core,
-            # CSV input: the delimiter the reader detected.
-            "delimiter": _DELIMITER_NAMES.get(inp.get("delimiter") or "")
-            if inp.get("format") == "csv"
-            else None,
-        }
+    if source == "tpt":
+        fields |= {"version_source": inp.get("versionSource"), "type_count": inp.get("columns")}
+        if target == "fundsxml":
+            fields |= {"include_block": req.include_block, "include_core": req.include_core}
+    if target == "fundsxml":
+        # CSV input: the delimiter the reader detected.
+        fields["delimiter"] = (
+            _DELIMITER_NAMES.get(inp.get("delimiter") or "") if inp.get("format") == "csv" else None
+        )
     else:
         fields |= {
             # CSV output: the delimiter written (an unknown choice falls back to semicolon).
             "delimiter": (req.delimiter if req.delimiter in CSV_DELIMITERS else "semicolon")
             if req.output_format == "csv"
             else None,
-            "all_columns": req.all_columns,
+            # Effective choice: every TPT column unless declined, every openfunds column only on request.
+            "all_columns": req.all_columns if req.all_columns is not None else target == "tpt",
         }
     return fields

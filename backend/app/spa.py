@@ -52,10 +52,30 @@ ROUTE_META: dict[str, RouteMeta] = {
         "Convert FundsXML 4 documents into Solvency II TPT V7 or V8 files as Excel (XLSX) or CSV, one "
         "portfolio per share class. Free, no login, nothing stored.",
     ),
+    "openfunds-to-fundsxml": RouteMeta(
+        "openfunds to FundsXML Converter – OFST fields, holdings and EMT/EPT/EET to FundsXML 4",
+        "Convert openfunds files (XLSX, CSV) into FundsXML 4: share class static data, NAVs, portfolio "
+        "holdings and the EMT, EPT, EET and EFT template fields. Lossless, free, nothing stored.",
+    ),
+    "fundsxml-to-openfunds": RouteMeta(
+        "FundsXML to openfunds Converter – FundsXML 4 to openfunds Excel/CSV",
+        "Convert FundsXML 4 documents into openfunds files with OF-ID columns: one row per share "
+        "class plus a holdings sheet. Free, no login, nothing stored.",
+    ),
+    "tpt-to-openfunds": RouteMeta(
+        "TPT to openfunds Converter – Tripartite Template to openfunds holdings (lossless)",
+        "Convert Solvency II TPT V7/V8 files into openfunds: share class data and OFPH holdings, with "
+        "every TPT field kept. Free, no login, nothing stored.",
+    ),
+    "openfunds-to-tpt": RouteMeta(
+        "openfunds to TPT Converter – openfunds holdings to Tripartite Template V7/V8",
+        "Convert openfunds portfolio holdings (OFPH) and share class data into a Solvency II TPT V7 or "
+        "V8 file as Excel or CSV. Free, no login, nothing stored.",
+    ),
     "mapping": RouteMeta(
         "TPT ⇄ FundsXML field mapping – every TPT V7/V8 field and its FundsXML path",
-        "Which FundsXML 4 element each FinDatEx TPT field maps to: the Solvency II TPT block, "
-        "fund, position and asset master data.",
+        "Which FundsXML 4 element each FinDatEx TPT field and each openfunds field maps to: the "
+        "Solvency II TPT block, fund, share class, position, asset master data and EMT/EPT/EET.",
     ),
     "api-docs": RouteMeta(
         "TPT ⇄ FundsXML Converter API – convert from scripts with curl, PowerShell or Python",
@@ -128,19 +148,28 @@ def robots_txt() -> str:
 def llms_txt() -> str:
     """A plain-text map of the site for LLM crawlers (llmstxt.org)."""
     origin = settings.site_origin
-    pages = [p for p in all_pages().values() if not p.noindex and not p.slug.startswith("tpt/fields/")]
+    pages = [
+        p
+        for p in all_pages().values()
+        if not p.noindex and not p.slug.startswith(("tpt/fields/", "openfunds/fields/"))
+    ]
     lines = [
         "# TPT ⇄ FundsXML Converter",
         "",
-        "> Free web tool and HTTP API that converts FinDatEx Tripartite Template (Solvency II TPT V7 and V8) "
-        "files (XLSX, CSV) into FundsXML 4.2.11 and FundsXML back into TPT. No login; files are processed "
-        "in memory and not stored.",
+        "> Free web tool and HTTP API that converts between FinDatEx Tripartite Template (Solvency II TPT "
+        "V7 and V8, XLSX/CSV), FundsXML 4.2.11 and openfunds 2.13 (XLSX/CSV), in every direction. No "
+        "login; files are processed in memory and not stored.",
         "",
         "## Tool",
         "",
         f"- [TPT to FundsXML]({origin}/): upload a TPT Excel or CSV file, get FundsXML 4 plus a report",
         f"- [FundsXML to TPT]({origin}/fundsxml-to-tpt): FundsXML 4 to TPT V7/V8 as XLSX or CSV",
-        f"- [Field mapping]({origin}/mapping): every TPT field and its FundsXML path",
+        f"- [openfunds to FundsXML]({origin}/openfunds-to-fundsxml): openfunds static data, holdings and "
+        "templates to FundsXML 4",
+        f"- [FundsXML to openfunds]({origin}/fundsxml-to-openfunds): FundsXML 4 to openfunds XLSX or CSV",
+        f"- [TPT to openfunds]({origin}/tpt-to-openfunds): TPT V7/V8 to openfunds holdings, lossless",
+        f"- [openfunds to TPT]({origin}/openfunds-to-tpt): openfunds holdings to TPT V7/V8",
+        f"- [Field mapping]({origin}/mapping): every TPT and openfunds field and its FundsXML path",
         f"- [API]({origin}/api-docs): one POST request per conversion (curl, PowerShell, Python)",
         "",
         "## Guides",
