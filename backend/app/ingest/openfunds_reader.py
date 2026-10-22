@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import io
+import itertools
 import re
 import zipfile
 from dataclasses import dataclass, field
@@ -26,11 +27,13 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 from pathlib import PurePath
 
+from app.ingest.limits import archive_problem, guarded, sheet_rows, text_lines
 from app.ingest.tpt_reader import _cell_text, _decode, _looks_like_xlsx
 from app.model.issues import Issue
 from app.spec.openfunds import OfCatalog, load_openfunds
 
 HEADER_SCAN_ROWS = 50
+SNIFF_BYTES = 256 * 1024  # enough for the header rows when only sniffing
 MIN_HEADER_MATCHES = 3
 DELIMITERS = ("|", ";", "\t", ",")
 IGNORE = "[IGNORE]"
@@ -355,8 +358,8 @@ def _tables(data: bytes, filename: str, limit: int | None = None) -> tuple[list[
         return _zip_tables(data, limit)
     if _looks_like_xlsx(data, filename):
         return _xlsx_tables(data, limit), "xlsx", None
-    text = _decode(data[: 256 * 1024] if limit else data)
-    delim, rows = _read_delimited("\n".join(text.splitlines()[: limit + 1]) if limit else text)
+    text = _decode(data[:SNIFF_BYTES] if limit else data)
+    delim, rows = _read_delimited(text, limit)
     return [_Table(PurePath(filename or "upload").name, rows, delim)], "csv", delim
 
 
@@ -371,6 +374,8 @@ def _is_xlsx(data: bytes) -> bool:
 def _zip_tables(data: bytes, limit: int | None = None) -> tuple[list[_Table], str, str | None]:
     tables: list[_Table] = []
     delim = None
+    if problem := archive_problem(data):
+        raise OpenfundsReadError(f"not a readable ZIP file: {problem}")
     try:
         zf = zipfile.ZipFile(io.BytesIO(data))
     except zipfile.BadZipFile as exc:
@@ -378,14 +383,15 @@ def _zip_tables(data: bytes, limit: int | None = None) -> tuple[list[_Table], st
     with zf:
         for info in zf.infolist():
             name = info.filename
-            if info.is_dir() or name.startswith("__MACOSX/") or info.file_size > 200 * 1024 * 1024:
+            if info.is_dir() or name.startswith("__MACOSX/"):
                 continue
             lower = name.lower()
             if lower.endswith((".xlsx", ".xlsm")):
                 tables += _xlsx_tables(zf.read(info), limit)
             elif lower.endswith((".csv", ".txt", ".tsv")):
-                text = _decode(zf.read(info))
-                d, rows = _read_delimited("\n".join(text.splitlines()[: limit + 1]) if limit else text)
+                with zf.open(info) as f:
+                    text = _decode(f.read(SNIFF_BYTES) if limit else f.read())
+                d, rows = _read_delimited(text, limit)
                 delim = delim or d
                 tables.append(_Table(PurePath(name).name, rows, d))
     if not tables:
@@ -396,16 +402,15 @@ def _zip_tables(data: bytes, limit: int | None = None) -> tuple[list[_Table], st
 def _xlsx_tables(data: bytes, limit: int | None = None) -> list[_Table]:
     from openpyxl import load_workbook
 
+    if problem := archive_problem(data):
+        raise OpenfundsReadError(f"not a readable XLSX file: {problem}")
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except (zipfile.BadZipFile, KeyError, OSError, ValueError) as exc:
         raise OpenfundsReadError(f"not a readable XLSX file: {exc}") from exc
     try:
         return [
-            _Table(
-                ws.title,
-                [[_of_cell_text(c) for c in row] for row in ws.iter_rows(max_row=limit, values_only=True)],
-            )
+            _Table(ws.title, guarded(sheet_rows(ws, _of_cell_text, limit), limit is not None))
             for ws in wb.worksheets
         ]
     finally:
@@ -418,17 +423,20 @@ def _of_cell_text(value) -> str:
     return _cell_text(value)
 
 
-def _read_delimited(text: str) -> tuple[str, list[list[str]]]:
-    lines = text.splitlines()
+def _read_delimited(text: str, limit: int | None = None) -> tuple[str, list[list[str]]]:
+    """Delimiter and rows of a CSV; ``limit`` reads only that many rows."""
+    lines = text_lines(text)
+    head = list(itertools.islice(lines, HEADER_SCAN_ROWS + 1))
     hint = None
-    if lines and lines[0].lower().startswith("sep=") and len(lines[0]) >= 5:
-        hint = lines[0][4]
-        lines = lines[1:]
-    delim = hint or _detect_delimiter(lines[:HEADER_SCAN_ROWS])
-    body = "\n".join(lines)
+    first = head[0].rstrip("\r\n") if head else ""
+    if first.lower().startswith("sep=") and len(first) >= 5:
+        hint = first[4]
+        head = head[1:]
+    delim = hint or _detect_delimiter([line.rstrip("\r\n") for line in head[:HEADER_SCAN_ROWS]])
+    body = itertools.islice(itertools.chain(head, lines), limit)
     if delim == "|":
-        return delim, [line.split("|") for line in body.splitlines()]
-    return delim, list(csv.reader(io.StringIO(body), delimiter=delim))
+        return delim, guarded((line.rstrip("\r\n").split("|") for line in body), limit is not None)
+    return delim, guarded(csv.reader(body, delimiter=delim), limit is not None)
 
 
 def _detect_delimiter(lines: list[str]) -> str:

@@ -21,7 +21,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 
 from app.config import settings
-from app.rate_limit import client_ip, convert_quota
+from app.rate_limit import convert_quota, visitor_key
 from app.service import (
     DEFAULT_TARGET,
     DIRECTIONS,
@@ -35,6 +35,7 @@ from app.service import Request as ConvertRequest
 from app.service import convert as convert_request
 from app.usage.context import emit
 from app.usage.conversion import conversion_fields, is_sample
+from app.writers.formula_safe import csv_text
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -196,7 +197,7 @@ async def convert(
         None, description="TPT → FundsXML: DataSupplier/SystemCountry, ISO 3166 alpha-2 (default: field 122)"
     ),
 ) -> Response | dict:
-    visitor = client_ip(request) or "unknown"
+    visitor = visitor_key(request)
     if not convert_quota.hit(visitor):
         # The X-RateLimit-* headers are added by the middleware in main.py, like on every response.
         wait = convert_quota.retry_after(visitor)
@@ -287,7 +288,7 @@ async def convert(
 async def limits(request: Request) -> dict:
     """Per window: `limit`, `remaining` and `resetSeconds` (0 while the window has not started).
     Does not count as a conversion."""
-    return {"convert": convert_quota.status(client_ip(request) or "unknown")}
+    return {"convert": convert_quota.status(visitor_key(request))}
 
 
 def _safe_direction(data: bytes, filename: str, wanted: str, target: str | None) -> str | None:
@@ -353,7 +354,8 @@ def _issues_csv(issues: list[dict]) -> bytes:
     writer = csv.writer(buf, delimiter=";", lineterminator="\r\n")
     writer.writerow(ISSUE_CSV_COLUMNS)
     for issue in issues:
-        writer.writerow([issue.get(c, "") for c in ISSUE_CSV_COLUMNS])
+        values = (issue.get(c) for c in ISSUE_CSV_COLUMNS)
+        writer.writerow(["" if v is None else csv_text(str(v)) for v in values])
     return buf.getvalue().encode("utf-8-sig")
 
 

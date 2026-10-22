@@ -14,6 +14,7 @@ import zipfile
 
 from app.model.xmltree import parse_decimal
 from app.spec.openfunds import OfCatalog, load_openfunds
+from app.writers.formula_safe import csv_text, pipe_text, xlsx_row
 from app.writers.xlsx_numbers import full_precision_floats
 
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -91,16 +92,16 @@ def _xlsx(tables, catalog: OfCatalog, header_names: bool) -> bytes:
         cols = columns(rows, catalog, prefixes)
         ws = wb.create_sheet(name)
         ids, names = header_cells(cols, catalog)
-        ws.append(ids)
+        ws.append(xlsx_row(ws, ids))
         if header_names:
-            ws.append(names)
+            ws.append(xlsx_row(ws, names))
         types = {}
         for col in cols:
             match = catalog.match_header(col)
             f = catalog.by_id.get(match.of_id) if match else None
             types[col] = f.data_type if f else "string"
         for r in rows:
-            ws.append([_cell(r.get(c, ""), types[c]) for c in cols])
+            ws.append(xlsx_row(ws, [_cell(r.get(c, ""), types[c]) for c in cols]))
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
@@ -122,14 +123,14 @@ def _csv(rows, cols: list[str], catalog: OfCatalog, delimiter: str, header_names
     ids, names = header_cells(cols, catalog)
     buf = io.StringIO()
     if delimiter == "|":
-        lines = ["|".join(ids)] + (["|".join(names)] if header_names else [])
-        lines += ["|".join(r.get(c, "").replace("|", "/").replace("\n", " ") for c in cols) for r in rows]
+        lines = ["|".join(map(csv_text, ids))] + (["|".join(map(csv_text, names))] if header_names else [])
+        lines += ["|".join(pipe_text(r.get(c, "")) for c in cols) for r in rows]
         buf.write("\r\n".join(lines) + "\r\n")
     else:
         writer = csv.writer(buf, delimiter=delimiter, lineterminator="\r\n")
-        writer.writerow(ids)
+        writer.writerow(map(csv_text, ids))
         if header_names:
-            writer.writerow(names)
+            writer.writerow(map(csv_text, names))
         for r in rows:
-            writer.writerow([r.get(c, "") for c in cols])
+            writer.writerow([csv_text(r.get(c, "")) for c in cols])
     return b"\xef\xbb\xbf" + buf.getvalue().encode("utf-8")

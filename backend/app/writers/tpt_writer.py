@@ -7,6 +7,7 @@ import io
 
 from app.model.xmltree import parse_decimal
 from app.spec.catalog import Catalog, load_catalog
+from app.writers.formula_safe import csv_text, pipe_text, xlsx_row
 from app.writers.xlsx_numbers import full_precision_floats
 
 CSV_DELIMITERS = {"semicolon": ";", "comma": ",", "pipe": "|", "tab": "\t"}
@@ -30,7 +31,7 @@ def write_xlsx(rows: list[dict[str, str]], version: str, all_columns: bool = Tru
     ws.append([catalog.by_key[k].num_data for k in keys])
     numeric = {k for k in keys if catalog.by_key[k].kind == "NUMERIC"}
     for r in rows:
-        ws.append([_cell(r.get(k, ""), k in numeric) for k in keys])
+        ws.append(xlsx_row(ws, [_cell(r.get(k, ""), k in numeric) for k in keys]))
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
@@ -57,12 +58,12 @@ def write_csv(
     if delimiter == "|":
         # Pipe files are unquoted by convention; strip the delimiter from values instead.
         lines = ["|".join(catalog.by_key[k].num_data for k in keys)]
-        lines += ["|".join(r.get(k, "").replace("|", "/").replace("\n", " ") for k in keys) for r in rows]
+        lines += ["|".join(pipe_text(r.get(k, "")) for k in keys) for r in rows]
         buf.write("\r\n".join(lines) + "\r\n")
     else:
         writer = csv.writer(buf, delimiter=delimiter, lineterminator="\r\n")
         writer.writerow([catalog.by_key[k].num_data for k in keys])
         for r in rows:
-            writer.writerow([r.get(k, "") for k in keys])
+            writer.writerow([csv_text(r.get(k, "")) for k in keys])
     data = buf.getvalue().encode("utf-8")
     return (b"\xef\xbb\xbf" + data) if bom else data

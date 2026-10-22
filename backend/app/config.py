@@ -14,6 +14,7 @@ class Settings:
     static_dir: str
     trusted_proxy_hops: int
     max_concurrent_conversions: int
+    max_pending_conversions: int
     convert_rate_limit: str
     cors_allow_origins: tuple[str, ...]
     max_positions: int
@@ -44,6 +45,8 @@ def load_settings() -> Settings:
         trusted_proxy_hops=int(os.getenv("TRUSTED_PROXY_HOPS", "1")),
         # Conversions are CPU and memory bound; more in parallel only queue on one vCPU.
         max_concurrent_conversions=int(os.getenv("MAX_CONCURRENT_CONVERSIONS", "1")),
+        # Conversions uploading, queued or running at once; more get 503 (each holds its upload).
+        max_pending_conversions=int(os.getenv("MAX_PENDING_CONVERSIONS", "4")),
         convert_rate_limit=os.getenv("CONVERT_RATE_LIMIT", "20/minute;200/hour"),
         # Memory grows with the number of positions (≈ 50 KB each while converting).
         max_positions=int(os.getenv("MAX_POSITIONS", "10000")),

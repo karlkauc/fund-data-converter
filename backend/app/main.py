@@ -29,7 +29,7 @@ from app.config import settings
 from app.content.fields import field_pages
 from app.content.openfunds_fields import openfunds_field_pages
 from app.content.pages import register_provider
-from app.rate_limit import client_ip, convert_quota, limiter
+from app.rate_limit import client_ip, convert_quota, limiter, visitor_key
 from app.spa import mount_spa
 from app.usage.context import RequestUsage, UsageTracker, bind, emit, unbind
 from app.usage.feedback import FeedbackStore
@@ -50,11 +50,53 @@ class BufferRequestBodyMiddleware:
 
     def __init__(self, app) -> None:
         self.app = app
+        # Conversions being uploaded, queued or run: each holds its upload (up to the limit) in memory.
+        self.conversions = 0
 
     async def __call__(self, scope, receive, send) -> None:
         if scope["type"] != "http" or scope.get("method") not in ("POST", "PUT", "PATCH"):
             await self.app(scope, receive, send)
             return
+        if scope.get("path") != "/api/convert":
+            await self._buffered(scope, receive, send)
+            return
+        # Refused before the body is kept: an exhausted quota or a full queue costs no memory.
+        refusal = self._refusal(Request(scope))
+        if refusal is not None:
+            await self._drain(receive)
+            await refusal(scope, receive, send)
+            return
+        self.conversions += 1
+        try:
+            await self._buffered(scope, receive, send)
+        finally:
+            self.conversions -= 1
+
+    def _refusal(self, request: Request) -> JSONResponse | None:
+        visitor = visitor_key(request)
+        if convert_quota.exhausted(visitor):
+            wait = convert_quota.retry_after(visitor)
+            return JSONResponse(
+                {"detail": f"rate limit exceeded ({convert_quota.describe()}); try again in {wait} s"},
+                status_code=429,
+                headers={"Retry-After": str(wait), **convert_quota.headers(visitor)},
+            )
+        if self.conversions >= settings.max_pending_conversions:
+            return JSONResponse(
+                {"detail": "the converter is busy; try again in a minute"},
+                status_code=503,
+                headers={"Retry-After": "30"},
+            )
+        return None
+
+    @staticmethod
+    async def _drain(receive) -> None:
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect" or not message.get("more_body", False):
+                return
+
+    async def _buffered(self, scope, receive, send) -> None:
         limit = settings.max_upload_bytes + 1024 * 1024  # multipart framing and form fields
         chunks: list[bytes] = []
         size = 0
@@ -193,7 +235,7 @@ async def convert_rate_headers(request: Request, call_next):
     """The caller's rate limit on every /api/convert answer: success, error and 429 alike."""
     response = await call_next(request)
     if request.url.path == "/api/convert" and request.method == "POST":
-        response.headers.update(convert_quota.headers(client_ip(request) or "unknown"))
+        response.headers.update(convert_quota.headers(visitor_key(request)))
     return response
 
 

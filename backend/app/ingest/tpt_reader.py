@@ -10,12 +10,14 @@ from __future__ import annotations
 
 import csv
 import io
+import itertools
 import re
 import zipfile
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 
+from app.ingest.limits import archive_problem, guarded, sheet_rows, text_lines
 from app.model.issues import Issue
 from app.spec.catalog import VERSIONS, Catalog, load_catalog
 
@@ -161,13 +163,14 @@ def _looks_like_xlsx(data: bytes, filename: str) -> bool:
 def _read_xlsx(data: bytes) -> list[list[str]]:
     from openpyxl import load_workbook
 
+    if problem := archive_problem(data):
+        raise TptReadError(f"not a readable XLSX file: {problem}")
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except (zipfile.BadZipFile, KeyError, OSError, ValueError) as exc:
         raise TptReadError(f"not a readable XLSX file: {exc}") from exc
     try:
-        sheet = _pick_sheet(wb)
-        return [[_cell_text(c) for c in row] for row in sheet.iter_rows(values_only=True)]
+        return guarded(sheet_rows(_pick_sheet(wb), _cell_text))
     finally:
         wb.close()
 
@@ -216,20 +219,23 @@ def _decode(data: bytes) -> str:
     return data.decode("latin-1")
 
 
-def _read_delimited(text: str) -> tuple[str, list[list[str]]]:
-    lines = text.splitlines()
+def _read_delimited(text: str, limit: int | None = None) -> tuple[str, list[list[str]]]:
+    """Delimiter and rows of a CSV; ``limit`` reads only that many rows."""
+    lines = text_lines(text)
+    head = list(itertools.islice(lines, HEADER_SCAN_ROWS + 1))
     hint = None
-    if lines and lines[0].lower().startswith("sep=") and len(lines[0]) >= 5:
-        hint = lines[0][4]
-        lines = lines[1:]
-    delim = hint or _detect_delimiter(lines[:HEADER_SCAN_ROWS])
-    body = "\n".join(lines)
+    first = head[0].rstrip("\r\n") if head else ""
+    if first.lower().startswith("sep=") and len(first) >= 5:
+        hint = first[4]
+        head = head[1:]
+    delim = hint or _detect_delimiter([line.rstrip("\r\n") for line in head[:HEADER_SCAN_ROWS]])
+    body = itertools.islice(itertools.chain(head, lines), limit)
     if delim == "|":
         # Pipe files do not quote; quotes are literal text.
-        table = [line.split("|") for line in body.splitlines()]
+        rows = (line.rstrip("\r\n").split("|") for line in body)
     else:
-        table = list(csv.reader(io.StringIO(body), delimiter=delim))
-    return delim, table
+        rows = csv.reader(body, delimiter=delim)
+    return delim, guarded(rows, limit is not None)
 
 
 def _detect_delimiter(lines: list[str]) -> str:

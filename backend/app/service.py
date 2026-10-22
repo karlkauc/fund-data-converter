@@ -18,6 +18,7 @@ from app.convert.openfunds_to_fundsxml import OfConvertOptions, convert_openfund
 from app.convert.to_fundsxml import ConversionResult, ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import TptExtract, extract_tpt
 from app.ingest.fundsxml_reader import FundsXmlReadError, parse_fundsxml
+from app.ingest.limits import TooManyRowsError
 from app.ingest.openfunds_reader import OfDocument, OpenfundsReadError, looks_like_openfunds, read_openfunds
 from app.ingest.tpt_reader import TptDocument, TptReadError, read_tpt
 from app.model.issues import Issue
@@ -31,6 +32,8 @@ PREVIEW_ROWS = 200
 PREVIEW_KEYS = ("1", "6", "12", "14", "17", "21", "22", "24", "26")
 OF_PREVIEW_KEYS = ("OFST020000", "OFST020060", "OFST020540", "OFDY000036", "OFDY000035", "OFDY000070")
 XML_PREVIEW_BYTES = 60_000
+# Start and end tags of a FundsXML within the upload limit are about a million.
+MAX_XML_TAGS = 2_000_000
 FORMATS = ("tpt", "fundsxml", "openfunds")
 DIRECTIONS = tuple(f"{a}-to-{b}" for a in FORMATS for b in FORMATS if a != b)
 # Target when the request names none: the first two keep the behaviour of the TPT ⇄ FundsXML converter.
@@ -164,6 +167,8 @@ def _data_loss(issues: list[dict], totals: dict[str, int]) -> dict:
 def _read_tpt(req: Request) -> TptDocument:
     try:
         doc = read_tpt(req.data, req.filename, req.tpt_version or None)
+    except TooManyRowsError as exc:
+        raise _too_large(exc) from exc
     except TptReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
@@ -173,6 +178,8 @@ def _read_tpt(req: Request) -> TptDocument:
 def _read_openfunds(req: Request) -> OfDocument:
     try:
         doc = read_openfunds(req.data, req.filename)
+    except TooManyRowsError as exc:
+        raise _too_large(exc) from exc
     except OpenfundsReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.holdings))
@@ -180,6 +187,13 @@ def _read_openfunds(req: Request) -> OfDocument:
 
 
 def _parse_fundsxml(req: Request):
+    # A tree costs about 130 bytes per element; real documents spend ~26 bytes of text on a tag,
+    # a crafted one 4 ("<a/>"). Refused before parsing, so 25 MB cannot become gigabytes.
+    if req.data.count(b"<") > MAX_XML_TAGS:
+        raise TooLargeError(
+            f"the document has more than {MAX_XML_TAGS} tags; this service converts up to "
+            f"{settings.max_positions} positions per file – split it by portfolio"
+        )
     try:
         root = parse_fundsxml(req.data)
     except FundsXmlReadError as exc:
@@ -510,6 +524,12 @@ def _check_size(positions: int) -> None:
             f"the file has {positions} positions; this service converts up to {settings.max_positions} "
             "per file – split it by portfolio"
         )
+
+
+def _too_large(exc: TooManyRowsError) -> TooLargeError:
+    return TooLargeError(
+        f"{exc}; this service converts up to {settings.max_positions} per file – split it by portfolio"
+    )
 
 
 def _package(name: str, mime: str, data: bytes) -> OutputFile:

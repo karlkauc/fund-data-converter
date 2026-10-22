@@ -7,6 +7,7 @@ the client sent and must never be trusted.
 
 from __future__ import annotations
 
+import ipaddress
 import math
 import time
 
@@ -29,7 +30,23 @@ def client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
 
 
-limiter = Limiter(key_func=lambda request: client_ip(request) or "unknown", default_limits=[])
+def visitor_key(request: Request) -> str:
+    """What the rate limits count by: the IP, for IPv6 its /64 (one subscriber's whole block)."""
+    ip = client_ip(request)
+    if not ip:
+        return "unknown"
+    try:
+        address = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if isinstance(address, ipaddress.IPv6Address):
+        if address.ipv4_mapped:
+            return str(address.ipv4_mapped)
+        return str(ipaddress.ip_network(f"{address}/64", strict=False))
+    return str(address)
+
+
+limiter = Limiter(key_func=visitor_key, default_limits=[])
 
 
 class Quota:
@@ -81,6 +98,10 @@ class Quota:
             out[f"X-RateLimit-Remaining-{suffix}"] = str(w["remaining"])
             out[f"X-RateLimit-Reset-{suffix}"] = str(w["resetSeconds"])
         return out
+
+    def exhausted(self, key: str) -> bool:
+        """True while a window has no room left (nothing is counted)."""
+        return any(w["remaining"] <= 0 for w in self.status(key))
 
     def retry_after(self, key: str) -> int:
         """Seconds until every exhausted window has room again."""
