@@ -33,6 +33,15 @@ tracking; the anonymous usage statistics count conversions, sizes and durations,
 """
 
 [[faq]]
+q = "Can I open the result in the XML viewer or check it with the FinDatEx validator?"
+a = """
+Yes. Below the result, a generated FundsXML file can be opened in [xml-viewer.online](https://www.xml-viewer.online/)
+together with the FundsXML schema, so it is validated there right away, and a generated TPT file can be checked in
+[findatex-validator.eu](https://www.findatex-validator.eu/), which validates it against the TPT version it was
+written for. The file goes from your browser tab straight to the new tab; it is not stored on the way.
+"""
+
+[[faq]]
 q = "Can I automate the conversion?"
 a = """
 Yes. One `POST /api/convert` request converts a file and returns the result plus a JSON report — no account, no

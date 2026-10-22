@@ -263,3 +263,16 @@ def test_swagger_ui_may_load_its_bundle(client):
     csp = client.get("/api/docs").headers["content-security-policy"]
     assert "https://cdn.jsdelivr.net" in csp and "sandbox" not in csp
     assert "sandbox" in client.get("/api/health").headers["content-security-policy"]
+
+
+def test_fundsxml_schema_zip_for_the_xml_viewer(client):
+    r = client.get("/api/schema/fundsxml.zip")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/zip"
+    assert "max-age" in r.headers["cache-control"]
+    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+        assert zf.namelist() == ["FundsXML4.xsd", "xmldsig-core-schema.xsd"]
+        # The main schema imports the signature schema by this relative name.
+        assert b'schemaLocation="xmldsig-core-schema.xsd"' in zf.read("FundsXML4.xsd")
+    again = client.get("/api/schema/fundsxml.zip", headers={"If-None-Match": r.headers["etag"]})
+    assert again.status_code == 304 and not again.content

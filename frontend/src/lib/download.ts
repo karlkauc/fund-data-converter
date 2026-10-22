@@ -1,6 +1,10 @@
+export function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
+  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+}
+
 /** Save a base64 payload from the API as a file. */
 export function downloadBase64(base64: string, filename: string, mimeType: string): void {
-  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const bytes = base64ToBytes(base64);
   const url = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
   const a = document.createElement("a");
   a.href = url;

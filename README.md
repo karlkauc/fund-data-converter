@@ -26,6 +26,10 @@ six directions. Runs as a single container on Google Cloud Run.
   - Every other value is kept as `CustomAttributes/Attribute[Name=OF_<OF-ID>]`.
 - **TPT ⇄ openfunds** goes through FundsXML. TPT fields without an openfunds column travel as columns
   `TPT_<field>`, so TPT → openfunds → TPT is lossless.
+- **Hand-over**: the result view opens generated FundsXML in [xml-viewer.online](https://www.xml-viewer.online/)
+  (with the FundsXML schema from `GET /api/schema/fundsxml.zip`) and checks generated TPT files in
+  [findatex-validator.eu](https://www.findatex-validator.eu/). The file goes from browser tab to browser tab
+  (`window.open` + `postMessage`); it is not uploaded anywhere on the way.
 - **Privacy**: files are processed in memory and never stored. No cookies, no client-side tracking.
   Anonymous usage statistics (counts, sizes, durations, issue codes – never file content, file names
   or IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`.

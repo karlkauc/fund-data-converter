@@ -32,5 +32,9 @@ See README.md for layout, commands and deployment.
   and `Direction` in `types.ts`.
 - **XML is never built by hand**: use `Node.set/ensure` and `serialize_at`. The schema model orders children,
   normalises values, drops invalid optional subtrees and reports what was lost.
+- **Hand-over** to xml-viewer.online (FundsXML + `/api/schema/fundsxml.zip`) and findatex-validator.eu (TPT):
+  `frontend/src/lib/handoff.ts`, window.open + postMessage, nothing stored. `SENDER_ORIGINS` must match the
+  allow-lists in `../xml-online-viewer` and `../findatex-validator` (`lib/handoff.ts` in both). Never send
+  `Cross-Origin-Opener-Policy: same-origin` from the SPA, or the popup loses its opener.
 - **Dev venv**: Python 3.14 in `.venv`; Docker and CI use 3.12. Code must run on 3.12.
 - `frontend/.npmrc` sets `legacy-peer-deps` (vitest 4 and vite 6 peer ranges).

@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { parseDirection } from "../lib/directions";
-import { downloadBase64, formatBytes } from "../lib/download";
+import { base64ToBytes, downloadBase64, formatBytes } from "../lib/download";
+import { FINDATEX_VALIDATOR, XML_VIEWER, fetchFundsXmlSchema, handOff, handoffSupported } from "../lib/handoff";
 import { issueText, useI18n, type MessageKey } from "../lib/i18n";
 import type { ConvertResult, CoverageField, Format, Issue } from "../types";
 import { XmlCode } from "./XmlCode";
@@ -403,6 +404,7 @@ function PreviewPanel({ result }: { result: ConvertResult }) {
 function DownloadBar({ result }: { result: ConvertResult }) {
   const { t } = useI18n();
   const { output, validation } = result;
+  const { source: from, target: to } = parseDirection(result.direction);
   return (
     <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 md:mx-0 md:rounded-lg md:border">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3">
@@ -415,6 +417,15 @@ function DownloadBar({ result }: { result: ConvertResult }) {
           <span className="hidden max-w-[22rem] truncate sm:inline">{output.filename}</span>
           <span className="text-xs opacity-80">({formatBytes(output.size)})</span>
         </button>
+        {to === "fundsxml" && <HandoffButton result={result} site="xml-viewer.online" label={t("openInXmlViewer")} />}
+        {to === "tpt" && (
+          <HandoffButton
+            result={result}
+            site="findatex-validator.eu"
+            label={t("validateInFindatex")}
+            version={from === "fundsxml" ? result.input.version : result.input.outputVersion}
+          />
+        )}
         {validation &&
           (validation.valid ? (
             <span className="text-sm text-emerald-700 dark:text-emerald-400">✓ {t("xsdValid")}</span>
@@ -423,5 +434,55 @@ function DownloadBar({ result }: { result: ConvertResult }) {
           ))}
       </div>
     </div>
+  );
+}
+
+/** Opens the sibling site in a new tab and hands the converted file over (lib/handoff). */
+function HandoffButton({
+  result,
+  site,
+  label,
+  version,
+}: {
+  result: ConvertResult;
+  site: string;
+  label: string;
+  /** TPT output version ("V7" / "V8"): the validator checks against it. */
+  version?: string;
+}) {
+  const { t } = useI18n();
+  const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
+  const { output } = result;
+  if (!handoffSupported()) return null;
+  if (output.zipped) {
+    return <span className="max-w-md text-xs text-slate-500 dark:text-slate-400">{t("handoffZipped", { site })}</span>;
+  }
+  const open = () => {
+    const content = base64ToBytes(output.base64).buffer;
+    setState("busy");
+    const sent = version
+      ? handOff(FINDATEX_VALIDATOR, output.filename, content, {
+          extra: { templateId: "TPT", templateVersion: `${version}.0` },
+        })
+      : handOff(XML_VIEWER, output.filename, content, { schema: fetchFundsXmlSchema });
+    void sent.then((ok) => setState(ok ? "idle" : "failed"));
+  };
+  return (
+    <span className="inline-flex flex-col items-center gap-1">
+      <button
+        type="button"
+        className="btn px-4 py-2.5"
+        onClick={open}
+        disabled={state === "busy"}
+        title={t("handoffHint", { site })}
+      >
+        {state === "busy" ? t("handoffOpening", { site }) : `↗ ${label}`}
+      </button>
+      {state === "failed" && (
+        <span role="alert" className="text-xs text-amber-700 dark:text-amber-400">
+          {t("handoffFailed", { site })}
+        </span>
+      )}
+    </span>
   );
 }
