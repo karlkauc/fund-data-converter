@@ -7,6 +7,7 @@ import io
 
 from app.model.xmltree import parse_decimal
 from app.spec.catalog import Catalog, load_catalog
+from app.writers.xlsx_numbers import full_precision_floats
 
 CSV_DELIMITERS = {"semicolon": ";", "comma": ",", "pipe": "|", "tab": "\t"}
 
@@ -21,6 +22,7 @@ def _columns(catalog: Catalog, rows: list[dict[str, str]], all_columns: bool) ->
 def write_xlsx(rows: list[dict[str, str]], version: str, all_columns: bool = True) -> bytes:
     from openpyxl import Workbook
 
+    full_precision_floats()
     catalog = load_catalog(version)
     keys = _columns(catalog, rows, all_columns)
     wb = Workbook(write_only=True)
@@ -42,7 +44,6 @@ def _cell(value: str, numeric: bool):
             d = parse_decimal(value)
         except ValueError:
             return value
-        # Floats keep 15–17 significant digits: enough for TPT amounts and weights.
         return int(d) if d == d.to_integral_value() and abs(d) < 10**15 else float(d)
     return value
 

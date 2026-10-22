@@ -162,14 +162,15 @@ def test_holding_adapter():
     assert tpt["14"] == "DE0001102580" and tpt["15"] == "1"
     assert tpt["38"] == "1" and tpt["42"] == "Cal"
     assert "OFPH000110" not in represented  # only one instrument identifier fits TPT
-    values, kept = tpt_to_holding({"14": "X1", "15": "99", "44": "B", "58": "Y"})
+    values, kept = tpt_to_holding({"14": "X1", "15": "99", "44": "B", "52": "CZ", "58": "Y"})
     assert values == {
         "OFPH000190": "X1",
         "OFPH000195": "Internal",
         "OFPH000650": "bearer",
+        "OFPH000712": "CZ",  # no TPT reference in openfunds: EXTRA_PAIRS
         "OFPH000715": "yes",
     }
-    assert kept == {"14", "15", "44", "58"}
+    assert kept == {"14", "15", "44", "52", "58"}
 
 
 # -- mapping tables ---------------------------------------------------------------

@@ -14,6 +14,7 @@ import zipfile
 
 from app.model.xmltree import parse_decimal
 from app.spec.openfunds import OfCatalog, load_openfunds
+from app.writers.xlsx_numbers import full_precision_floats
 
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 SHEET_SHARECLASSES = "openfunds"
@@ -84,6 +85,7 @@ def write_openfunds(
 def _xlsx(tables, catalog: OfCatalog, header_names: bool) -> bytes:
     from openpyxl import Workbook
 
+    full_precision_floats()
     wb = Workbook(write_only=True)
     for name, rows, prefixes in tables:
         cols = columns(rows, catalog, prefixes)

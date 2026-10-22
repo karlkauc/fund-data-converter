@@ -50,6 +50,8 @@ _ID_COLUMNS = {c for c, _ in INSTRUMENT_IDS + UNDERLYING_IDS} | {
     ISSUER_LEI,
     "OFPH000135",
 }
+# Columns openfunds gives no TPT reference although TPT has the field: column -> TPT numKey.
+EXTRA_PAIRS = (("OFPH000712", "52"),)  # Holding Issuer Domicile = 52_Issuer_country
 # TPT code fields without an element of their own: FundsXML expresses them by the element (ISIN, LEI)
 # that holds the value of their partner field, so they are written whenever the partner is.
 IMPLIED_BY = {"15": "14", "69": "68", "48": "47"}
@@ -87,12 +89,13 @@ class _Field:
 
 @lru_cache(maxsize=1)
 def field_pairs() -> tuple[_Field, ...]:
-    """OFPH columns with a plain 1:1 TPT counterpart (identifiers excluded)."""
+    """OFPH columns with a plain 1:1 TPT counterpart (identifiers excluded), plus ``EXTRA_PAIRS``."""
     out = []
     for f in load_openfunds().fields:
         ref = f.ref("TPT")
         if f.prefix == "OFPH" and ref and f.active and f.of_id not in _ID_COLUMNS:
             out.append(_Field(f.of_id, ref.num.lower()))
+    out += [_Field(of_id, tpt) for of_id, tpt in EXTRA_PAIRS]
     return tuple(out)
 
 

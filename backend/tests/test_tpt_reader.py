@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from app.ingest.tpt_reader import TptReadError, detect_version, read_tpt
+from app.writers.tpt_writer import write_xlsx
 
 HEADER = [
     "1_Portfolio_identifying_data",
@@ -69,3 +70,11 @@ def test_version_detection():
 
 def test_version_can_be_forced():
     assert read_tpt(_csv(";"), "x.csv", version="v8").version == "V8"
+
+
+def test_xlsx_numbers_keep_full_precision():
+    """openpyxl alone writes "%.16g" and drops the 17th digit a double may need."""
+    rows = [{"1": "AT0000000001", "9": "1.8931484249581674", "26": "0.12345678901234567"}]
+    back = read_tpt(write_xlsx(rows, "V7"), "x.xlsx").rows[0]
+    assert back.get("9") == "1.8931484249581674"
+    assert float(back.get("26")) == float("0.12345678901234567")
