@@ -30,8 +30,6 @@ See README.md for layout, commands and deployment.
     TPT → openfunds → TPT, and both must stay lossless.
 - **Directions**: `DIRECTIONS`/`DEFAULT_TARGET` in `backend/app/service.py` mirror `frontend/src/lib/directions.ts`
   and `Direction` in `types.ts`.
-- **openfunds texts**: the openfunds field descriptions are not published (field pages and `/api/mapping/openfunds`
-  carry facts only) until their terms of use are clear.
 - **XML is never built by hand**: use `Node.set/ensure` and `serialize_at`. The schema model orders children,
   normalises values, drops invalid optional subtrees and reports what was lost.
 - **Dev venv**: Python 3.14 in `.venv`; Docker and CI use 3.12. Code must run on 3.12.

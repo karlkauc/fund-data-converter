@@ -96,6 +96,7 @@ def openfunds_mapping_table() -> dict:
             "level": f.level,
             "tags": list(f.tags),
             "type": f.data_type,
+            "definition": f.description[:400],
             "core": core.get(f.of_id, []),
             "template": template.get(f.of_id, []),
             "holding": holding.get(f.of_id, []),

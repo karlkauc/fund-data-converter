@@ -155,7 +155,7 @@ function OpenfundsMapping() {
         (!area || f.key.startsWith(area)) &&
         (!status || f.status === status) &&
         (!q ||
-          [f.key, f.name, f.level, ...f.core.map((r) => r.path), ...f.template.map((r) => r.path)]
+          [f.key, f.name, f.level, f.definition, ...f.core.map((r) => r.path), ...f.template.map((r) => r.path)]
             .join(" ")
             .toLowerCase()
             .includes(q)),
@@ -226,6 +226,7 @@ function OpenfundsMapping() {
                       {t("colLevel")}: {f.level}
                     </span>
                   </div>
+                  {f.definition && <p className="mt-1 line-clamp-3 text-xs text-slate-500 dark:text-slate-400">{f.definition}</p>}
                 </td>
                 <td className="px-3 py-2">
                   {f.status === "custom" ? (

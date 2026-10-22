@@ -133,6 +133,7 @@ export interface OpenfundsMappingField {
   level: string;
   tags: string[];
   type: string;
+  definition: string;
   core: MappingRule[];
   template: (MappingRule & { template: string })[];
   holding: string[];

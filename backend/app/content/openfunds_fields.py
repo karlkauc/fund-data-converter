@@ -2,9 +2,8 @@
 ``/openfunds/fields`` table, built from the openfunds field catalog and the mapping rules.
 
 People search for single OF-IDs ("OFST020000", "OFPH000300 openfunds"); each page answers with the
-format and values, the FinDatEx template field it corresponds to and where the converter puts it in
-FundsXML 4. The openfunds description texts are not reproduced (their terms of use are unclear); the
-pages link to openfunds.org instead. Fields without a FundsXML counterpart are listed on the hub only.
+openfunds definition, the format and values, the FinDatEx template field it corresponds to and where
+the converter puts it in FundsXML 4.
 """
 
 from __future__ import annotations
@@ -56,7 +55,7 @@ def _slug(of_id: str, name: str) -> str:
 
 
 def _paragraphs(text: str) -> list[str]:
-    """Catalog text (values lists, never the openfunds descriptions) as Markdown paragraphs."""
+    """Catalog text as Markdown paragraphs."""
     return [_md(p) for p in text.split("\n\n") if p.strip()]
 
 
@@ -96,15 +95,13 @@ def _mapping_lines(entry: dict) -> list[str]:
 def openfunds_field_pages() -> list[Page]:
     catalog = load_openfunds()
     table = {f["key"]: f for f in openfunds_mapping_table()["fields"]}
-    keys = [k for k, entry in table.items() if entry["status"] != "custom"]
+    keys = list(table)
     pages: list[Page] = []
     for i, key in enumerate(keys):
         f = catalog.by_id[key]
         entry = table[key]
         body = [
-            f"**{_md(f.name)}** is a {f.level.lower()}-level field of openfunds {catalog.version}. The "
-            f"full definition is in the [openfunds field list]({OPENFUNDS_URL}).",
-            "",
+            *[p + "\n" for p in _paragraphs(f.description) or [_md(f.name)]],
             "| Property | Value |",
             "|---|---|",
             f"| OF-ID | `{key}` |",
@@ -153,31 +150,30 @@ def openfunds_field_pages() -> list[Page]:
             nav.append(f"[{nxt}](/{_slug(nxt, catalog.by_id[nxt].name)}) →")
         body.append(" · ".join(nav))
 
+        lead = " ".join(f.description.split()) or f.name
+        short = lead if len(lead) <= 90 else lead[:87].rsplit(" ", 1)[0] + "…"
         pages.append(
             Page(
                 slug=_slug(key, f.name),
                 title=f"openfunds {key}: {f.name}",
                 heading=f"{key} – {f.name}",
-                description=(
-                    f"openfunds field {key}, {f.name} ({f.level}, {_TYPES.get(f.data_type, f.data_type)}): "
-                    f"format, values and where it goes in FundsXML 4 ({_STATUS[entry['status']]})."
-                ),
+                description=f"openfunds {key} ({f.name}): {short} Format, values and FundsXML 4 mapping.",
                 body="\n".join(body),
                 cta_label="Convert an openfunds file",
                 cta_href="/openfunds-to-fundsxml",
             )
         )
-    pages.append(_hub(list(table), table, set(keys)))
+    pages.append(_hub(keys, table))
     return pages
 
 
-def _hub(keys: list[str], table: dict[str, dict], linked: set[str]) -> Page:
+def _hub(keys: list[str], table: dict[str, dict]) -> Page:
     catalog = load_openfunds()
     body = [
-        f"openfunds {catalog.version} ({catalog.date}) has {len(keys)} active fields. For each field with a "
-        "FundsXML counterpart a page gives the format and values, the FinDatEx template field where there is "
-        "one, and where the TPT ⇄ FundsXML Converter puts the value in FundsXML 4. Fields without one are "
-        "kept as custom attributes `OF_<OF-ID>`, so nothing is lost. Definitions: "
+        f"openfunds {catalog.version} ({catalog.date}) has {len(keys)} active fields. Each page below gives "
+        "the openfunds definition, the format and values, the FinDatEx template field where there is one, "
+        "and where the TPT ⇄ FundsXML Converter puts the value in FundsXML 4. Fields without a FundsXML "
+        "counterpart are kept as custom attributes `OF_<OF-ID>`, so nothing is lost. Source: the "
         f"[openfunds field list]({OPENFUNDS_URL}).",
         "",
     ]
@@ -188,8 +184,10 @@ def _hub(keys: list[str], table: dict[str, dict], linked: set[str]) -> Page:
         body += [f"## {title} ({prefix})", "", "| OF-ID | Name | Level | In FundsXML |", "|---|---|---|---|"]
         for key in members:
             f = catalog.by_id[key]
-            name = f"[{_md(f.name)}](/{_slug(key, f.name)})" if key in linked else _md(f.name)
-            body.append(f"| {key} | {name} | {_md(f.level)} | {_STATUS[table[key]['status']]} |")
+            body.append(
+                f"| {key} | [{_md(f.name)}](/{_slug(key, f.name)}) | {_md(f.level)} "
+                f"| {_STATUS[table[key]['status']]} |"
+            )
         body.append("")
     return Page(
         slug=HUB,
