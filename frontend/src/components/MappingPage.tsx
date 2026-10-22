@@ -76,7 +76,7 @@ function TptMapping({ version }: { version: "V7" | "V8" }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("search")}
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+          className="min-w-0 basis-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900 sm:basis-auto sm:flex-1"
           aria-label={t("search")}
         />
         <span className="text-xs text-slate-500">
@@ -184,7 +184,7 @@ function OpenfundsMapping() {
           onChange={(e) => setStatus(e.target.value as typeof status)}
           aria-label={t("colTarget")}
         >
-          <option value="">{t("all")}</option>
+          <option value="">{t("allTargets")}</option>
           {(Object.keys(OF_STATUS) as OpenfundsMappingField["status"][]).map((s) => (
             <option key={s} value={s}>
               {t(OF_STATUS[s].label)}
@@ -196,7 +196,7 @@ function OpenfundsMapping() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("search")}
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+          className="min-w-0 basis-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900 sm:basis-auto sm:flex-1"
           aria-label={t("search")}
         />
         <span className="text-xs text-slate-500">
@@ -207,17 +207,17 @@ function OpenfundsMapping() {
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <div className="panel mt-4 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full table-fixed text-sm md:table-auto">
           <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
             <tr>
               <th className="px-3 py-2">{t("colField")}</th>
-              <th className="px-3 py-2">{t("colTarget")}</th>
+              <th className="hidden px-3 py-2 md:table-cell">{t("colTarget")}</th>
             </tr>
           </thead>
           <tbody>
             {shown.slice(0, limit).map((f) => (
               <tr key={f.key} className="border-t border-slate-100 align-top dark:border-slate-800">
-                <td className="max-w-sm px-3 py-2">
+                <td className="px-3 py-2 md:max-w-sm">
                   <div className="font-mono text-xs font-semibold">{f.key}</div>
                   <div className="text-xs">{f.name}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -227,20 +227,12 @@ function OpenfundsMapping() {
                     </span>
                   </div>
                   {f.definition && <p className="mt-1 line-clamp-3 text-xs text-slate-500 dark:text-slate-400">{f.definition}</p>}
+                  <div className="mt-2 md:hidden">
+                    <OfTarget field={f} />
+                  </div>
                 </td>
-                <td className="px-3 py-2">
-                  {f.status === "custom" ? (
-                    <code className="text-xs text-amber-700 dark:text-amber-400">
-                      CustomAttributes/Attribute[Name=OF_{f.key}]
-                    </code>
-                  ) : f.status === "holding" ? (
-                    <span className="text-xs">
-                      TPT {f.holding.join(", ")} → <code>Fund/…/Portfolio/Positions/Position</code>,{" "}
-                      <code>AssetMasterData/Asset</code>
-                    </span>
-                  ) : (
-                    <Rules rules={[...f.core, ...f.template]} />
-                  )}
+                <td className="hidden px-3 py-2 md:table-cell">
+                  <OfTarget field={f} />
                 </td>
               </tr>
             ))}
@@ -280,5 +272,22 @@ function Rules({ rules }: { rules: MappingRule[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function OfTarget({ field: f }: { field: OpenfundsMappingField }) {
+  return (
+    <div className="min-w-0 break-words">
+      {f.status === "custom" ? (
+        <code className="break-all text-xs text-amber-700 dark:text-amber-400">CustomAttributes/Attribute[Name=OF_{f.key}]</code>
+      ) : f.status === "holding" ? (
+        <span className="text-xs">
+          TPT {f.holding.join(", ")} → <code className="break-all">Fund/…/Portfolio/Positions/Position</code>,{" "}
+          <code className="break-all">AssetMasterData/Asset</code>
+        </span>
+      ) : (
+        <Rules rules={[...f.core, ...f.template]} />
+      )}
+    </div>
   );
 }

@@ -46,11 +46,17 @@ function InputLine({ result }: { result: ConvertResult }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
       <span className="font-medium">{input.filename}</span>
-      <span className="chip bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">{inLabel}</span>
-      <span aria-hidden className="text-slate-400">
-        →
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+        <span className="chip normal-case tracking-normal bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+          {inLabel}
+        </span>
+        <span aria-hidden className="text-slate-400">
+          →
+        </span>
+        <span className="chip normal-case tracking-normal bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
+          {outLabel}
+        </span>
       </span>
-      <span className="chip bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">{outLabel}</span>
       {input.kind === "openfunds" && (
         <span className="text-slate-500 dark:text-slate-400">
           {input.format?.toUpperCase()}
@@ -124,19 +130,32 @@ function CoverageCard({ result }: { result: ConvertResult }) {
   const cov = result.coverage;
   const { source: from, target: to } = parseDirection(result.direction);
   if (to !== "fundsxml") {
-    const total = cov.total ?? cov.present;
+    // A file fills only the fields it needs: the share of the whole catalogue says nothing, so no bar.
     return (
       <section className="panel p-4" aria-labelledby="coverage-title">
-        <h2 id="coverage-title" className="panel-title mb-3">
-          {t("coverage")}
-        </h2>
-        <Bar parts={[{ value: cov.present, className: "bg-accent dark:bg-accent-dark" }]} total={total} />
-        <p className="mt-2 text-sm">
-          <strong className="tabular-nums">
-            {cov.present} / {total}
-          </strong>{" "}
-          {t("fieldsInFile")}
+        <div className="mb-2 flex items-center justify-between">
+          <h2 id="coverage-title" className="panel-title">
+            {t("coverage")}
+          </h2>
+          <button type="button" className="text-xs text-accent underline dark:text-accent-dark" onClick={() => setOpen(!open)}>
+            {t("details")} {open ? "▴" : "▾"}
+          </button>
+        </div>
+        <p className="text-sm">
+          <strong className="text-2xl tabular-nums">{cov.present}</strong> {t("fieldsWritten", { format: to === "tpt" ? "TPT" : "openfunds" })}
         </p>
+        {cov.total !== undefined && (
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t("ofCatalog", { total: cov.total })}</p>
+        )}
+        {open && (
+          <ul className="mt-3 flex max-h-56 flex-wrap gap-1 overflow-auto">
+            {cov.fields.map((f) => (
+              <li key={f.key} className="chip normal-case tracking-normal bg-slate-100 font-mono text-slate-700 dark:bg-slate-800 dark:text-slate-200" title={f.name}>
+                {f.key}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     );
   }

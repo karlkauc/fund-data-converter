@@ -141,26 +141,35 @@ export function Converter({ direction }: { direction: Direction }) {
       )}
 
       <div className={clsx("mx-auto space-y-4", !file && "max-w-3xl")}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+          <div className="panel grid flex-1 items-end gap-3 p-3 sm:grid-cols-[1fr_auto_1fr] sm:p-4">
             <FormatPicker
               label={t("from")}
-              formats={FORMATS}
+              tone="source"
               current={source}
               onPick={(f) => navigate(routeOf(makeDirection(f, target)))}
             />
-            <span aria-hidden className="text-slate-400">
-              →
-            </span>
+            <button
+              type="button"
+              className="btn mx-auto h-10 w-10 rounded-full p-0 text-lg"
+              onClick={() => navigate(routeOf(makeDirection(target, source)))}
+              aria-label={t("swapDirection")}
+              title={t("swapDirection")}
+            >
+              <span aria-hidden className="rotate-90 sm:rotate-0">
+                ⇄
+              </span>
+            </button>
             <FormatPicker
               label={t("to")}
-              formats={FORMATS.filter((f) => f !== source)}
+              tone="target"
               current={target}
+              disabled={source}
               onPick={(f) => navigate(routeOf(makeDirection(source, f)))}
             />
           </div>
           {file && (
-            <button type="button" className="btn" onClick={reset}>
+            <button type="button" className="btn self-end sm:self-center" onClick={reset}>
               ↺ {t("newFile")}
             </button>
           )}
@@ -213,28 +222,48 @@ export function Converter({ direction }: { direction: Direction }) {
   );
 }
 
+const TONE = {
+  source: "bg-blue-600 text-white shadow-sm dark:bg-blue-500 dark:text-white",
+  target: "bg-emerald-600 text-white shadow-sm dark:bg-emerald-500 dark:text-slate-950",
+};
+
 function FormatPicker({
   label,
-  formats,
+  tone,
   current,
+  disabled,
   onPick,
 }: {
   label: string;
-  formats: Format[];
+  tone: keyof typeof TONE;
   current: Format;
+  /** The format that cannot be picked here (the target cannot be the source). */
+  disabled?: Format;
   onPick: (f: Format) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>
-      <div className="inline-flex rounded-full bg-slate-100 p-1 dark:bg-slate-900" role="radiogroup" aria-label={label}>
-        {formats.map((f) => (
+    <div className="min-w-0">
+      <div className="mb-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</div>
+      <div
+        className="grid grid-cols-3 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800"
+        role="radiogroup"
+        aria-label={label}
+      >
+        {FORMATS.map((f) => (
           <button
             key={f}
             type="button"
             role="radio"
             aria-checked={current === f}
-            className={clsx("pill", current === f && "pill-active")}
+            disabled={f === disabled}
+            className={clsx(
+              "rounded-md px-2 py-1.5 text-sm font-semibold transition-colors touch:py-2.5",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+              current === f
+                ? TONE[tone]
+                : "text-slate-700 hover:bg-white dark:text-slate-200 dark:hover:bg-slate-700",
+              f === disabled && "cursor-not-allowed opacity-40 hover:bg-transparent dark:hover:bg-transparent",
+            )}
             onClick={() => onPick(f)}
           >
             {FORMAT_LABEL[f]}
