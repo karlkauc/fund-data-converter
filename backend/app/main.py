@@ -161,7 +161,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="TPT ⇄ FundsXML Converter",
+    title="Fund Data Converter",
     version=__version__,
     docs_url="/api/docs",
     redoc_url=None,

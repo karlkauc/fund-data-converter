@@ -40,13 +40,13 @@ class RouteMeta:
 
 
 _HOME = (
-    "Free online TPT converter: turn FinDatEx Tripartite Template (Solvency II TPT V7 and V8) Excel or "
-    "CSV files into schema-valid FundsXML 4 and back. No login, nothing stored."
+    "Free online converter for fund data: FinDatEx Tripartite Template (Solvency II TPT V7 and V8), "
+    "FundsXML 4 and openfunds, as Excel, CSV or XML, in every direction. No login, nothing stored."
 )
 
 # Keep in sync with ROUTES and TITLES in frontend/src/lib/router.ts.
 ROUTE_META: dict[str, RouteMeta] = {
-    "": RouteMeta("TPT to FundsXML Converter – Solvency II Tripartite Template V7/V8 (Free)", _HOME),
+    "": RouteMeta("Fund Data Converter – TPT V7/V8, FundsXML 4 and openfunds (Free)", _HOME),
     "fundsxml-to-tpt": RouteMeta(
         "FundsXML to TPT Converter – FundsXML 4 to Tripartite Template Excel/CSV",
         "Convert FundsXML 4 documents into Solvency II TPT V7 or V8 files as Excel (XLSX) or CSV, one "
@@ -78,7 +78,7 @@ ROUTE_META: dict[str, RouteMeta] = {
         "Solvency II TPT block, fund, share class, position, asset master data and EMT/EPT/EET.",
     ),
     "api-docs": RouteMeta(
-        "TPT ⇄ FundsXML Converter API – convert from scripts with curl, PowerShell or Python",
+        "Fund Data Converter API – convert from scripts with curl, PowerShell or Python",
         "One HTTP request converts a TPT file to FundsXML 4 or back and returns the file plus a "
         "report: validation, issues, data loss. No account, no API key.",
     ),
@@ -107,7 +107,7 @@ _OG_RE = {
     for key in ("title", "description", "url")
 }
 # index.html names the default origin; the deployed one comes from SITE_ORIGIN.
-_ORIGIN_PLACEHOLDER = "https://converter.status20.net"
+_ORIGIN_PLACEHOLDER = "https://www.fund-data-converter.eu"
 _FAQ_MARKER = "<!--faq-->"
 _FAQ_JSONLD_MARKER = "<!--faq-jsonld-->"
 
@@ -154,7 +154,7 @@ def llms_txt() -> str:
         if not p.noindex and not p.slug.startswith(("tpt/fields/", "openfunds/fields/"))
     ]
     lines = [
-        "# TPT ⇄ FundsXML Converter",
+        "# Fund Data Converter",
         "",
         "> Free web tool and HTTP API that converts between FinDatEx Tripartite Template (Solvency II TPT "
         "V7 and V8, XLSX/CSV), FundsXML 4.2.11 and openfunds 2.13 (XLSX/CSV), in every direction. No "

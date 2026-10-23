@@ -4,7 +4,7 @@ import type { SampleName } from "./api";
 export type Lang = "de" | "en";
 
 const en = {
-  appTitle: "TPT ⇄ FundsXML Converter",
+  appTitle: "Fund Data Converter",
   tagline: "Convert between TPT (V7/V8), FundsXML 4 and openfunds – in every direction.",
   privacy: "Files are processed in memory only and never stored. No login.",
   dirToFundsxml: "TPT → FundsXML",
@@ -146,7 +146,7 @@ const en = {
 };
 
 const de: typeof en = {
-  appTitle: "TPT ⇄ FundsXML Converter",
+  appTitle: "Fund Data Converter",
   tagline: "Konvertiere zwischen TPT (V7/V8), FundsXML 4 und openfunds – in jede Richtung.",
   privacy: "Dateien werden nur im Speicher verarbeitet und nicht gespeichert. Kein Login.",
   dirToFundsxml: "TPT → FundsXML",

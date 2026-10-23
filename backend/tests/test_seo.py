@@ -17,11 +17,11 @@ from app.content.pages import all_pages, register_provider
 SHELL = """<!doctype html><html><head>
 <title>x</title>
 <meta name="description" content="x" />
-<link rel="canonical" href="https://converter.status20.net/" />
+<link rel="canonical" href="https://www.fund-data-converter.eu/" />
 <meta property="og:title" content="x" />
 <meta property="og:description" content="x" />
-<meta property="og:url" content="https://converter.status20.net/" />
-<meta property="og:image" content="https://converter.status20.net/og-image.png" />
+<meta property="og:url" content="https://www.fund-data-converter.eu/" />
+<meta property="og:image" content="https://www.fund-data-converter.eu/og-image.png" />
 <!--faq-jsonld-->
 </head><body><div id="root"><!--faq--></div></body></html>"""
 
@@ -52,7 +52,7 @@ def test_shell_has_canonical_og_and_home_faq(site):
     home = site.get("/").text
     assert '<link rel="canonical" href="https://tpt.example/" />' in home
     assert 'og:image" content="https://tpt.example/og-image.png"' in home
-    assert "converter.status20.net" not in home
+    assert "www.fund-data-converter.eu" not in home
     assert '"@type": "FAQPage"' in home and '<details class="faq">' in home
     mapping = site.get("/mapping").text
     assert '<link rel="canonical" href="https://tpt.example/mapping" />' in mapping
@@ -111,7 +111,7 @@ def test_robots_and_llms_name_the_configured_origin(site):
     robots = site.get("/robots.txt").text
     assert "Disallow: /api/" in robots and "Sitemap: https://tpt.example/sitemap.xml" in robots
     llms = site.get("/llms.txt").text
-    assert llms.startswith("# TPT ⇄ FundsXML Converter")
+    assert llms.startswith("# Fund Data Converter")
     assert "https://tpt.example/guides/what-is-tpt" in llms
 
 
@@ -151,5 +151,5 @@ def test_faq_api_and_gzip(client):
     r = client.get("/api/content/faq", headers={"accept-encoding": "gzip"})
     assert r.status_code == 200 and r.headers["content-encoding"] == "gzip"
     faq = r.json()
-    assert faq[0]["question"] == "What does the TPT converter do?"
+    assert faq[0]["question"] == "What does the Fund Data Converter do?"
     assert faq[0]["answer_html"].startswith("<p>")

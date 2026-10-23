@@ -25,7 +25,7 @@ from functools import lru_cache
 from lxml import etree
 
 from app.convert.derive import amount, complete_portfolio, complete_position, dec
-from app.mapping.rules import PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIER, Rule, rules_for
+from app.mapping.rules import PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIERS, Rule, rules_for
 from app.model.issues import Issue
 from app.spec.catalog import VERSIONS, load_catalog
 
@@ -287,7 +287,7 @@ def _read_portfolio(core: CorePortfolio, values: dict[str, str]) -> None:
         if reported.get("7") and values.get("6", "") > reported["7"]:
             reported["7"] = values["6"]
         # Our own TPT → FundsXML output names no real fund issuer.
-        if reported.get("117") == PLACEHOLDER_SUPPLIER:
+        if reported.get("117") in PLACEHOLDER_SUPPLIERS:
             del reported["117"]
         if reported.get("122", "").upper() == PLACEHOLDER_COUNTRY:
             del reported["122"]

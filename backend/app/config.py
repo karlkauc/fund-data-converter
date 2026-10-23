@@ -64,7 +64,7 @@ def load_settings() -> Settings:
         maxmind_license_key=os.getenv("MAXMIND_LICENSE_KEY", ""),
         # The public address search engines should index (canonical, sitemap, og:url). Requests
         # for any other host (*.run.app, staging) get X-Robots-Tag: noindex.
-        site_origin=os.getenv("SITE_ORIGIN", "https://converter.status20.net").rstrip("/"),
+        site_origin=os.getenv("SITE_ORIGIN", "https://www.fund-data-converter.eu").rstrip("/"),
         # IndexNow key (tools/indexnow_ping.py); served as /<key>.txt when set.
         indexnow_key=os.getenv("INDEXNOW_KEY", ""),
         cors_allow_origins=tuple(

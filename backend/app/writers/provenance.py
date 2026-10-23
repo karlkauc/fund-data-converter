@@ -11,9 +11,9 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from app import release_version
+from app.config import settings
 
-APP_NAME = "TPT ⇄ FundsXML Converter"
-APP_URL = "https://converter.status20.net"
+APP_NAME = "Fund Data Converter"
 NOTE = "Converted automatically from the source file; check it against the source before relying on it."
 
 
@@ -32,7 +32,7 @@ class Provenance:
     def items(self) -> list[tuple[str, str]]:
         """(label, value) in the order shown."""
         out = [
-            ("Converted with", f"{APP_NAME} {release_version()} ({APP_URL})"),
+            ("Converted with", f"{APP_NAME} {release_version()} ({settings.site_origin})"),
             ("Converted at", self.converted_at.strftime("%Y-%m-%dT%H:%M:%SZ")),
             ("Source file", self.source_file),
             ("Conversion", self.conversion),

@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-SITE_NAME = "TPT ⇄ FundsXML Converter"
+SITE_NAME = "Fund Data Converter"
 # Where the "Open the converter" button in the page header points.
 VIEWER_PATH = "/"
 OPEN_LABEL = "Open the converter"
 LOGO_PATH = "/favicon.svg"
 # Preview image for shared links, 1200×630 (frontend/public); index.html names the same.
 OG_IMAGE_PATH = "/og-image.png"
-OG_IMAGE_ALT = "TPT ⇄ FundsXML Converter — FinDatEx Tripartite Template to FundsXML 4 and back"
+OG_IMAGE_ALT = "Fund Data Converter — TPT, FundsXML 4 and openfunds in every direction"
 # This site's key in FAMILY; its own entry is shown without a link.
 SELF = "tpt"
 
@@ -19,7 +19,7 @@ FAMILY: tuple[tuple[str, str, str], ...] = (
     ("xsd", "XSD Viewer", "/go/xsd-viewer"),
     ("xml", "XML Viewer", "/go/xml-viewer"),
     ("odata", "OData Viewer", "/go/odata-viewer"),
-    ("tpt", "TPT Converter", "/go/tpt-converter"),
+    ("tpt", "Fund Data Converter", "/go/tpt-converter"),
     ("desktop", "Desktop app", "/go/freexmltoolkit"),
 )
 

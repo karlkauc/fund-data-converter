@@ -10,7 +10,7 @@ The feature is **off by default**; it only switches on when `USAGE_DB_URL` is se
 The implementation (`backend/app/usage/`) is a port of the XSD/XML/OData viewers' module. The
 `usage_event` table has the same columns as theirs plus converter columns, so the usage dashboard
 (`~/webdav/usage_statistics`, app key `tptconverter`, usage.status20.net) reads it with the shared
-viewer queries. Both deployments (Cloud Run and the Docker copy behind converter.status20.net)
+viewer queries. Both deployments (Cloud Run and the Docker copy behind www.fund-data-converter.eu)
 write into the same database `tptconverter_stats` on the Hetzner Postgres (tanzapp-prod);
 column `instance` tells them apart.
 
@@ -142,7 +142,7 @@ https://www.maxmind.com."
    done
    ```
    `scripts/deploy.sh` enables the statistics as soon as `tptconverter-db-password` exists.
-3. **Docker copy** (converter.status20.net): `cp .env.example .env`, fill in the password, the
+3. **Docker copy** (www.fund-data-converter.eu): `cp .env.example .env`, fill in the password, the
    hash secret (`gcloud secrets versions access latest --secret tptconverter-usage-hash-secret`)
    and the MaxMind key, then `docker compose up -d --build`.
 4. **Dashboard**: register the app in `~/webdav/usage_statistics` (`TPTCONVERTER_DB_URL` /

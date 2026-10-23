@@ -342,7 +342,9 @@ def _identifier_rules(code: str, kind: str, ctx: str, base: str, note: str = "")
 _NO_CLASSES = ", fund without share classes"
 
 # ControlData written by TPT → FundsXML when the TPT names no fund issuer; never read back as one.
-PLACEHOLDER_SUPPLIER = "TPT to FundsXML Converter"
+PLACEHOLDER_SUPPLIER = "Fund Data Converter"
+# What files written before the rename (2026-10) carry there; recognised the same way.
+PLACEHOLDER_SUPPLIERS = frozenset({PLACEHOLDER_SUPPLIER, "TPT to FundsXML Converter"})
 PLACEHOLDER_COUNTRY = "XX"
 
 # Instrument types with an issuer resp. a counterparty in AssetDetails (beyond the bidirectional rules).

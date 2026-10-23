@@ -47,7 +47,7 @@ export function Header({ route }: { route: Route }) {
         >
           <img src="/favicon.svg" alt="" className="h-7 w-7" />
           <span className="hidden sm:inline">{t("appTitle")}</span>
-          <span className="sm:hidden">TPT ⇄ FundsXML</span>
+          <span className="sm:hidden">Fund Data</span>
         </a>
         <nav className="ml-auto flex items-center gap-1.5">
           <a

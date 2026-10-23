@@ -37,7 +37,8 @@ XML_PREVIEW_BYTES = 60_000
 MAX_XML_TAGS = 2_000_000
 FORMATS = ("tpt", "fundsxml", "openfunds")
 DIRECTIONS = tuple(f"{a}-to-{b}" for a in FORMATS for b in FORMATS if a != b)
-# Target when the request names none: the first two keep the behaviour of the TPT ⇄ FundsXML converter.
+# Target when the request names none: the first two keep the behaviour of the TPT ⇄ FundsXML-only
+# first version of the converter.
 DEFAULT_TARGET = {"tpt": "fundsxml", "fundsxml": "tpt", "openfunds": "fundsxml"}
 KIND_TEXT = {"tpt": "a TPT file", "fundsxml": "a FundsXML document", "openfunds": "an openfunds file"}
 

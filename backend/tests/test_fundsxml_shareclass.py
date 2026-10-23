@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
 
@@ -235,8 +237,10 @@ def test_fund_issuer_from_the_data_supplier():
     assert {(r["117"], r["122"]) for r in rows} == {("KAG GmbH", "AT")}
 
 
-def test_converter_placeholder_is_no_fund_issuer():
+@pytest.mark.parametrize("supplier", ["Fund Data Converter", "TPT to FundsXML Converter"])
+def test_converter_placeholder_is_no_fund_issuer(supplier):
+    """Our own placeholder, also the one of files written before the rename, is no fund issuer."""
     sc = [_share_class("AT0000000AA1", "EUR", "10", {"EUR": "1000"})]
-    xml = _doc(sc, FUND_PF, control=_supplier("TPT to FundsXML Converter", "XX"))
+    xml = _doc(sc, FUND_PF, control=_supplier(supplier, "XX"))
     rows = extract_tpt(parse_fundsxml(xml), "V7").rows
     assert not any(r.get("117") or r.get("122") for r in rows)

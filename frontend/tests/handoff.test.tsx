@@ -28,6 +28,7 @@ test("the target URL names the converter as source", () => {
 });
 
 test("hand-over is offered only where the sibling sites accept it", () => {
+  expect(handoffSupported("https://www.fund-data-converter.eu")).toBe(true);
   expect(handoffSupported("https://converter.status20.net")).toBe(true);
   expect(handoffSupported("https://evil.example")).toBe(false);
   // Vitest runs in dev mode, like the Vite dev server.

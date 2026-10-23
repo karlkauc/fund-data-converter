@@ -1,4 +1,6 @@
-# TPT ⇄ FundsXML Converter
+# Fund Data Converter
+
+Formerly “TPT ⇄ FundsXML Converter”; converts TPT, FundsXML and openfunds in every direction.
 
 Public web app (no login) that converts between **FinDatEx TPT** files (Tripartite Template **V7** and
 **V8**, XLSX or CSV), **FundsXML 4.2.11** and **openfunds 2.13** (XLSX, CSV or a ZIP of CSV files), in all
@@ -115,7 +117,7 @@ then also downloads GeoLite2 into `backend/geoip/` and mounts the secrets. The D
 
 ### Search engines
 
-- `SITE_ORIGIN` (default `https://converter.status20.net`) is the indexed address: canonical links,
+- `SITE_ORIGIN` (default `https://www.fund-data-converter.eu`) is the indexed address: canonical links,
   `og:url`, `/sitemap.xml`, `/robots.txt` and `/llms.txt` use it. Every other host – the `*.run.app` URL,
   staging – gets `X-Robots-Tag: noindex`. Set it in `deploy.sh`'s environment and in `.env`.
 - Content pages live in `backend/app/content/`: Markdown with TOML front matter under `pages/`, the

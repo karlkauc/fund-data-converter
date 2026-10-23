@@ -75,15 +75,15 @@ def og_image() -> Image.Image:
     img.paste(mark, (80, 150), mark)
 
     x = 336
-    draw.text((x, 154), "FINDATEX TPT  ·  FUNDSXML 4", font=font(BOLD, 24), fill=LIGHT_BLUE)
-    draw.text((x, 196), "TPT ⇄ FundsXML", font=font(BOLD, 72), fill=WHITE)
-    draw.text((x, 290), "Converter · TPT V7 / V8", font=font(BOLD, 38), fill=LIGHT_BLUE)
+    draw.text((x, 154), "TPT  ·  FUNDSXML 4  ·  OPENFUNDS", font=font(BOLD, 24), fill=LIGHT_BLUE)
+    draw.text((x, 196), "Fund Data", font=font(BOLD, 72), fill=WHITE)
+    draw.text((x, 290), "Converter · every direction", font=font(BOLD, 38), fill=LIGHT_BLUE)
     draw.line((x, 362, x + 300, 362), fill=(71, 85, 105), width=3)
-    draw.text((x, 390), "Excel or CSV in, schema-valid FundsXML out —", font=font(REGULAR, 28), fill=SLATE_200)
-    draw.text((x, 432), "and back. Lossless round trip, XSD report.", font=font(REGULAR, 28), fill=SLATE_200)
+    draw.text((x, 390), "TPT V7/V8, FundsXML 4 and openfunds as", font=font(REGULAR, 28), fill=SLATE_200)
+    draw.text((x, 432), "Excel, CSV or XML. Lossless, XSD report.", font=font(REGULAR, 28), fill=SLATE_200)
 
     draw.line((80, 536, WIDTH - 80, 536), fill=(51, 65, 85), width=2)
-    draw.text((80, 560), "Solvency II Tripartite Template", font=font(BOLD, 26), fill=WHITE)
+    draw.text((80, 560), "Fund data, one converter", font=font(BOLD, 26), fill=WHITE)
     free = "Free · no login · files not stored"
     f = font(REGULAR, 26)
     draw.text((WIDTH - 80 - draw.textlength(free, font=f), 560), free, font=f, fill=LIGHT_BLUE)

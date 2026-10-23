@@ -1,4 +1,4 @@
-# Local deployment behind Apache (converter.status20.net → 127.0.0.1:8095).
+# Local deployment behind Apache (www.fund-data-converter.eu → 127.0.0.1:8095).
 services:
   tpt-fundsxml-converter:
     build:
@@ -25,7 +25,7 @@ services:
       TRUSTED_PROXY_HOPS: "1"
       USAGE_INSTANCE: vps
       # Canonical address for search engines; other hosts get X-Robots-Tag: noindex.
-      SITE_ORIGIN: ${SITE_ORIGIN:-https://converter.status20.net}
+      SITE_ORIGIN: ${SITE_ORIGIN:-https://www.fund-data-converter.eu}
       INDEXNOW_KEY: ${INDEXNOW_KEY:-}
     mem_limit: 1g
     memswap_limit: 1g  # no swap: an oversized conversion is killed, not slowing the host

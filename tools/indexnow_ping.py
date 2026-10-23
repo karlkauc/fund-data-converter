@@ -3,7 +3,7 @@
 
 Run after a deploy that added or changed content pages:
 
-    python3 tools/indexnow_ping.py --key <INDEXNOW_KEY> --site https://converter.status20.net
+    python3 tools/indexnow_ping.py --key <INDEXNOW_KEY> --site https://www.fund-data-converter.eu
 
 The key must already be served at <site>/<key>.txt (env INDEXNOW_KEY on the service).
 Standard library only, so it runs anywhere deploy.sh runs.
@@ -29,7 +29,7 @@ def sitemap_urls(site: str) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--key", required=True)
-    parser.add_argument("--site", required=True, help="canonical origin, e.g. https://converter.status20.net")
+    parser.add_argument("--site", required=True, help="canonical origin, e.g. https://www.fund-data-converter.eu")
     args = parser.parse_args()
     site = args.site.rstrip("/")
     urls = sitemap_urls(site)

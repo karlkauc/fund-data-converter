@@ -2,7 +2,7 @@
 # JSON-LD, and available to the SPA via /api/content/faq. Answers are Markdown.
 
 [[faq]]
-q = "What does the TPT converter do?"
+q = "What does the Fund Data Converter do?"
 a = """
 It converts a FinDatEx Tripartite Template (TPT V7 or V8) file — Excel or CSV — into a FundsXML 4.2.11 document,
 and a FundsXML 4 document back into a TPT file. The FundsXML output contains the Solvency II TPT block and the

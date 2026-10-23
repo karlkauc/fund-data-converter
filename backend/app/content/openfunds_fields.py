@@ -172,7 +172,7 @@ def _hub(keys: list[str], table: dict[str, dict]) -> Page:
     body = [
         f"openfunds {catalog.version} ({catalog.date}) has {len(keys)} active fields. Each page below gives "
         "the openfunds definition, the format and values, the FinDatEx template field where there is one, "
-        "and where the TPT ⇄ FundsXML Converter puts the value in FundsXML 4. Fields without a FundsXML "
+        "and where the Fund Data Converter puts the value in FundsXML 4. Fields without a FundsXML "
         "counterpart are kept as custom attributes `OF_<OF-ID>`, so nothing is lost. Source: the "
         f"[openfunds field list]({OPENFUNDS_URL}).",
         "",

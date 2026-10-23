@@ -1,4 +1,4 @@
--- Usage statistics schema for the TPT ⇄ FundsXML Converter (docs/USAGE_STATS.md).
+-- Usage statistics schema for the Fund Data Converter (formerly TPT ⇄ FundsXML Converter) (docs/USAGE_STATS.md).
 -- Column set is the XSD/XML/OData viewers' usage_event plus converter columns, so the
 -- usage dashboard (~/webdav/usage_statistics, app key `tptconverter`) reads it with the
 -- shared viewer queries. Apply once by hand as the owning role; the app never issues DDL:

@@ -234,7 +234,7 @@ def _hub(keys: list[str], raw: dict[str, dict], table: dict[str, dict]) -> Page:
     body = [
         f"The FinDatEx Tripartite Template {VERSIONS[-1]} has {len(keys)} fields. Each page below gives the "
         "definition, the format and allowed codes, the CIC categories it applies to and where the "
-        "TPT ⇄ FundsXML Converter puts the value in FundsXML 4.",
+        "Fund Data Converter puts the value in FundsXML 4.",
         "",
         "Solvency II flags: **M** mandatory, **C** conditional, **O** optional, **I** indicative. "
         "*TPT block* means the Solvency II block `TripartiteTemplateSolvencyII_V7`, *core* the regular "

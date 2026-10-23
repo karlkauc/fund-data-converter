@@ -1,4 +1,4 @@
-# TPT ⇄ FundsXML Converter – notes for Claude
+# Fund Data Converter (formerly TPT ⇄ FundsXML Converter) – notes for Claude
 
 See README.md for layout, commands and deployment.
 
