@@ -92,6 +92,25 @@ export function OptionsPanel({ direction, options, onChange, disabled }: Props) 
           </fieldset>
         )}
 
+        {direction === "openfunds-to-fundsxml" && (
+          <fieldset className="space-y-1.5">
+            <legend className="field-label mb-1">{t("fundsxmlContent")}</legend>
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-blue-500"
+                checked={options.impliedTptAttributes}
+                disabled={disabled}
+                onChange={(e) => set({ impliedTptAttributes: e.target.checked })}
+              />
+              {t("impliedTptAttributes")}
+            </label>
+            {!options.impliedTptAttributes && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t("impliedTptAttributesHint")}</p>
+            )}
+          </fieldset>
+        )}
+
         {target === "fundsxml" ? (
           toFundsxml && (
           <fieldset className="space-y-1.5">

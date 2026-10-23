@@ -1,7 +1,11 @@
 # Local deployment behind Apache (converter.status20.net → 127.0.0.1:8095).
 services:
   tpt-fundsxml-converter:
-    build: .
+    build:
+      context: .
+      # Deploy with GIT_COMMIT=$(git rev-parse --short HEAD) docker compose up -d --build
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-}
     image: tpt-fundsxml-converter:latest
     restart: unless-stopped
     ports:

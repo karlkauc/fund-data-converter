@@ -18,11 +18,12 @@ from __future__ import annotations
 import re
 import uuid
 from collections import Counter, OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 
 from lxml import etree
 
+from app.convert.derive import DERIVED_FIELDS
 from app.convert.to_fundsxml import (
     AssetRegistry,
     ConversionResult,
@@ -33,6 +34,8 @@ from app.convert.to_fundsxml import (
     _unkeep,
     build_positions,
 )
+from app.convert.to_tpt import extract_tpt
+from app.ingest.fundsxml_reader import parse_fundsxml
 from app.ingest.openfunds_reader import INSTRUMENT_ID, ISIN, OfDocument
 from app.ingest.tpt_reader import TptRow
 from app.mapping.openfunds_holdings import add_accrued_interest, holding_to_tpt, with_implied
@@ -71,6 +74,10 @@ class OfConvertOptions:
     data_supplier_name: str | None = None
     data_supplier_short: str | None = None
     data_supplier_country: str | None = None
+    # TPT values the FundsXML implies (clean = market value, exposure = market value, issuer =
+    # instrument name, …) as TPT_<field> custom attributes too. False leaves out those the reverse
+    # conversion derives exactly: a smaller document, nothing lost.
+    implied_tpt_attributes: bool = True
 
 
 def rules_for(ctx: str):
@@ -85,6 +92,42 @@ def convert_openfunds_to_fundsxml(
     doc: OfDocument, options: OfConvertOptions | None = None
 ) -> ConversionResult:
     opts = options or OfConvertOptions()
+    if opts.implied_tpt_attributes:
+        return _convert(doc, opts, None)[0]
+    # Leave out the TPT attributes the extraction derives by itself. Whether it does is checked by
+    # reading the document back, not predicted: an attribute stays where a value would come back
+    # different. Kept attributes only make the derived values more exact, so this settles quickly.
+    keep: dict[int, set[str]] = {}
+    probe = replace(opts, validate=False)
+    for _ in range(3):
+        result, written = _convert(doc, probe, keep)
+        differs = _not_derived(result.xml, written)
+        if not differs:
+            return _convert(doc, opts, keep)[0]
+        for n, keys in differs.items():
+            keep.setdefault(n, set()).update(keys)
+    return _convert(doc, opts, None)[0]
+
+
+def _not_derived(xml: bytes, written: list[tuple[int, dict[str, str], set[str]]]) -> dict[int, set[str]]:
+    """Per holding: the TPT values left out that the extraction does not give back unchanged."""
+    rows = extract_tpt(parse_fundsxml(xml)).rows
+    if len(rows) != len(written):
+        return {n: omitted for n, _values, omitted in written if omitted}
+    out: dict[int, set[str]] = {}
+    for back, (n, values, omitted) in zip(rows, written, strict=True):
+        wrong = {k for k in omitted if not _same_value(back.get(k, ""), values.get(k, ""))}
+        if wrong:
+            out[n] = wrong
+    return out
+
+
+def _convert(
+    doc: OfDocument, opts: OfConvertOptions, keep: dict[int, set[str]] | None
+) -> tuple[ConversionResult, list[tuple[int, dict[str, str], set[str]]]]:
+    """``keep`` None: every TPT value the core structures do not take gets an attribute; else the
+    derivable ones (``DERIVED_FIELDS``) only where ``keep`` names them. Also returns, in document
+    order, each holding's number, TPT values and the attributes left out."""
     model = fundsxml_model()
     issues: list[Issue] = list(doc.issues)
     # Records are numbered: share classes 1…n, holdings n+1…; origin tags are "<number>:<column>".
@@ -210,22 +253,30 @@ def convert_openfunds_to_fundsxml(
             # Without a portfolio currency the amounts in portfolio currency cannot be read back.
             for key in sorted(_IN_PORTFOLIO_CCY & set(row.values)):
                 _custom(pos, _tpt_name(key), row.get(key), f"{row.source_row}:{key}#custom")
+    omitted: dict[int, tuple[int, dict[str, str], set[str]]] = {}
     for row, pos in position_nodes:
         values, extra, represented = holding_rows[row.source_row]
         reached = with_implied(core_kept[row.source_row])
+        implied: set[str] = set()
+        if keep is not None:
+            missing = {k for keys in represented.values() for k in keys} - reached
+            missing |= {_tpt_key(h) for h in extra} - {""}
+            implied = (missing & DERIVED_FIELDS) - keep.get(row.source_row, set())
+        omitted[id(pos)] = (row.source_row, row.values, implied)
         for col, value in values.items():
-            if col in (ISIN, INSTRUMENT_ID) or (col in represented and represented[col] <= reached):
+            if col in (ISIN, INSTRUMENT_ID) or (col in represented and represented[col] <= reached | implied):
                 continue
             custom_cols.add(col)
             if col in represented:
                 # A TPT value the core structures did not take: kept in TPT form, which reads back
                 # exactly (checked by holding_to_tpt) and is understood by the TPT extraction too.
-                for key in sorted(represented[col] - reached):
+                for key in sorted(represented[col] - reached - implied):
                     _custom(pos, _tpt_name(key), row.get(key), f"{row.source_row}:{col}#custom")
                 continue
             _custom(pos, CUSTOM_PREFIX + col, value, f"{row.source_row}:{col}#custom")
         for header, value in extra.items():
-            _custom(pos, _extra_name(header), value, f"{row.source_row}:{header}#custom")
+            if _tpt_key(header) not in implied:
+                _custom(pos, _extra_name(header), value, f"{row.source_row}:{header}#custom")
 
     res_f = serialize_at(model, funds, ["Funds"])
     res_a = serialize_at(model, assets.node, ["AssetMasterData"])
@@ -298,7 +349,21 @@ def convert_openfunds_to_fundsxml(
         "custom_attributes": int(root.xpath("count(//CustomAttributes/Attribute)")),
         "coverage": coverage,
     }
-    return ConversionResult(xml, _cap(issues), stats, valid, errors, dict(Counter(i.code for i in issues)))
+    result = ConversionResult(xml, _cap(issues), stats, valid, errors, dict(Counter(i.code for i in issues)))
+    return result, [omitted[id(pos)] for pos in _positions_in_order(funds)]
+
+
+def _positions_in_order(funds: Node) -> list[Node]:
+    """The Position nodes in document order: fund, share class, portfolio, position."""
+    out: list[Node] = []
+    for fund in funds.children:
+        classes = fund.find("SingleFund/ShareClasses")
+        for sc in classes.children if classes is not None else []:
+            portfolios = sc.child("Portfolios")
+            for pf in portfolios.children if portfolios is not None else []:
+                positions = pf.child("Positions")
+                out += positions.children if positions is not None else []
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -473,13 +538,14 @@ def _tpt_name(key: str) -> str:
 
 def _tpt_columns(extra: dict[str, str]) -> dict[str, str]:
     """TPT values of ``TPT_<field>`` columns by field key."""
-    out = {}
-    for header, value in extra.items():
-        if header.startswith(TPT_PREFIX):
-            key = header[len(TPT_PREFIX) :].split("_", 1)[0].lower()
-            if key:
-                out[key] = value
-    return out
+    return {key: value for header, value in extra.items() if (key := _tpt_key(header))}
+
+
+def _tpt_key(header: str) -> str:
+    """The TPT field of a ``TPT_<field>_<name>`` column ("" for any other column)."""
+    if not header.startswith(TPT_PREFIX):
+        return ""
+    return header[len(TPT_PREFIX) :].split("_", 1)[0].lower()
 
 
 def _extra_name(header: str) -> str:

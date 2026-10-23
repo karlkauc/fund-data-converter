@@ -26,6 +26,7 @@ from app.schema.model import fundsxml_version
 from app.spec.catalog import load_catalog
 from app.spec.openfunds import load_openfunds
 from app.writers.openfunds_writer import write_openfunds
+from app.writers.provenance import Provenance, with_xml_comment
 from app.writers.tpt_writer import CSV_DELIMITERS, write_csv, write_xlsx
 
 PREVIEW_ROWS = 200
@@ -63,10 +64,14 @@ class Request:
     target: str | None = None  # with direction auto: tpt | fundsxml | openfunds (default DEFAULT_TARGET)
     of_header_names: bool = False  # openfunds output: second header row with the field names
     non_openfunds_columns: bool = True  # TPT → openfunds: TPT fields without a column as TPT_<field>
+    # openfunds → FundsXML: TPT values the FundsXML implies as TPT_<field> attributes too
+    implied_tpt_attributes: bool = True
     preview: bool = True  # False drops the table and XML previews (API callers rarely want them)
     data_supplier_name: str | None = None  # TPT → FundsXML: ControlData/DataSupplier overrides
     data_supplier_short: str | None = None
     data_supplier_country: str | None = None
+    # Set while reading the upload ("TPT V7", "openfunds", "FundsXML"): named in the output's metadata.
+    source_format: str = ""
 
 
 @dataclass
@@ -172,6 +177,7 @@ def _read_tpt(req: Request) -> TptDocument:
     except TptReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
+    req.source_format = f"TPT {doc.version}"
     return doc
 
 
@@ -183,6 +189,7 @@ def _read_openfunds(req: Request) -> OfDocument:
     except OpenfundsReadError as exc:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.holdings))
+    req.source_format = "openfunds"
     return doc
 
 
@@ -199,7 +206,24 @@ def _parse_fundsxml(req: Request):
     except FundsXmlReadError as exc:
         raise InputError(str(exc)) from exc
     _check_fundsxml_size(root)
+    req.source_format = "FundsXML"
     return root
+
+
+def _provenance(req: Request, target_format: str, contents: str = "") -> Provenance:
+    return Provenance(req.filename, req.source_format or "upload", target_format, contents)
+
+
+def _contents(stats: dict) -> str:
+    """ "2 share classes, 120 positions" from a conversion's stats."""
+    labels = (("funds", "fund", "funds"), ("shareclasses", "share class", "share classes"))
+    labels += (("portfolios", "portfolio", "portfolios"), ("positions", "position", "positions"))
+    parts = [f"{stats[k]} {one if stats[k] == 1 else many}" for k, one, many in labels if k in stats]
+    return ", ".join(parts)
+
+
+def _with_comment(req: Request, xml: bytes, stats: dict) -> bytes:
+    return with_xml_comment(xml, _provenance(req, f"FundsXML {fundsxml_version()}", _contents(stats)))
 
 
 def _tpt_input(req: Request, doc: TptDocument) -> dict:
@@ -243,6 +267,7 @@ def _of_options(req: Request) -> OfConvertOptions:
         data_supplier_name=req.data_supplier_name,
         data_supplier_short=req.data_supplier_short,
         data_supplier_country=req.data_supplier_country,
+        implied_tpt_attributes=req.implied_tpt_attributes,
     )
 
 
@@ -255,7 +280,8 @@ def _write_tpt(req: Request, extract: TptExtract) -> OutputFile:
         delim = CSV_DELIMITERS.get(req.delimiter, ";")
         data = write_csv(extract.rows, extract.version, delim, req.all_columns is not False)
         return _package(f"{stem}_TPT_{extract.version}.csv", "text/csv", data)
-    data = write_xlsx(extract.rows, extract.version, req.all_columns is not False)
+    meta = _provenance(req, f"TPT {extract.version}", f"{len(extract.rows)} positions")
+    data = write_xlsx(extract.rows, extract.version, req.all_columns is not False, meta)
     return _package(
         f"{stem}_TPT_{extract.version}.xlsx",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -274,6 +300,11 @@ def _write_openfunds(req: Request, extract: OfExtract) -> OutputFile:
         header_names=req.of_header_names,
         all_columns=bool(req.all_columns),
         stem=_stem(req.filename),
+        meta=_provenance(
+            req,
+            f"openfunds {load_openfunds().version}",
+            f"{len(extract.shareclasses)} share classes, {len(extract.holdings)} holdings",
+        ),
     )
     return _package(name, mime, data)
 
@@ -291,6 +322,7 @@ def _extract_tpt(root, version: str | None) -> TptExtract:
 def _tpt_to_fundsxml(req: Request):
     doc = _read_tpt(req)
     result = convert_tpt_to_fundsxml(doc, _tpt_options(req))
+    result.xml = _with_comment(req, result.xml, result.stats)
     catalog = load_catalog(doc.version)
     report = {
         "direction": "tpt-to-fundsxml",
@@ -312,6 +344,7 @@ def _tpt_to_fundsxml(req: Request):
 def _openfunds_to_fundsxml(req: Request):
     doc = _read_openfunds(req)
     result = convert_openfunds_to_fundsxml(doc, _of_options(req))
+    result.xml = _with_comment(req, result.xml, result.stats)
     report = {
         "direction": "openfunds-to-fundsxml",
         "input": _openfunds_input(req, doc),

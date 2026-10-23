@@ -43,6 +43,12 @@ COPY --chown=app:app backend/geoip ./geoip
 USER app
 
 EXPOSE 8080
+# The commit built, named in converted files and usage rows (app.release_version); passed by
+# docker compose from GIT_COMMIT on the host, empty for the version alone. Set last, so a new
+# commit does not rebuild the layers above.
+ARG GIT_COMMIT=""
+ENV GIT_COMMIT=${GIT_COMMIT}
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD python -c "import os,urllib.request,sys; \
     r=urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8080')+'/api/health',timeout=3); \

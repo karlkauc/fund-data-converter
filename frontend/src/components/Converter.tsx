@@ -22,6 +22,7 @@ const DEFAULTS: ConvertOptions = {
   delimiter: "semicolon",
   ofHeaderNames: false,
   nonOpenfundsColumns: true,
+  impliedTptAttributes: true,
 };
 
 // Marks a 429 in the error state: shown as rateLimitError in the current language.

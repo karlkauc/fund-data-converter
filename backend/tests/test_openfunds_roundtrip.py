@@ -12,7 +12,7 @@ import pytest
 from test_roundtrip import FILES, _diffs, _same
 
 from app.convert.fundsxml_to_openfunds import extract_openfunds
-from app.convert.openfunds_to_fundsxml import convert_openfunds_to_fundsxml
+from app.convert.openfunds_to_fundsxml import OfConvertOptions, convert_openfunds_to_fundsxml
 from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
@@ -289,3 +289,23 @@ def test_openfunds_samples_are_lossless(fixture_bytes, name):
     assert [_lost(o.values, b) for o, b in zip(doc.holdings, back.holdings, strict=True)] == [
         {} for _ in doc.holdings
     ]
+
+
+@pytest.mark.parametrize("name", ["openfunds_sample.xlsx", "openfunds_multi.xlsx", "tpt_v7_sample.xlsx"])
+def test_implied_tpt_attributes_can_be_left_out(fixture_bytes, name):
+    """Without the TPT values the FundsXML implies the document is smaller and reads back the same."""
+    if name.startswith("tpt"):
+        fx = convert_tpt_to_fundsxml(read_tpt(fixture_bytes(name), name), ConvertOptions())
+        extract = extract_openfunds(parse_fundsxml(fx.xml))
+        data, filename, _ = write_openfunds(extract.shareclasses, extract.holdings)
+        of_doc = read_openfunds(data, filename)
+    else:
+        of_doc = read_openfunds(fixture_bytes(name), name)
+    full = convert_openfunds_to_fundsxml(of_doc)
+    slim = convert_openfunds_to_fundsxml(of_doc, OfConvertOptions(implied_tpt_attributes=False))
+    assert slim.valid, slim.validation_errors[:3]
+    assert slim.stats["custom_attributes"] < full.stats["custom_attributes"]
+    assert extract_tpt(parse_fundsxml(slim.xml)).rows == extract_tpt(parse_fundsxml(full.xml)).rows
+    back_full, back_slim = (extract_openfunds(parse_fundsxml(r.xml)) for r in (full, slim))
+    assert back_slim.holdings == back_full.holdings
+    assert back_slim.shareclasses == back_full.shareclasses

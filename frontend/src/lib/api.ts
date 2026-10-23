@@ -47,6 +47,10 @@ export async function convertFile(
     form.append("of_header_names", String(opts.ofHeaderNames));
     form.append("non_openfunds_columns", String(opts.nonOpenfundsColumns));
   }
+  if (target === "fundsxml") {
+    // Only used for an openfunds upload; the server tells the source from the file.
+    form.append("implied_tpt_attributes", String(opts.impliedTptAttributes));
+  }
   // X-Client tells the usage statistics the SPA from API scripts (backend/app/main.py).
   const res = await fetch("/api/convert", { method: "POST", body: form, headers: { "X-Client": "web" }, signal });
   if (!res.ok) throw await errorFrom(res);

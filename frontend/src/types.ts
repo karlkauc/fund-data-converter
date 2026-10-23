@@ -112,6 +112,8 @@ export interface ConvertOptions {
   ofHeaderNames: boolean;
   /** TPT → openfunds: TPT fields without an openfunds column as TPT_<field> columns. */
   nonOpenfundsColumns: boolean;
+  /** openfunds → FundsXML: TPT values the FundsXML implies as TPT_<field> attributes too. */
+  impliedTptAttributes: boolean;
 }
 
 export interface MappingRule {

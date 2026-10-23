@@ -45,6 +45,7 @@ const TEXT = {
       ["all_columns", "TPT output: every TPT column (true, default) or only filled ones. openfunds output: every OFST/OFPH column (default false: only filled ones)"],
       ["of_header_names", "openfunds output: a second header row with the field names (default false)"],
       ["non_openfunds_columns", "TPT → openfunds: TPT fields without an openfunds column as columns TPT_<field> (default true; false drops them and reports hop_data_loss)"],
+      ["implied_tpt_attributes", "openfunds → FundsXML: also keep TPT values the FundsXML implies as custom attributes TPT_<field> (default true; false leaves out those the reverse conversion derives exactly – a smaller file, nothing lost)"],
       ["preview", "response=json: include the table and XML previews of the web interface (default true; scripts usually send false)"],
     ] as Row[],
     modeRows: [
@@ -126,6 +127,7 @@ const TEXT = {
       ["all_columns", "TPT-Ausgabe: alle TPT-Spalten (true, Standard) oder nur befüllte. openfunds-Ausgabe: alle OFST/OFPH-Spalten (Standard false: nur befüllte)"],
       ["of_header_names", "openfunds-Ausgabe: zweite Kopfzeile mit den Feldnamen (Standard false)"],
       ["non_openfunds_columns", "TPT → openfunds: TPT-Felder ohne openfunds-Spalte als Spalten TPT_<Feld> (Standard true; false lässt sie weg und meldet hop_data_loss)"],
+      ["implied_tpt_attributes", "openfunds → FundsXML: TPT-Werte, die das FundsXML schon enthält, zusätzlich als Custom Attributes TPT_<Feld> (Standard true; false lässt die weg, die die Rückumwandlung exakt ableitet – kleinere Datei, kein Verlust)"],
       ["preview", "response=json: Tabellen- und XML-Vorschau der Weboberfläche mitliefern (Standard true; Skripte senden meist false)"],
     ] as Row[],
     modeRows: [

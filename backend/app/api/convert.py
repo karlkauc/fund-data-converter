@@ -188,6 +188,11 @@ async def convert(
         description="TPT → openfunds: TPT fields without an openfunds column as columns TPT_<field> "
         "(default true; false drops them)",
     ),
+    implied_tpt_attributes: str | None = Form(
+        None,
+        description="openfunds → FundsXML: also keep TPT values the FundsXML implies as custom attributes "
+        "TPT_<field> (default true; false leaves out those the reverse conversion derives exactly)",
+    ),
     preview: str | None = Form(None, description="json: include the table and XML previews (default true)"),
     data_supplier_name: str | None = Form(
         None, description="TPT → FundsXML: ControlData/DataSupplier/Name (default: TPT field 117)"
@@ -240,6 +245,7 @@ async def convert(
         target=goal,
         of_header_names=_flag(of_header_names, False),
         non_openfunds_columns=_flag(non_openfunds_columns, True),
+        implied_tpt_attributes=_flag(implied_tpt_attributes, True),
         preview=_flag(preview, True),
         data_supplier_name=_text(data_supplier_name),
         data_supplier_short=_text(data_supplier_short),

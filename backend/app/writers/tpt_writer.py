@@ -8,6 +8,7 @@ import io
 from app.model.xmltree import parse_decimal
 from app.spec.catalog import Catalog, load_catalog
 from app.writers.formula_safe import csv_text, pipe_text, xlsx_row
+from app.writers.provenance import Provenance, apply_to_workbook
 from app.writers.xlsx_numbers import full_precision_floats
 
 CSV_DELIMITERS = {"semicolon": ";", "comma": ",", "pipe": "|", "tab": "\t"}
@@ -20,7 +21,10 @@ def _columns(catalog: Catalog, rows: list[dict[str, str]], all_columns: bool) ->
     return [k for k in catalog.key_order() if k in present]
 
 
-def write_xlsx(rows: list[dict[str, str]], version: str, all_columns: bool = True) -> bytes:
+def write_xlsx(
+    rows: list[dict[str, str]], version: str, all_columns: bool = True, meta: Provenance | None = None
+) -> bytes:
+    """``meta``: where the rows come from, written as document properties."""
     from openpyxl import Workbook
 
     full_precision_floats()
@@ -32,6 +36,8 @@ def write_xlsx(rows: list[dict[str, str]], version: str, all_columns: bool = Tru
     numeric = {k for k in keys if catalog.by_key[k].kind == "NUMERIC"}
     for r in rows:
         ws.append(xlsx_row(ws, [_cell(r.get(k, ""), k in numeric) for k in keys]))
+    if meta is not None:
+        apply_to_workbook(wb, meta)
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()

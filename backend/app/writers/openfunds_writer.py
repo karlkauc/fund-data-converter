@@ -15,6 +15,7 @@ import zipfile
 from app.model.xmltree import parse_decimal
 from app.spec.openfunds import OfCatalog, load_openfunds
 from app.writers.formula_safe import csv_text, pipe_text, xlsx_row
+from app.writers.provenance import Provenance, apply_to_workbook
 from app.writers.xlsx_numbers import full_precision_floats
 
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -62,8 +63,9 @@ def write_openfunds(
     header_names: bool = False,
     all_columns: bool = False,
     stem: str = "openfunds",
+    meta: Provenance | None = None,
 ) -> tuple[bytes, str, str]:
-    """(data, filename, mime type) of the openfunds output."""
+    """(data, filename, mime type) of the openfunds output; ``meta`` becomes the XLSX's properties."""
     catalog = load_openfunds()
     tables = [(SHEET_SHARECLASSES, shareclasses, ("OFST",) if all_columns else None)]
     if holdings:
@@ -80,10 +82,10 @@ def write_openfunds(
             for name, data in files:
                 zf.writestr(name, data)
         return buf.getvalue(), f"{stem}_openfunds.zip", "application/zip"
-    return _xlsx(tables, catalog, header_names), f"{stem}_openfunds.xlsx", XLSX_MIME
+    return _xlsx(tables, catalog, header_names, meta), f"{stem}_openfunds.xlsx", XLSX_MIME
 
 
-def _xlsx(tables, catalog: OfCatalog, header_names: bool) -> bytes:
+def _xlsx(tables, catalog: OfCatalog, header_names: bool, meta: Provenance | None = None) -> bytes:
     from openpyxl import Workbook
 
     full_precision_floats()
@@ -102,6 +104,8 @@ def _xlsx(tables, catalog: OfCatalog, header_names: bool) -> bytes:
             types[col] = f.data_type if f else "string"
         for r in rows:
             ws.append(xlsx_row(ws, [_cell(r.get(c, ""), types[c]) for c in cols]))
+    if meta is not None:
+        apply_to_workbook(wb, meta)
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
