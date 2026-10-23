@@ -8,9 +8,13 @@ names or NAVs, cell values or issue messages: only issue *codes*.
 from __future__ import annotations
 
 import hashlib
+import hmac
+import re
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
+from app.model.xmltree import parse_date
 from app.service import Request as ConvertRequest
 from app.writers.tpt_writer import CSV_DELIMITERS
 
@@ -43,6 +47,38 @@ _TELEMETRY = frozenset(
 )
 
 
+_ISIN = re.compile(r"[A-Z]{2}[A-Z0-9]{9}[0-9]")
+
+
+def fund_fields(isins, nav_dates, secret: str | None, today: date) -> dict:
+    """What the statistics keep of the share classes converted – never an ISIN or a date as such.
+
+    * ``isin_countries``: the ISINs' country prefixes (LU, IE, AT …);
+    * ``fund_keys``: a keyed fingerprint per ISIN (HMAC with the usage hash secret), so distinct and
+      repeatedly converted share classes can be counted; without the secret it cannot be reversed or
+      matched against an ISIN list. None without a secret;
+    * ``nav_months``: the valuation dates' months (2026-09);
+    * ``data_age_days``: days from the latest valuation date to the conversion.
+    """
+    valid = sorted({i.strip().upper() for i in isins if i and _ISIN.fullmatch(i.strip().upper())})
+    dates = []
+    for value in nav_dates:
+        try:
+            dates.append(parse_date(value))
+        except (ValueError, TypeError):
+            continue
+    out: dict = {
+        "isin_countries": sorted({i[:2] for i in valid}),
+        "nav_months": sorted({d.strftime("%Y-%m") for d in dates}),
+        "data_age_days": (today - max(dates)).days if dates else None,
+    }
+    if secret:
+        out["fund_keys"] = [
+            hmac.new(secret.encode(), f"fund|{i}".encode(), hashlib.sha256).hexdigest()[:20] for i in valid
+        ]
+    return out
+
+
 def request_options(req: ConvertRequest, source: str, target: str) -> list[str]:
     """The options set away from their default that apply to this direction, as fixed names."""
     supplier = bool(req.data_supplier_name or req.data_supplier_short or req.data_supplier_country)
@@ -67,7 +103,7 @@ def _coverage_pct(coverage: dict) -> float | None:
     return round(100 * placed / len(fields), 1)
 
 
-def conversion_fields(req: ConvertRequest, result: dict) -> dict:
+def conversion_fields(req: ConvertRequest, result: dict, secret: str | None = None) -> dict:
     inp = result.get("input") or {}
     summary = result.get("summary") or {}
     issues = result.get("issues") or []
@@ -104,6 +140,9 @@ def conversion_fields(req: ConvertRequest, result: dict) -> dict:
         "coverage_pct": _coverage_pct(result.get("coverage") or {}),
         "options": request_options(req, source, target),
         **{k: v for k, v in req.telemetry.items() if k in _TELEMETRY},
+        **fund_fields(
+            req.telemetry.get("isins", ()), req.telemetry.get("nav_dates", ()), secret, date.today()
+        ),
     }
     if source == "tpt":
         fields |= {"version_source": inp.get("versionSource"), "type_count": inp.get("columns")}

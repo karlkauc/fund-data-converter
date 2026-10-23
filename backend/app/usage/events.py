@@ -95,6 +95,11 @@ class UsageEvent:
     coverage_pct: float | None = None  # → FundsXML: source fields placed in the block or core
     options: list[str] = field(default_factory=list)  # non-default options, fixed names
     target: str | None = None  # download: xml | xlsx | csv | zip; handoff: validator | xml-viewer
+    # added 2026-10-23 (fund statistics): no ISIN, no date – see app.usage.conversion.fund_fields
+    isin_countries: list[str] = field(default_factory=list)  # ISIN country prefixes (LU, IE, AT …)
+    fund_keys: list[str] = field(default_factory=list)  # keyed fingerprints of the share class ISINs
+    nav_months: list[str] = field(default_factory=list)  # valuation months (2026-09)
+    data_age_days: int | None = None  # latest valuation date → conversion
 
     def as_row(self) -> tuple:
         return tuple(getattr(self, f.name) for f in fields(self))

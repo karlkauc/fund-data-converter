@@ -187,7 +187,12 @@ def _read_tpt(req: Request) -> TptDocument:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
     req.source_format = f"TPT {doc.version}"
-    req.telemetry["cic_categories"] = cic_categories(r.values.get("12") for r in doc.rows)
+    req.telemetry |= {
+        "cic_categories": cic_categories(r.values.get("12") for r in doc.rows),
+        # Turned into countries, months and keyed fingerprints by app.usage.conversion, never stored as is.
+        "isins": sorted({r.values.get("1", "") for r in doc.rows}),
+        "nav_dates": sorted({r.values.get("6", "") for r in doc.rows}),
+    }
     return doc
 
 
@@ -206,6 +211,11 @@ def _read_openfunds(req: Request) -> OfDocument:
         "shareclass_count": len(doc.shareclasses),
         "holding_count": len(doc.holdings),
         "cic_categories": cic_categories(h.values.get(OF_CIC) for h in doc.holdings),
+        "isins": sorted({r.values.get("OFST020000", "") for r in doc.shareclasses}),
+        "nav_dates": sorted(
+            {h.values.get("OFPH000010", "") for h in doc.holdings}
+            or {r.values.get(k, "") for r in doc.shareclasses for k in ("OFDY000071", "OFDY000036")}
+        ),
     }
     return doc
 
@@ -230,6 +240,13 @@ def _parse_fundsxml(req: Request):
         "asset_count": int(root.xpath("count(AssetMasterData/Asset)")),
         "cic_categories": cic_categories(
             root.xpath("AssetMasterData/Asset/Classifications/Classification[ListedGroup='CIC']/Value/text()")
+        ),
+        "isins": sorted(
+            set(root.xpath("Funds/Fund/SingleFund/ShareClasses/ShareClass/Identifiers/ISIN/text()"))
+        ),
+        "nav_dates": sorted(
+            set(root.xpath("Funds/Fund//Portfolios/Portfolio/NavDate/text()"))
+            or set(root.xpath("Funds/Fund//TotalAssetValues/TotalAssetValue/NavDate/text()"))
         ),
     }
     return root

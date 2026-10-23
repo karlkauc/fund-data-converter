@@ -76,6 +76,8 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 | `values_lost`, `values_kept_custom` | the report's `dataLoss`: values lost / kept as custom attributes |
 | `coverage_pct` | → FundsXML: share of the source fields placed in the TPT block or core structures (the rest went to custom attributes) |
 | `options` | options set away from their default that apply to the direction, as fixed names: `tpt_version_forced`, `of_header_names`, `no_non_openfunds_columns`, `no_implied_tpt_attributes`, `data_supplier`, `no_preview` |
+| `isin_countries`, `nav_months`, `data_age_days` | of the share classes converted: the ISINs' country prefixes (`LU`, `IE` …), the valuation months (`2026-09`) and the days from the latest valuation date to the conversion – never an ISIN or a date |
+| `fund_keys` | per share class ISIN `HMAC-SHA256(USAGE_HASH_SECRET, "fund|" + ISIN)[:20]`: stable across days, so distinct and repeatedly converted funds can be counted; without the secret it can neither be reversed nor matched against an ISIN list. Empty without a secret |
 | `target` | `download`: file type `xml`/`xlsx`/`csv`/`zip`; `handoff`: `validator`/`xml-viewer` |
 | `app_version`, `received_at` | version + Cloud Run revision (VPS: git commit), server timestamp |
 

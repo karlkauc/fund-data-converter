@@ -31,6 +31,8 @@ a = """
 No. Files are processed in memory and discarded after the response. There are no cookies and no third-party
 tracking. The anonymous usage statistics count conversions (formats, sizes, durations, message codes) and whether
 a result was downloaded or handed over to another site – never file content, file names or values from the file.
+Of the funds only the country prefix of the ISIN, the month of the valuation date and an irreversible keyed
+fingerprint (to count distinct funds) are kept, never the ISIN or the fund name.
 """
 
 [[faq]]

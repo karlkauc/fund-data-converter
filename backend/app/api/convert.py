@@ -33,7 +33,7 @@ from app.service import (
 )
 from app.service import Request as ConvertRequest
 from app.service import convert as convert_request
-from app.usage.context import emit
+from app.usage.context import current, emit
 from app.usage.conversion import conversion_fields, is_sample
 from app.writers.formula_safe import csv_text
 
@@ -103,6 +103,11 @@ def _direction(data: bytes, filename: str, wanted: str = "auto", target: str | N
     kind = detect_kind(data, filename)
     goal = target if target in FORMATS and target != kind else DEFAULT_TARGET[kind]
     return f"{kind}-to-{goal}"
+
+
+def _hash_secret() -> str | None:
+    ctx = current()
+    return ctx.tracker.hash_secret if ctx is not None else None
 
 
 def _formats(direction: str | None) -> dict:
@@ -289,7 +294,7 @@ async def convert(
         status_code=200,
         duration_ms=report["meta"]["durationMs"],
         response_mode=mode,
-        **conversion_fields(req, report),
+        **conversion_fields(req, report, _hash_secret()),
     )
     if mode == "file":
         return _file_response(report, out)

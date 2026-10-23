@@ -63,7 +63,11 @@ CREATE TABLE IF NOT EXISTS usage_event (
   values_kept_custom int,                -- report.dataLoss.keptAsCustomAttribute
   coverage_pct     numeric(5,1),         -- → FundsXML: source fields placed in the TPT block or core
   options          text[]      NOT NULL DEFAULT '{}',  -- non-default options, fixed names
-  target           text                  -- download: xml | xlsx | csv | zip ; handoff: validator | xml-viewer
+  target           text,                 -- download: xml | xlsx | csv | zip ; handoff: validator | xml-viewer
+  isin_countries   text[]      NOT NULL DEFAULT '{}',  -- ISIN country prefixes of the share classes
+  fund_keys        text[]      NOT NULL DEFAULT '{}',  -- HMAC(secret, ISIN)[:20]: counts distinct funds, not reversible
+  nav_months       text[]      NOT NULL DEFAULT '{}',  -- valuation months (YYYY-MM), never the date
+  data_age_days    int                   -- days from the latest valuation date to the conversion
 );
 
 CREATE INDEX IF NOT EXISTS idx_usage_event_received  ON usage_event (received_at);
@@ -113,3 +117,10 @@ ALTER TABLE usage_event ADD CONSTRAINT usage_event_event_type_check
 UPDATE usage_event
    SET source_format = split_part(direction, '-to-', 1), target_format = split_part(direction, '-to-', 2)
  WHERE event_type = 'convert' AND direction LIKE '%-to-%' AND source_format IS NULL;
+
+-- 2026-10-23 (fund statistics): fund domicile, valuation month, data age, keyed fund fingerprints
+ALTER TABLE usage_event
+  ADD COLUMN IF NOT EXISTS isin_countries text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS fund_keys      text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS nav_months     text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS data_age_days  int;

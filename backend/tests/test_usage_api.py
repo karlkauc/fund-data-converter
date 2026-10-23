@@ -287,3 +287,32 @@ def test_download_and_handoff_events(client, events, payload):
 def test_usage_event_takes_fixed_values_only(client, events, payload):
     assert client.post("/api/usage/event", json=payload).status_code == 422
     assert events == []
+
+
+def test_funds_are_counted_without_isin_or_date(client, events, fixture_bytes):
+    data = fixture_bytes("tpt_v7_sample.xlsx")
+    body = _post(client, "a.xlsx", data).json()
+    _post(client, "b.xlsx", data)
+    first, second = events
+    isin = body["summary"]["portfolioList"][0]["id"]
+    assert first.isin_countries == [isin[:2]]
+    assert len(first.fund_keys) == 1 and first.fund_keys == second.fund_keys  # same fund, same key
+    assert first.nav_months and all(len(m) == 7 for m in first.nav_months)
+    assert isinstance(first.data_age_days, int)
+    row = repr(dataclasses.astuple(first))
+    assert isin not in row
+    for p in body["summary"]["portfolioList"]:
+        assert p["date"] not in row
+
+
+def test_fund_keys_need_the_secret():
+    from datetime import date
+
+    from app.usage.conversion import fund_fields
+
+    with_secret = fund_fields(["LU0000000001", "bad"], ["2026-09-30"], "s", date(2026, 10, 23))
+    assert with_secret["isin_countries"] == ["LU"] and with_secret["nav_months"] == ["2026-09"]
+    assert with_secret["data_age_days"] == 23 and len(with_secret["fund_keys"]) == 1
+    other = fund_fields(["LU0000000001"], [], "other", date(2026, 10, 23))
+    assert other["fund_keys"] != with_secret["fund_keys"]
+    assert "fund_keys" not in fund_fields(["LU0000000001"], [], None, date(2026, 10, 23))
