@@ -17,7 +17,7 @@ export const HANDOFF_TIMEOUT_MS = 15_000;
 const SOURCE = "tpt-converter";
 
 /** Origins the sibling sites accept a hand-over from; keep in step with their allow-lists. */
-// The old address stays until the sibling sites and every open tab have moved on.
+// The second origin is the test instance on the VPS.
 export const SENDER_ORIGINS = ["https://www.fund-data-converter.eu", "https://converter.status20.net"];
 
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
