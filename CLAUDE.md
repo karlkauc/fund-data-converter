@@ -3,8 +3,10 @@
 See README.md for layout, commands and deployment.
 
 ## Conventions
-- **Deploy**: always via `GCP_PROJECT=<id> scripts/deploy.sh`. The project is passed explicitly; never rely
-  on the gcloud default.
+- **Deploy**: public site = Cloud Run service `tpt-fundsxml` in project `fund-data-converter`
+  (europe-west1): `GCP_PROJECT=fund-data-converter scripts/deploy.sh`. The project is passed explicitly; never
+  rely on the gcloud default. The VPS copy (converter.status20.net, `GIT_COMMIT=$(git rev-parse --short HEAD)
+  docker compose up -d --build`) is a test instance.
 - **API types**: the JSON in `backend/app/service.py` is mirrored by hand in `frontend/src/types.ts`; keep
   them in sync.
 - **SPA routes** live in both `backend/app/spa.py` (`ROUTE_META`) and `frontend/src/lib/router.ts` (`ROUTES`,

@@ -307,3 +307,15 @@ def test_fundsxml_schema_zip_for_the_xml_viewer(client):
         assert b'schemaLocation="xmldsig-core-schema.xsd"' in zf.read("FundsXML4.xsd")
     again = client.get("/api/schema/fundsxml.zip", headers={"If-None-Match": r.headers["etag"]})
     assert again.status_code == 304 and not again.content
+
+
+def test_bare_domain_redirects_to_www(client, monkeypatch):
+    from app import main
+
+    monkeypatch.setattr(main, "_apex_host", "fund-data-converter.eu")
+    monkeypatch.setattr(main.settings, "site_origin", "https://www.fund-data-converter.eu")
+    r = client.get("/mapping?x=1", headers={"host": "fund-data-converter.eu"}, follow_redirects=False)
+    assert r.status_code == 301 and r.headers["location"] == "https://www.fund-data-converter.eu/mapping?x=1"
+    r = client.post("/api/convert", headers={"host": "fund-data-converter.eu"}, follow_redirects=False)
+    assert r.status_code == 308
+    assert client.get("/api/health").status_code == 200

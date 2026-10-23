@@ -13,7 +13,7 @@ import anyio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
@@ -229,6 +229,22 @@ async def security_headers(request: Request, call_next):
     if request.url.path.startswith("/api/"):
         response.headers.setdefault("Cache-Control", "no-store")
     return response
+
+
+_site_host = urlsplit(settings.site_origin).hostname or ""
+# www.fund-data-converter.eu is the site; the bare domain points at the same service and redirects.
+_apex_host = _site_host[4:] if _site_host.startswith("www.") else None
+
+
+@app.middleware("http")
+async def redirect_apex_to_www(request: Request, call_next):
+    if _apex_host and request.headers.get("host", "").split(":")[0].lower() == _apex_host:
+        target = settings.site_origin + request.url.path
+        if request.url.query:
+            target += "?" + request.url.query
+        # 308 keeps method and body for API calls; plain page loads get the classic 301.
+        return RedirectResponse(target, status_code=301 if request.method in ("GET", "HEAD") else 308)
+    return await call_next(request)
 
 
 @app.middleware("http")
