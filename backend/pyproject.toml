@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tpt-fundsxml-converter"
+name = "fund-data-converter"
 version = "0.1.0"
 description = "Convert FinDatEx TPT (V7/V8) files to FundsXML 4 and back."
 requires-python = ">=3.12"

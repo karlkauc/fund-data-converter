@@ -1,5 +1,5 @@
 {
-  "name": "tpt-fundsxml-converter-e2e",
+  "name": "fund-data-converter-e2e",
   "private": true,
   "type": "module",
   "scripts": {

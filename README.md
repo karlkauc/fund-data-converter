@@ -1,7 +1,6 @@
 # Fund Data Converter
 
-Formerly “TPT ⇄ FundsXML Converter” (repository `karlkauc/tpt-fundsxml-converter`); converts TPT,
-FundsXML and openfunds in every direction.
+Converts TPT, FundsXML and openfunds in every direction.
 
 - Site: <https://www.fund-data-converter.eu>
 - Repository: <https://github.com/karlkauc/fund-data-converter>
