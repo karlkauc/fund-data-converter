@@ -36,7 +36,7 @@ from app.mapping.rules import (
     Rule,
     rules_for,
 )
-from app.mapping.transforms import POSITION_ELEMENT, asset_type
+from app.mapping.transforms import asset_type, position_element
 from app.model.issues import Issue
 from app.model.xmltree import Dropped, Node, parse_decimal, serialize_at
 from app.schema.model import fundsxml_model, fundsxml_schema_url, fundsxml_version
@@ -123,7 +123,10 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
             _apply(pf, first, pf_rules, ctx_values(first), kept)
             positions = pf.ensure("Positions")
             for row in group.rows:
-                _apply(positions.add("Position"), row, pos_rules, ctx_values(row), kept)
+                pos = positions.add("Position")
+                _apply(pos, row, pos_rules, ctx_values(row), kept)
+                if not row.get("17"):
+                    pos.ensure("InstrumentName")  # mandatory; empty, as the source has it
         res = serialize_at(model, block, TPT_BLOCK)
         del block  # the loose tree is no longer needed; large files need the memory
         block_el = res.element
@@ -382,7 +385,7 @@ def build_positions(
         pos = positions.add("Position")
         pos.set("UniqueID", aid)
         _apply(pos, row, rules_for("position"), ctx_values(row), core_kept)
-        element = POSITION_ELEMENT.get(asset_type(row.get("12")) or "")
+        element = position_element(row)
         if element:
             pos.ensure(element)
         position_nodes.append((row, pos))
@@ -391,6 +394,8 @@ def build_positions(
             asset = assets.node.add("Asset")
             asset.set("UniqueID", aid)
             _apply(asset, row, rules_for("asset"), ctx_values(row), core_kept)
+            if not row.get("17"):
+                asset.ensure("Name")  # mandatory; empty, as the source has it
 
 
 def _build_core(groups: list[PortfolioGroup], ctx_values, core_kept: dict[int, set[str]]):

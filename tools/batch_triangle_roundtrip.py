@@ -532,11 +532,27 @@ def _navs(holder) -> dict[tuple[str, str], Decimal]:
     return out
 
 
+def _portfolio_ccy(portfolio, candidates: list[str]) -> str:
+    """The first candidate (fund currency, holder currency, NAV currencies) every position has an
+    amount in; else the one most positions have. TPT and openfunds keep one portfolio currency: a
+    share class in EUR of a USD fund comes back with its positions in EUR only."""
+    candidates = [c.strip() for c in dict.fromkeys(candidates) if c and c.strip()]
+    counts: Counter = Counter()
+    n = 0
+    for pos in portfolio.iterfind("Positions/Position"):
+        n += 1
+        counts.update({a.get("ccy") for a in pos.iterfind("TotalValue/Amount")})
+    for c in candidates:
+        if counts[c] == n:
+            return c
+    return max(candidates, key=lambda c: counts[c], default="")
+
+
 def _nav_fundsxml(root) -> list[dict]:
     """Per portfolio: the positions' TotalValue in the fund currency against the net assets."""
     out = []
     for fund in root.iterfind("Funds/Fund"):
-        ccy = (fund.findtext("Currency") or "").strip()
+        fund_ccy = (fund.findtext("Currency") or "").strip()
         dyn = fund.find("FundDynamicData")
         fund_navs = _navs(dyn)
         holders = [("fund", fund.findtext("Names/OfficialName") or "?", dyn, fund_navs)]
@@ -548,6 +564,14 @@ def _nav_fundsxml(root) -> list[dict]:
                 continue
             for pf in holder.iterfind("Portfolios/Portfolio"):
                 when = (pf.findtext("NavDate") or "").strip()
+                ccy = _portfolio_ccy(
+                    pf,
+                    [
+                        fund_ccy,
+                        holder.findtext("Currency") or "",
+                        *(c for _, c in navs),
+                    ],
+                )
                 total, n, missing = Decimal(0), 0, 0
                 percent = Decimal(0)
                 for pos in pf.iterfind("Positions/Position"):

@@ -12,7 +12,7 @@ from app.convert.to_fundsxml import ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import extract_tpt
 from app.ingest.fundsxml_reader import parse_fundsxml
 from app.ingest.tpt_reader import read_tpt
-from app.mapping.transforms import ASSET_TYPE, POSITION_ELEMENT, RATE_TYPE, ZERO_COUPON_RATE, asset_type
+from app.mapping.transforms import ASSET_TYPE, POSITION_ELEMENT, RATE_TYPE, ZERO_COUPON_RATE
 from app.model.xmltree import parse_date, parse_decimal
 
 FILES = [
@@ -155,7 +155,8 @@ def test_values_real_files_carry_survive(fixture_bytes, block):
 @pytest.mark.parametrize("kind", sorted(POSITION_ELEMENT))
 def test_asset_type_without_cic_comes_back(kind):
     """A FundsXML without CIC: the CIC guessed for TPT gives the same AssetType back."""
-    assert asset_type(ASSET_TYPE.from_xml(kind, {})) == kind
+    cic = ASSET_TYPE.from_xml(kind, {})
+    assert ASSET_TYPE.to_xml(cic, {"12": cic, "18": "" if kind == "FE" else "1"})[0] == kind
 
 
 def test_zero_coupon_type_comes_back():
@@ -183,3 +184,41 @@ def test_one_isin_in_two_currencies_is_two_assets(fixture_bytes):
         if a.findtext("Identifiers/ISIN") == rows[4]["14"]
     }
     assert currencies == {rows[4]["21"], rows[5]["21"]}
+
+
+@pytest.mark.parametrize("block", [True, False])
+def test_rows_without_quantity_stay_schema_valid(fixture_bytes, block):
+    """ "Other" (x09) without quantity is a fee, private equity without one PrivateEquity, an asset
+    without name an empty Name: no mandatory child is left missing."""
+    from lxml import etree
+
+    doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
+    rows = [r.values for r in doc.rows]
+    for row, cic, ident in ((rows[1], "XT09", "FEE1"), (rows[2], "XT34", "PE1"), (rows[3], "XT09", "NONAME")):
+        row.update({"12": cic, "14": ident, "15": "99", "18": "", "19": ""})
+    rows[3]["17"] = ""
+    result = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=block))
+    assert result.valid, result.validation_errors[:3]
+    root = etree.fromstring(result.xml)
+    kinds = {
+        p.findtext("Identifiers/OtherID"): {etree.QName(c).localname for c in p} & {"Fee", "PrivateEquity"}
+        for p in root.iterfind(".//Portfolios/Portfolio/Positions/Position")
+    }
+    assert (kinds["FEE1"], kinds["PE1"]) == ({"Fee"}, {"PrivateEquity"})
+    assert _diffs(doc, extract_tpt(parse_fundsxml(result.xml)).rows) == []
+
+
+def test_quantity_is_read_whatever_the_cic(fixture_bytes):
+    """An equity whose supplier gave it a bond CIC: Units and market value still reach TPT, and the
+    bond written back is valid (the quantity stands in for the nominal)."""
+    doc = read_tpt(fixture_bytes("tpt_all_cic.xlsx"), "all.xlsx")
+    row = next(r.values for r in doc.rows if r.values.get("12", "")[2:3] == "3" and r.values.get("18"))
+    xml = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=False)).xml
+    xml = xml.replace(f"<Value>{row['12']}</Value>".encode(), b"<Value>XT21</Value>")
+    back = next(r for r in extract_tpt(parse_fundsxml(xml)).rows if r.get("14") == row["14"])
+    assert back["12"] == "XT21"
+    assert _same(back["18"], row["18"])
+    assert back.get("25") and back.get("23")
+    doc.rows[[r.values for r in doc.rows].index(row)].values.update({"12": "XT21"})
+    again = convert_tpt_to_fundsxml(doc, ConvertOptions(include_block=False))
+    assert again.valid, again.validation_errors[:3]

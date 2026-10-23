@@ -12,11 +12,12 @@ represented; the others are kept by the caller (custom attribute or non-openfund
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
 from functools import lru_cache
 
-from app.convert.derive import INTEREST_BEARING, amount, dec
+from app.convert.derive import INTEREST_BEARING, dec
 from app.mapping.transforms import cic_category
-from app.model.xmltree import parse_decimal
+from app.model.xmltree import format_decimal, parse_decimal
 from app.spec.openfunds import load_openfunds
 
 # Instrument identifiers: openfunds column -> TPT field 15 code (1 ISIN, 2 CUSIP, 3 SEDOL, 4 WKN,
@@ -148,14 +149,17 @@ def add_accrued_interest(tpt: dict[str, str]) -> None:
         return
     market, clean = dec(tpt.get("24")), dec(tpt.get("25"))
     if not tpt.get("126") and market is not None and clean is not None:
-        tpt["126"] = amount(market - clean)  # 0 for a zero coupon bond, as FundsXML states it
+        # Exact, not rounded: the source's own amount comes back. 0 for a zero coupon bond.
+        tpt["126"] = format_decimal(market - clean)
     accrued, market_qc = dec(tpt.get("126")), dec(tpt.get("22"))
     foreign = tpt.get("21") and tpt.get("21") != tpt.get("4")
     if not foreign or tpt.get("125") or tpt.get("23") or accrued is None or market_qc is None or not market:
         return
-    accrued_qc = accrued * market_qc / market
-    tpt["125"] = amount(accrued_qc)
-    tpt["23"] = amount(market_qc - dec(tpt["125"]))
+    # Converted at the rate of the market values, to as many places as the amounts have.
+    places = max(2, *(-d.as_tuple().exponent for d in (market, market_qc, accrued)))
+    accrued_qc = (accrued * market_qc / market).quantize(Decimal(1).scaleb(-places), ROUND_HALF_UP)
+    tpt["125"] = format_decimal(accrued_qc)
+    tpt["23"] = format_decimal(market_qc - accrued_qc)
 
 
 def tpt_to_holding(tpt: dict[str, str]) -> tuple[dict[str, str], set[str]]:

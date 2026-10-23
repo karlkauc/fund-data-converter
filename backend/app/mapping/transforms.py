@@ -194,6 +194,26 @@ def asset_type(cic: str) -> str | None:
     return ASSET_TYPE_BY_CATEGORY.get(cat)
 
 
+def position_type(row) -> str | None:
+    """The AssetType a TPT row is written as: by its CIC, except that "other" (x0) without a
+    quantity (18) is a fee: a Certificate needs Units, a Fee nothing."""
+    kind = asset_type(row.get("12") or "")
+    if kind == "CE" and not (row.get("18") or "").strip():
+        return "FE"
+    return kind
+
+
+def position_element(row) -> str | None:
+    """The core position element of a TPT row (Equity, Bond, Fee, …).
+
+    Private equity without a quantity (18) is ``PrivateEquity``, which needs none; ``Equity``
+    needs Units."""
+    kind = position_type(row)
+    if kind == "PE" and not (row.get("18") or "").strip():
+        return "PrivateEquity"
+    return POSITION_ELEMENT.get(kind or "")
+
+
 # Core position element per FundsXML AssetType.
 POSITION_ELEMENT = {
     "BO": "Bond",
@@ -209,6 +229,7 @@ POSITION_ELEMENT = {
     "FT": "FixedTimeDeposit",
     "LO": "Loan",
     "RE": "RealEstate",
+    "FE": "Fee",
 }
 
 FUTURE_TYPE = {"1": "EF", "2": "IRF", "3": "CF", "4": "OTHER", "5": "OTHER", "9": "OTHER"}
@@ -290,9 +311,9 @@ def _asset_type_from(v: str, _ctx: dict[str, str]) -> str | None:
 
 ASSET_TYPE = Transform(
     "cic_asset_type",
-    lambda v, _c: (asset_type(v), False),
+    lambda v, c: (position_type({**c, "12": v}), False),
     _asset_type_from,
-    "AssetType from the CIC category (3rd character)",
+    "AssetType from the CIC category (3rd character); other (x0) without quantity: fee",
 )
 FUTURE_TYPE_T = _derived("cic_future_type", _future_type, "Future type from the CIC subcategory")
 OPTION_TYPE_T = _derived("cic_option_type", _option_type, "Option type from the CIC subcategory")

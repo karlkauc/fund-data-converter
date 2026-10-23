@@ -21,6 +21,7 @@ from app.ingest.tpt_reader import read_tpt
 from app.mapping.openfunds_holdings import add_accrued_interest, holding_to_tpt, tpt_to_holding
 from app.mapping.openfunds_rules import DEFAULTS, OF_FUND, STATIC_RULES
 from app.mapping.openfunds_templates import templates
+from app.model.xmltree import parse_decimal
 from app.schema.model import fundsxml_model
 from app.spec.openfunds import load_openfunds
 from app.writers.openfunds_writer import write_openfunds
@@ -205,6 +206,13 @@ def test_accrued_interest_from_market_values():
     domestic = {"12": "DE21", "4": "EUR", "21": "EUR", "22": "1000", "24": "1000", "25": "900"}
     add_accrued_interest(domestic)
     assert "125" not in domestic and "23" not in domestic
+    # Not rounded to cents: the amounts keep the places of the source.
+    exact = {"12": "CH21", "4": "EUR", "21": "CHF", "22": "1482000.1234567"}
+    exact |= {"24": "1500000.5", "25": "1476919.2212895"}
+    add_accrued_interest(exact)
+    assert exact["126"] == "23081.2787105"
+    assert parse_decimal(exact["23"]) + parse_decimal(exact["125"]) == parse_decimal(exact["22"])
+    assert len(exact["125"].split(".")[1]) == 7
 
 
 def test_accrued_interest_reaches_fundsxml():

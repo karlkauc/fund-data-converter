@@ -44,7 +44,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from app.mapping import transforms as t
-from app.mapping.transforms import Transform, asset_type, cic_category
+from app.mapping.transforms import Transform, asset_type, cic_category, position_element
 
 Condition = Callable[[dict[str, str]], bool]
 
@@ -385,6 +385,28 @@ def _internal_id(ctx: str, code: str = "14", kind: str = "15", path: str = "Iden
 def _position_fallbacks() -> list[Rule]:
     out = [_ro("18", "position", f"{kind}/Units") for kind in ("REIT", "Right", "Warrant")]
     out.append(_ro("19", "position", "CommercialPaper/Nominal"))
+    # The quantity and value of the position element the source has, also when its CIC points
+    # to another one (an equity classified as bond): otherwise the instrument comes back without.
+    for kind, quantity in (
+        ("Equity", "Units"),
+        ("ShareClass", "Shares"),
+        ("Certificate", "Units"),
+        ("Option", "Contracts"),
+        ("Future", "Contracts"),
+    ):
+        out.append(_ro("18", "position", f"{kind}/{quantity}", when_text="read only, CIC of another kind"))
+    out.append(_ro("19", "position", "Bond/Nominal", when_text="read only, CIC of another kind"))
+    not_equity = lambda r: not _EQ_LIKE(r)  # noqa: E731
+    for field, ccy in (("25", "4"), ("23", "21")):
+        out.append(
+            _ro(
+                field,
+                "position",
+                f"Equity/MarketValue/Amount[@ccy={{{ccy}}}]",
+                when=not_equity,
+                when_text="read only, equity with a CIC of another kind: clean = market value",
+            )
+        )
     # clean value and accrued interest: TotalValue = MarketValue + interest
     for kind, interest in (
         ("Bond", "InterestClaimGross"),
@@ -498,7 +520,14 @@ CORE_RULES: list[Rule] = [
         when_text="bond quoted in another currency than the portfolio",
     ),
     _r("18", "position", "Equity/Units", when=_EQ_LIKE, when_text="equity (CIC x3)"),
-    _r("24", "position", "Equity/MarketValue/Amount[@ccy={4}]", when=_EQ_LIKE, when_text="equity"),
+    _r(
+        "24",
+        "position",
+        "Equity/MarketValue/Amount[@ccy={4}]",
+        when=lambda r: position_element(r) == "Equity",
+        reverse_when=_EQ_LIKE,
+        when_text="equity (private equity without quantity: PrivateEquity)",
+    ),
     _r("18", "position", "ShareClass/Shares", when=asset_types("SC"), when_text="fund share (CIC x4)"),
     _r("18", "position", "Certificate/Units", when=asset_types("CE"), when_text="other (CIC x0)"),
     _r("18", "position", "Option/Contracts", when=asset_types("OP"), when_text="option (CIC xB, xC)"),
