@@ -1,12 +1,13 @@
 # Local deployment behind Apache (www.fund-data-converter.eu → 127.0.0.1:8095).
+name: fund-data-converter
 services:
-  tpt-fundsxml-converter:
+  fund-data-converter:
     build:
       context: .
       # Deploy with GIT_COMMIT=$(git rev-parse --short HEAD) docker compose up -d --build
       args:
         GIT_COMMIT: ${GIT_COMMIT:-}
-    image: tpt-fundsxml-converter:latest
+    image: fund-data-converter:latest
     restart: unless-stopped
     ports:
       - "127.0.0.1:8095:8080"
