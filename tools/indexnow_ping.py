@@ -19,10 +19,13 @@ import urllib.request
 from urllib.parse import urlsplit
 
 ENDPOINT = "https://api.indexnow.org/indexnow"
+# api.indexnow.org answers 403 to the default Python-urllib user agent.
+USER_AGENT = "fund-data-converter-indexnow/1.0 (+https://www.fund-data-converter.eu)"
 
 
 def sitemap_urls(site: str) -> list[str]:
-    with urllib.request.urlopen(f"{site}/sitemap.xml", timeout=30) as response:
+    request = urllib.request.Request(f"{site}/sitemap.xml", headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=30) as response:
         return re.findall(r"<loc>(.*?)</loc>", response.read().decode("utf-8"))
 
 
@@ -44,7 +47,10 @@ def main() -> int:
     }
     body = json.dumps(payload).encode()
     request = urllib.request.Request(
-        ENDPOINT, data=body, headers={"Content-Type": "application/json; charset=utf-8"}, method="POST"
+        ENDPOINT,
+        data=body,
+        headers={"Content-Type": "application/json; charset=utf-8", "User-Agent": USER_AGENT},
+        method="POST",
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         print(f"IndexNow: HTTP {response.status} for {len(urls)} URLs")
