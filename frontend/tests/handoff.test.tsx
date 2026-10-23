@@ -47,7 +47,7 @@ test("the file and extra fields are posted after the ready message", async () =>
   ready({}, "findatex-validator:ready", "https://www.findatex-validator.eu");
   expect(popup.postMessage).not.toHaveBeenCalled();
   ready(popup, "findatex-validator:ready", "https://www.findatex-validator.eu");
-  await expect(sent).resolves.toBe(true);
+  await expect(sent).resolves.toBe("ok");
   expect(popup.postMessage).toHaveBeenCalledWith(
     { type: "findatex-validator:file", name: "a_TPT_V7.xlsx", content, templateId: "TPT", templateVersion: "V7.0" },
     "https://www.findatex-validator.eu",
@@ -62,21 +62,21 @@ test("the schema travels along to the XML viewer", async () => {
   const content = new ArrayBuffer(2);
   const sent = handOff(XML_VIEWER, "a.xml", content, { schema: async () => schema });
   ready(popup, "xml-viewer:ready", VIEWER);
-  await expect(sent).resolves.toBe(true);
+  await expect(sent).resolves.toBe("ok");
   const [message, origin, transfer] = popup.postMessage.mock.calls[0];
   expect(message).toMatchObject({ type: "xml-viewer:file", name: "a.xml", schema });
   expect(origin).toBe(VIEWER);
   expect(transfer).toEqual([content, schema.content]);
 });
 
-test("a blocked popup or a silent tab resolves false", async () => {
+test("a blocked popup and a silent tab say which it was", async () => {
   vi.spyOn(window, "open").mockReturnValue(null);
-  await expect(handOff(XML_VIEWER, "a.xml", new ArrayBuffer(1))).resolves.toBe(false);
+  await expect(handOff(XML_VIEWER, "a.xml", new ArrayBuffer(1))).resolves.toBe("blocked");
   vi.useFakeTimers();
   vi.spyOn(window, "open").mockReturnValue(fakePopup() as unknown as Window);
   const sent = handOff(XML_VIEWER, "a.xml", new ArrayBuffer(1), { timeoutMs: 1000 });
   vi.advanceTimersByTime(1000);
-  await expect(sent).resolves.toBe(false);
+  await expect(sent).resolves.toBe("timeout");
 });
 
 describe("buttons in the result view", () => {

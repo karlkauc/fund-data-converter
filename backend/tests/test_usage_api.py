@@ -138,7 +138,7 @@ def test_too_many_positions_is_rejected(client, events, fixture_bytes, monkeypat
 
     monkeypatch.setattr(settings, "max_positions", 1)
     assert _post(client, "a.xlsx", fixture_bytes("tpt_v7_sample.xlsx")).status_code == 422
-    assert events[0].status == "rejected" and events[0].error_detail == "TooLargeError"
+    assert events[0].status == "rejected" and events[0].error_detail == "too_large"
 
 
 def test_requests_turned_away_early_are_counted(client, events, fixture_bytes, monkeypatch):
@@ -222,3 +222,68 @@ def test_channel_tells_the_spa_from_scripts(client, events, fixture_bytes):
     web, api = events
     assert (web.channel, web.response_mode) == ("web", "json")
     assert (api.channel, api.response_mode) == ("api", "file")
+
+
+def test_formats_content_and_quality_are_recorded(client, events, fixture_bytes):
+    _post(client, "a.xlsx", fixture_bytes("tpt_all_cic.xlsx"))
+    (ev,) = events
+    assert (ev.source_format, ev.target_format) == ("tpt", "fundsxml")
+    assert {"1", "2", "3", "4", "7"} <= set(ev.cic_categories)
+    assert ev.cic_categories == sorted(ev.cic_categories)
+    assert ev.warning_count is not None and ev.info_count is not None
+    assert ev.values_lost is not None and ev.values_kept_custom is not None
+    assert ev.coverage_pct is not None and 0 < ev.coverage_pct <= 100
+    assert ev.options == []
+
+
+def test_openfunds_layout_templates_and_counts(client, events, fixture_bytes):
+    _post(client, "of.xlsx", fixture_bytes("openfunds_sample.xlsx"), target="fundsxml")
+    (ev,) = events
+    assert (ev.source_format, ev.target_format) == ("openfunds", "fundsxml")
+    assert ev.of_layout in ("flat", "narrow") and ev.shareclass_count and ev.holding_count
+    assert set(ev.of_templates) <= {"EMT", "EPT", "EET", "EFT"}
+    assert ev.cic_categories
+
+
+def test_fundsxml_input_structure(client, events, fixture_bytes):
+    _post(client, "f.xml", fixture_bytes("fundsxml_sample.xml"))
+    (ev,) = events
+    assert ev.source_format == "fundsxml" and ev.has_tpt_block in (True, False)
+    assert ev.shareclass_count and ev.asset_count and ev.cic_categories
+
+
+def test_non_default_options_are_named(client, events, fixture_bytes):
+    data = fixture_bytes("openfunds_sample.xlsx")
+    _post(client, "of.xlsx", data, target="fundsxml", implied_tpt_attributes="false", of_header_names="true")
+    # of_header_names only applies to openfunds output
+    assert events[0].options == ["no_implied_tpt_attributes"]
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"type": "download", "target": "xlsx", "direction": "fundsxml-to-tpt"},
+        {"type": "handoff", "target": "validator", "direction": "fundsxml-to-tpt", "outcome": "timeout"},
+    ],
+)
+def test_download_and_handoff_events(client, events, payload):
+    r = client.post("/api/usage/event", json=payload, headers={"X-Client": "web"})
+    assert r.status_code == 204
+    (ev,) = events
+    assert ev.event_type == payload["type"] and ev.target == payload["target"]
+    assert ev.status == payload.get("outcome", "ok") and ev.channel == "web"
+    assert (ev.source_format, ev.target_format) == ("fundsxml", "tpt")
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"type": "convert", "target": "xlsx"},
+        {"type": "download", "target": "secret.xlsx"},
+        {"type": "download", "target": "xlsx", "direction": "tpt-to-pdf"},
+        {"type": "download", "target": "xlsx", "filename": "Fund A.xlsx"},
+    ],
+)
+def test_usage_event_takes_fixed_values_only(client, events, payload):
+    assert client.post("/api/usage/event", json=payload).status_code == 422
+    assert events == []

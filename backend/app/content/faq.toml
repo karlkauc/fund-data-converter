@@ -28,8 +28,9 @@ The report lists every value that was moved or could not be written.
 [[faq]]
 q = "Are my files stored?"
 a = """
-No. Files are processed in memory and discarded after the response. There are no cookies and no client-side
-tracking; the anonymous usage statistics count conversions, sizes and durations, never file content or names.
+No. Files are processed in memory and discarded after the response. There are no cookies and no third-party
+tracking. The anonymous usage statistics count conversions (formats, sizes, durations, message codes) and whether
+a result was downloaded or handed over to another site – never file content, file names or values from the file.
 """
 
 [[faq]]

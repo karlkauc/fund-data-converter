@@ -123,7 +123,7 @@ class TestRow:
     def test_insert_names_every_column_in_order(self) -> None:
         names = INSERT_SQL.split("(", 1)[1].split(")", 1)[0].split(", ")
         assert tuple(names) == COLUMNS
-        assert names[-5:] == ["delimiter", "all_columns", "output_bytes", "channel", "response_mode"]
+        assert names[-5:] == ["values_lost", "values_kept_custom", "coverage_pct", "options", "target"]
 
 
 _DDL = Path(__file__).resolve().parent.parent / "sql" / "usage_stats.sql"

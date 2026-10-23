@@ -78,6 +78,23 @@ class UsageEvent:
     # added 2026-10 (public API): ALTER TABLE in backend/sql/usage_stats.sql before deploying
     channel: str | None = None  # web (the SPA sends X-Client: web) | api
     response_mode: str | None = None  # convert: json | file | zip
+    # added 2026-10 (format statistics): ALTER TABLE in backend/sql/usage_stats.sql before deploying
+    source_format: str | None = None  # tpt | fundsxml | openfunds
+    target_format: str | None = None
+    of_layout: str | None = None  # openfunds input: flat | narrow
+    of_templates: list[str] = field(default_factory=list)  # EMT, EPT, EET, EFT with filled fields
+    shareclass_count: int | None = None
+    holding_count: int | None = None
+    asset_count: int | None = None
+    has_tpt_block: bool | None = None  # FundsXML input
+    cic_categories: list[str] = field(default_factory=list)  # CIC categories present (1–9, 0, A–F)
+    warning_count: int | None = None
+    info_count: int | None = None
+    values_lost: int | None = None  # report.dataLoss
+    values_kept_custom: int | None = None
+    coverage_pct: float | None = None  # → FundsXML: source fields placed in the block or core
+    options: list[str] = field(default_factory=list)  # non-default options, fixed names
+    target: str | None = None  # download: xml | xlsx | csv | zip; handoff: validator | xml-viewer
 
     def as_row(self) -> tuple:
         return tuple(getattr(self, f.name) for f in fields(self))

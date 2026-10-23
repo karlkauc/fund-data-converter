@@ -9,7 +9,7 @@
 CREATE TABLE IF NOT EXISTS usage_event (
   event_id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   received_at      timestamptz NOT NULL DEFAULT now(),
-  event_type       text        NOT NULL CHECK (event_type IN ('page_view','convert','sample_load','mapping_view')),
+  event_type       text        NOT NULL CHECK (event_type IN ('page_view','convert','sample_load','mapping_view','download','handoff')),
   visitor_hash     text,                 -- sha256(daily salt | ip | user-agent), first 32 hex chars; no raw IP
   country_code     char(2),              -- ISO-3166-1 alpha-2 via GeoLite2, NULL if unknown
   user_agent       text,                 -- truncated to 255
@@ -47,7 +47,23 @@ CREATE TABLE IF NOT EXISTS usage_event (
   all_columns      boolean,              -- FundsXML → TPT option: every catalog column or only filled ones
   output_bytes     int,                  -- size of the delivered file (after zipping if zipped)
   channel          text,                 -- web (the SPA sends X-Client: web) | api
-  response_mode    text                  -- convert: json | file | zip (the API's response= option)
+  response_mode    text,                 -- convert: json | file | zip (the API's response= option)
+  source_format    text,                 -- convert, download, handoff: tpt | fundsxml | openfunds
+  target_format    text,
+  of_layout        text,                 -- openfunds input: flat | narrow
+  of_templates     text[]      NOT NULL DEFAULT '{}',  -- EMT, EPT, EET, EFT with filled fields
+  shareclass_count int,
+  holding_count    int,                  -- openfunds input: OFPH rows
+  asset_count      int,                  -- FundsXML input: AssetMasterData/Asset
+  has_tpt_block    boolean,              -- FundsXML input carries the Solvency II TPT block
+  cic_categories   text[]      NOT NULL DEFAULT '{}',  -- CIC categories present (1–9, 0, A–F), no values
+  warning_count    int,
+  info_count       int,
+  values_lost      int,                  -- report.dataLoss.lost
+  values_kept_custom int,                -- report.dataLoss.keptAsCustomAttribute
+  coverage_pct     numeric(5,1),         -- → FundsXML: source fields placed in the TPT block or core
+  options          text[]      NOT NULL DEFAULT '{}',  -- non-default options, fixed names
+  target           text                  -- download: xml | xlsx | csv | zip ; handoff: validator | xml-viewer
 );
 
 CREATE INDEX IF NOT EXISTS idx_usage_event_received  ON usage_event (received_at);
@@ -71,3 +87,29 @@ ALTER TABLE usage_event
 ALTER TABLE usage_event
   ADD COLUMN IF NOT EXISTS channel       text,
   ADD COLUMN IF NOT EXISTS response_mode text;
+
+-- 2026-10-23 (format statistics): formats, content mix, quality; download and handoff events
+ALTER TABLE usage_event
+  ADD COLUMN IF NOT EXISTS source_format      text,
+  ADD COLUMN IF NOT EXISTS target_format      text,
+  ADD COLUMN IF NOT EXISTS of_layout          text,
+  ADD COLUMN IF NOT EXISTS of_templates       text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS shareclass_count   int,
+  ADD COLUMN IF NOT EXISTS holding_count      int,
+  ADD COLUMN IF NOT EXISTS asset_count        int,
+  ADD COLUMN IF NOT EXISTS has_tpt_block      boolean,
+  ADD COLUMN IF NOT EXISTS cic_categories     text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS warning_count      int,
+  ADD COLUMN IF NOT EXISTS info_count         int,
+  ADD COLUMN IF NOT EXISTS values_lost        int,
+  ADD COLUMN IF NOT EXISTS values_kept_custom int,
+  ADD COLUMN IF NOT EXISTS coverage_pct       numeric(5,1),
+  ADD COLUMN IF NOT EXISTS options            text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS target             text;
+ALTER TABLE usage_event DROP CONSTRAINT IF EXISTS usage_event_event_type_check;
+ALTER TABLE usage_event ADD CONSTRAINT usage_event_event_type_check
+  CHECK (event_type IN ('page_view','convert','sample_load','mapping_view','download','handoff'));
+-- Backfill the new format columns of earlier conversions from direction.
+UPDATE usage_event
+   SET source_format = split_part(direction, '-to-', 1), target_format = split_part(direction, '-to-', 2)
+ WHERE event_type = 'convert' AND direction LIKE '%-to-%' AND source_format IS NULL;

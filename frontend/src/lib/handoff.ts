@@ -88,29 +88,31 @@ export interface HandoffOptions {
 /**
  * Open `target` and post the file once it reports ready. Call it straight from a click handler:
  * the popup is opened synchronously, before anything is awaited, so it is not blocked.
- * Resolves `true` when the file was posted, `false` when the popup was blocked or never answered
- * (the tab stays open; the visitor can upload by hand).
+ * Resolves "ok" when the file was posted, "blocked" when no popup opened and "timeout" when the
+ * tab never answered (it stays open; the visitor can upload by hand).
  */
+export type HandoffOutcome = "ok" | "blocked" | "timeout";
+
 export function handOff(
   target: HandoffTarget,
   name: string,
   content: ArrayBuffer,
   opts: HandoffOptions = {},
-): Promise<boolean> {
+): Promise<HandoffOutcome> {
   const url = opts.url ?? handoffUrl(target);
   const popup = window.open(url, "_blank");
-  if (!popup) return Promise.resolve(false);
+  if (!popup) return Promise.resolve("blocked");
   const targetOrigin = new URL(url).origin;
   const schemaPromise: Promise<HandoffSchema | undefined> = opts.schema
     ? opts.schema().catch(() => undefined)
     : Promise.resolve(undefined);
 
-  return new Promise<boolean>((resolve) => {
+  return new Promise<HandoffOutcome>((resolve) => {
     let answered = false;
-    const finish = (ok: boolean) => {
+    const finish = (outcome: HandoffOutcome) => {
       window.removeEventListener("message", onMessage);
       window.clearTimeout(timer);
-      resolve(ok);
+      resolve(outcome);
     };
     const onMessage = (event: MessageEvent) => {
       if (answered || event.source !== popup || !isTargetOrigin(target, event.origin)) return;
@@ -125,10 +127,10 @@ export function handOff(
           transfer.push(schema.content);
         }
         popup.postMessage(message, targetOrigin, transfer);
-        finish(true);
+        finish("ok");
       });
     };
     window.addEventListener("message", onMessage);
-    const timer = window.setTimeout(() => finish(false), opts.timeoutMs ?? HANDOFF_TIMEOUT_MS);
+    const timer = window.setTimeout(() => finish("timeout"), opts.timeoutMs ?? HANDOFF_TIMEOUT_MS);
   });
 }

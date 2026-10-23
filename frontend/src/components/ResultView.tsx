@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { parseDirection } from "../lib/directions";
 import { base64ToBytes, downloadBase64, formatBytes } from "../lib/download";
 import { FINDATEX_VALIDATOR, XML_VIEWER, fetchFundsXmlSchema, handOff, handoffSupported } from "../lib/handoff";
+import { fileType, reportUsage } from "../lib/usage";
 import { issueText, useI18n, type MessageKey } from "../lib/i18n";
 import type { ConvertResult, CoverageField, Format, Issue } from "../types";
 import { XmlCode } from "./XmlCode";
@@ -411,7 +412,10 @@ function DownloadBar({ result }: { result: ConvertResult }) {
         <button
           type="button"
           className="btn btn-primary px-5 py-2.5 text-base"
-          onClick={() => downloadBase64(output.base64, output.filename, output.mimeType)}
+          onClick={() => {
+            downloadBase64(output.base64, output.filename, output.mimeType);
+            reportUsage({ type: "download", target: fileType(output.filename), direction: result.direction });
+          }}
         >
           <span>⬇ {t("download")}</span>
           <span className="hidden max-w-[22rem] truncate sm:inline">{output.filename}</span>
@@ -465,7 +469,10 @@ function HandoffButton({
           extra: { templateId: "TPT", templateVersion: `${version}.0` },
         })
       : handOff(XML_VIEWER, output.filename, content, { schema: fetchFundsXmlSchema });
-    void sent.then((ok) => setState(ok ? "idle" : "failed"));
+    void sent.then((outcome) => {
+      setState(outcome === "ok" ? "idle" : "failed");
+      reportUsage({ type: "handoff", target: version ? "validator" : "xml-viewer", direction: result.direction, outcome });
+    });
   };
   return (
     <span className="inline-flex flex-col items-center gap-1">

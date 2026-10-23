@@ -49,7 +49,8 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 | `country_code` | ISO-3166-1 alpha-2 via MaxMind GeoLite2; NULL if unknown |
 | `user_agent`, `device` | UA (≤255) and `desktop`/`mobile`/`bot`/`unknown` |
 | `referrer` | `scheme://host/path` of the Referer, no query (the site itself sends `Referrer-Policy: no-referrer`) |
-| `direction` | `tpt-to-fundsxml` / `fundsxml-to-tpt` |
+| `direction` | `<source>-to-<target>` over `tpt`, `fundsxml`, `openfunds` (six directions) |
+| `source_format`, `target_format` | the two halves of `direction`, also on failed conversions, downloads and hand-overs |
 | `source` | convert: input format `xlsx`/`csv`/`xml`, or `sample` when the upload is a bundled example (compared by hash). A failed conversion takes it from the file extension (`.xlsx`/`.xls` → `xlsx`, `.csv`, `.xml`; NULL for anything else unless the content is XML) |
 | `schema_name`, `target_namespace` | input and output standard, e.g. `TPT V7` → `FundsXML 4` |
 | `tpt_version`, `version_source` | V7/V8; for TPT input how the version was found (`field 1000`, `default`, `user` …). A failed conversion records the *requested* version (NULL = auto) |
@@ -67,7 +68,21 @@ One row per event in `usage_event` (DDL: `backend/sql/usage_stats.sql`).
 | `instance` | `cloudrun` / `vps` (`USAGE_INSTANCE`) |
 | `channel` | `web` when the request carries `X-Client: web` (only the SPA sends it), else `api`. API scripts are usually also `device = bot` (curl, python-requests …), so filter API use by `channel`, not by `device` |
 | `response_mode` | convert: the API's `response=` option, `json` / `file` / `zip` |
-| `app_version`, `received_at` | version + Cloud Run revision, server timestamp |
+| `of_layout`, `of_templates` | openfunds input: `flat`/`narrow`; FinDatEx templates (`EMT`, `EPT`, `EET`, `EFT`) with at least one filled field |
+| `shareclass_count`, `holding_count`, `asset_count` | openfunds input: share classes and OFPH rows; FundsXML input: share classes and `AssetMasterData/Asset` |
+| `has_tpt_block` | FundsXML input carries the Solvency II TPT block |
+| `cic_categories` | the CIC *categories* present (third character: `1` government bonds … `7` cash, `A`–`F` derivatives), from the TPT rows, the openfunds holding CIC or the FundsXML asset classifications – no codes, no values |
+| `warning_count`, `info_count` | messages by level (`diagnostic_count` is all of them) |
+| `values_lost`, `values_kept_custom` | the report's `dataLoss`: values lost / kept as custom attributes |
+| `coverage_pct` | → FundsXML: share of the source fields placed in the TPT block or core structures (the rest went to custom attributes) |
+| `options` | options set away from their default that apply to the direction, as fixed names: `tpt_version_forced`, `of_header_names`, `no_non_openfunds_columns`, `no_implied_tpt_attributes`, `data_supplier`, `no_preview` |
+| `target` | `download`: file type `xml`/`xlsx`/`csv`/`zip`; `handoff`: `validator`/`xml-viewer` |
+| `app_version`, `received_at` | version + Cloud Run revision (VPS: git commit), server timestamp |
+
+**Browser events.** `download` and `handoff` come from the SPA via `POST /api/usage/event`
+(`backend/app/api/usage.py`, 60/minute): only fixed values – the type, `target`, `direction` and for a
+hand-over `status` = `ok` (posted) / `timeout` (the other tab never answered) / `blocked` (no popup).
+Anything else is refused with 422. They let the dashboard follow a conversion to its use.
 
 **Never collected:** file content, file names, portfolio ids/names/NAVs, cell values, issue
 messages, raw IP, cookies.

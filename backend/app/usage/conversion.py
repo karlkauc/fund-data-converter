@@ -36,12 +36,44 @@ def _format_name(kind: str, version: str | None) -> str:
     )
 
 
+# Request.telemetry keys taken over as they are (counts and classes, see app.service).
+_TELEMETRY = frozenset(
+    {"of_layout", "of_templates", "shareclass_count", "holding_count", "asset_count"}
+    | {"has_tpt_block", "cic_categories"}
+)
+
+
+def request_options(req: ConvertRequest, source: str, target: str) -> list[str]:
+    """The options set away from their default that apply to this direction, as fixed names."""
+    supplier = bool(req.data_supplier_name or req.data_supplier_short or req.data_supplier_country)
+    pair = (source, target)
+    flags = {
+        "tpt_version_forced": bool(req.tpt_version) and "tpt" in (source, target),
+        "of_header_names": req.of_header_names and target == "openfunds",
+        "no_non_openfunds_columns": not req.non_openfunds_columns and pair == ("tpt", "openfunds"),
+        "no_implied_tpt_attributes": not req.implied_tpt_attributes and pair == ("openfunds", "fundsxml"),
+        "data_supplier": supplier and target == "fundsxml",
+        "no_preview": not req.preview,
+    }
+    return sorted(name for name, on in flags.items() if on)
+
+
+def _coverage_pct(coverage: dict) -> float | None:
+    """→ FundsXML: the share of the source fields placed in the TPT block or core structures."""
+    fields = coverage.get("fields") or []
+    if not fields or "total" in coverage:
+        return None
+    placed = sum(1 for f in fields if f.get("block") or f.get("core"))
+    return round(100 * placed / len(fields), 1)
+
+
 def conversion_fields(req: ConvertRequest, result: dict) -> dict:
     inp = result.get("input") or {}
     summary = result.get("summary") or {}
     issues = result.get("issues") or []
     validation = result.get("validation")
     output = result.get("output") or {}
+    loss = result.get("dataLoss") or {}
     source, _, target = (result.get("direction") or "").partition("-to-")
     in_version = inp.get("version")
     out_version = inp.get("outputVersion") or (in_version if source == "fundsxml" else None)
@@ -63,6 +95,15 @@ def conversion_fields(req: ConvertRequest, result: dict) -> dict:
         "valid": validation["valid"] if validation else None,
         "zipped": output.get("zipped"),
         "output_bytes": output.get("size"),
+        "source_format": source or None,
+        "target_format": target or None,
+        "warning_count": sum(1 for i in issues if i.get("level") == "warning"),
+        "info_count": sum(1 for i in issues if i.get("level") == "info"),
+        "values_lost": loss.get("lost"),
+        "values_kept_custom": loss.get("keptAsCustomAttribute"),
+        "coverage_pct": _coverage_pct(result.get("coverage") or {}),
+        "options": request_options(req, source, target),
+        **{k: v for k, v in req.telemetry.items() if k in _TELEMETRY},
     }
     if source == "tpt":
         fields |= {"version_source": inp.get("versionSource"), "type_count": inp.get("columns")}

@@ -105,6 +105,11 @@ def _direction(data: bytes, filename: str, wanted: str = "auto", target: str | N
     return f"{kind}-to-{goal}"
 
 
+def _formats(direction: str | None) -> dict:
+    source, _, target = (direction or "").partition("-to-")
+    return {"source_format": source or None, "target_format": target or None}
+
+
 def _reject(
     status_code: int, detail: str, reason: str, data: bytes, filename: str, tpt_version: str | None
 ) -> HTTPException:
@@ -118,7 +123,8 @@ def _reject(
         status="rejected",
         status_code=status_code,
         error_detail=reason,
-        direction=_direction(data, filename),
+        direction=(direction := _direction(data, filename)),
+        **_formats(direction),
         source=_input_source(data, filename),
         tpt_version=tpt_version,
         input_bytes=len(data),
@@ -259,12 +265,15 @@ async def convert(
         report, out = await anyio.to_thread.run_sync(convert_request, req, limiter=_slots)
     except InputError as exc:
         # Only the exception class: messages may quote values from the file.
+        direction = _safe_direction(data, req.filename, wanted, goal)
+        too_large = isinstance(exc, TooLargeError)
         emit(
             "convert",
-            status="rejected" if isinstance(exc, TooLargeError) else "parse_error",
+            status="rejected" if too_large else "parse_error",
             status_code=422,
-            error_detail=type(exc.__cause__ or exc).__name__,
-            direction=_safe_direction(data, req.filename, wanted, goal),
+            error_detail="too_large" if too_large else type(exc.__cause__ or exc).__name__,
+            direction=direction,
+            **_formats(direction),
             source=_input_source(data, req.filename),
             tpt_version=version,
             input_bytes=len(data),

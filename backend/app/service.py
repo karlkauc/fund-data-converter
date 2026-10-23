@@ -7,7 +7,7 @@ import hashlib
 import io
 import re
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePath
 
 from app import __version__
@@ -15,12 +15,14 @@ from app.config import settings
 from app.convert.fundsxml_to_openfunds import OfExtract, extract_openfunds
 from app.convert.hub import not_carried_to_tpt, tpt_fields_without_column
 from app.convert.openfunds_to_fundsxml import OfConvertOptions, convert_openfunds_to_fundsxml
-from app.convert.to_fundsxml import ConversionResult, ConvertOptions, convert_tpt_to_fundsxml
+from app.convert.to_fundsxml import TPT_BLOCK, ConversionResult, ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import TptExtract, extract_tpt
 from app.ingest.fundsxml_reader import FundsXmlReadError, parse_fundsxml
 from app.ingest.limits import TooManyRowsError
 from app.ingest.openfunds_reader import OfDocument, OpenfundsReadError, looks_like_openfunds, read_openfunds
 from app.ingest.tpt_reader import TptDocument, TptReadError, read_tpt
+from app.mapping.openfunds_templates import templates
+from app.mapping.transforms import cic_category
 from app.model.issues import Issue
 from app.schema.model import fundsxml_version
 from app.spec.catalog import load_catalog
@@ -28,6 +30,9 @@ from app.spec.openfunds import load_openfunds
 from app.writers.openfunds_writer import write_openfunds
 from app.writers.provenance import Provenance, with_xml_comment
 from app.writers.tpt_writer import CSV_DELIMITERS, write_csv, write_xlsx
+
+CIC_CATEGORIES = frozenset("1234567890ABCDEF")
+OF_CIC = "OFPH000215"  # holding CIC column
 
 PREVIEW_ROWS = 200
 PREVIEW_KEYS = ("1", "6", "12", "14", "17", "21", "22", "24", "26")
@@ -73,6 +78,9 @@ class Request:
     data_supplier_country: str | None = None
     # Set while reading the upload ("TPT V7", "openfunds", "FundsXML"): named in the output's metadata.
     source_format: str = ""
+    # Set while reading and converting: counts and classes for the usage statistics
+    # (app.usage.conversion), never values from the file.
+    telemetry: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -179,6 +187,7 @@ def _read_tpt(req: Request) -> TptDocument:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.rows))
     req.source_format = f"TPT {doc.version}"
+    req.telemetry["cic_categories"] = cic_categories(r.values.get("12") for r in doc.rows)
     return doc
 
 
@@ -191,6 +200,13 @@ def _read_openfunds(req: Request) -> OfDocument:
         raise InputError(str(exc)) from exc
     _check_size(len(doc.holdings))
     req.source_format = "openfunds"
+    req.telemetry |= {
+        "of_layout": doc.layout,
+        "of_templates": openfunds_templates_used(r.values for r in doc.shareclasses),
+        "shareclass_count": len(doc.shareclasses),
+        "holding_count": len(doc.holdings),
+        "cic_categories": cic_categories(h.values.get(OF_CIC) for h in doc.holdings),
+    }
     return doc
 
 
@@ -208,6 +224,14 @@ def _parse_fundsxml(req: Request):
         raise InputError(str(exc)) from exc
     _check_fundsxml_size(root)
     req.source_format = "FundsXML"
+    req.telemetry |= {
+        "has_tpt_block": root.find("/".join(TPT_BLOCK)) is not None,
+        "shareclass_count": int(root.xpath("count(Funds/Fund/SingleFund/ShareClasses/ShareClass)")),
+        "asset_count": int(root.xpath("count(AssetMasterData/Asset)")),
+        "cic_categories": cic_categories(
+            root.xpath("AssetMasterData/Asset/Classifications/Classification[ListedGroup='CIC']/Value/text()")
+        ),
+    }
     return root
 
 
@@ -315,6 +339,17 @@ def _extract_tpt(root, version: str | None) -> TptExtract:
     if not extract.rows:
         raise InputError("; ".join(i.message for i in extract.issues) or "no positions found")
     return extract
+
+
+def cic_categories(cics) -> list[str]:
+    """The CIC categories (3rd character: 1 government bonds … 7 cash, A–F derivatives) present."""
+    return sorted({c for cic in cics if cic and (c := cic_category(cic)) in CIC_CATEGORIES})
+
+
+def openfunds_templates_used(records) -> list[str]:
+    """The FinDatEx templates (EMT, EPT, EET, EFT) with at least one filled field in the share classes."""
+    filled = {k for r in records for k, v in r.items() if v}
+    return sorted({tpl.name for tpl in templates() for f in tpl.fields if f.of_id in filled})
 
 
 # -- the six directions -------------------------------------------------------------

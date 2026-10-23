@@ -25,6 +25,7 @@ from app.api.go import router as go_router
 from app.api.mapping import router as mapping_router
 from app.api.samples import router as samples_router
 from app.api.schema import router as schema_router
+from app.api.usage import router as usage_router
 from app.config import settings
 from app.content.fields import field_pages
 from app.content.openfunds_fields import openfunds_field_pages
@@ -288,6 +289,7 @@ app.include_router(go_router)
 app.include_router(mapping_router, prefix="/api")
 app.include_router(samples_router, prefix="/api")
 app.include_router(schema_router, prefix="/api")
+app.include_router(usage_router, prefix="/api")
 
 register_provider(field_pages)
 register_provider(openfunds_field_pages)
