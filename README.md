@@ -1,6 +1,10 @@
 # Fund Data Converter
 
-Formerly “TPT ⇄ FundsXML Converter”; converts TPT, FundsXML and openfunds in every direction.
+Formerly “TPT ⇄ FundsXML Converter” (repository `karlkauc/tpt-fundsxml-converter`); converts TPT,
+FundsXML and openfunds in every direction.
+
+- Site: <https://www.fund-data-converter.eu>
+- Repository: <https://github.com/karlkauc/fund-data-converter>
 
 Public web app (no login) that converts between **FinDatEx TPT** files (Tripartite Template **V7** and
 **V8**, XLSX or CSV), **FundsXML 4.2.11** and **openfunds 2.13** (XLSX, CSV or a ZIP of CSV files), in all
@@ -79,6 +83,7 @@ scripts/deploy.sh  Cloud Run deployment
 ## Run locally
 
 ```bash
+git clone git@github.com:karlkauc/fund-data-converter.git && cd fund-data-converter
 python3 -m venv .venv && .venv/bin/pip install -e "backend[dev]"
 cd frontend && npm ci && npm run build && cd ..
 cd backend && STATIC_DIR=../frontend/dist TRUSTED_PROXY_HOPS=0 ../.venv/bin/uvicorn app.main:app --port 8080
@@ -99,7 +104,7 @@ require identical values (numbers and dates compared by value).
 ## Deploy (Google Cloud Run)
 
 ```bash
-GCP_PROJECT=<project-id> scripts/deploy.sh
+GCP_PROJECT=fund-data-converter scripts/deploy.sh
 ```
 
 The script runs `gcloud run deploy --source .`, using the `Dockerfile` via Cloud Build. Settings:
