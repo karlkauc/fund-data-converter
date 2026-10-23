@@ -40,7 +40,7 @@ OF_PREVIEW_KEYS = ("OFST020000", "OFST020060", "OFST020540", "OFDY000036", "OFDY
 XML_PREVIEW_BYTES = 60_000
 # Start and end tags of a FundsXML within the upload limit are about a million.
 MAX_XML_TAGS = 2_000_000
-FORMATS = ("tpt", "fundsxml", "openfunds")
+FORMATS = ("fundsxml", "tpt", "openfunds")
 DIRECTIONS = tuple(f"{a}-to-{b}" for a in FORMATS for b in FORMATS if a != b)
 # Target when the request names none: the first two keep the behaviour of the TPT ⇄ FundsXML-only
 # first version of the converter.

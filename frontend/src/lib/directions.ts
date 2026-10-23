@@ -2,7 +2,7 @@ import type { Direction, Format } from "../types";
 import type { Route } from "./router";
 
 // Keep in sync with FORMATS / DEFAULT_TARGET in backend/app/service.py.
-export const FORMATS: Format[] = ["tpt", "fundsxml", "openfunds"];
+export const FORMATS: Format[] = ["fundsxml", "tpt", "openfunds"];
 export const DEFAULT_TARGET: Record<Format, Format> = { tpt: "fundsxml", fundsxml: "tpt", openfunds: "fundsxml" };
 export const FORMAT_LABEL: Record<Format, string> = { tpt: "TPT", fundsxml: "FundsXML", openfunds: "openfunds" };
 
