@@ -151,7 +151,7 @@ https://www.maxmind.com."
    printf '%s' '<db-password>'   | gcloud secrets create tptconverter-db-password --project "$P" --data-file=-
    openssl rand -hex 32 | tr -d '\n' | gcloud secrets create tptconverter-usage-hash-secret --project "$P" --data-file=-
    printf '%s' '<maxmind-key>'   | gcloud secrets create tptconverter-maxmind-license-key --project "$P" --data-file=-
-   SA=$(gcloud run services describe tpt-fundsxml --project "$P" --region europe-west1 \
+   SA=$(gcloud run services describe fund-data-converter --project "$P" --region europe-west1 \
           --format='value(spec.template.spec.serviceAccountName)')
    for s in tptconverter-db-password tptconverter-usage-hash-secret tptconverter-maxmind-license-key; do
      gcloud secrets add-iam-policy-binding "$s" --project "$P" \

@@ -17,7 +17,7 @@ set -euo pipefail
 
 PROJECT="${GCP_PROJECT:?set GCP_PROJECT to the Google Cloud project id}"
 REGION="${GCP_REGION:-europe-west1}"
-SERVICE="${SERVICE:-tpt-fundsxml}"
+SERVICE="${SERVICE:-fund-data-converter}"
 EDITION=GeoLite2-Country
 USAGE_DB_URL='postgresql://tptconverter@62.238.116.11:5432/tptconverter_stats?sslmode=require'
 

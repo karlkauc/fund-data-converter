@@ -3,7 +3,7 @@
 See README.md for layout, commands and deployment.
 
 ## Conventions
-- **Deploy**: public site = Cloud Run service `tpt-fundsxml` in project `fund-data-converter`
+- **Deploy**: public site = Cloud Run service `fund-data-converter` in project `fund-data-converter`
   (europe-west1): `GCP_PROJECT=fund-data-converter scripts/deploy.sh`. The project is passed explicitly; never
   rely on the gcloud default. The VPS copy (converter.status20.net, `GIT_COMMIT=$(git rev-parse --short HEAD)
   docker compose up -d --build`) is a test instance.

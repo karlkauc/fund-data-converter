@@ -129,7 +129,7 @@ def test_indexnow_key_file(site, monkeypatch):
 
 def test_other_hosts_are_not_indexed(client):
     assert "x-robots-tag" not in client.get("/api/health").headers
-    r = client.get("/api/health", headers={"host": "tpt-fundsxml-abc-ew.a.run.app"})
+    r = client.get("/api/health", headers={"host": "fund-data-converter-abc-ew.a.run.app"})
     assert r.headers["x-robots-tag"] == "noindex"
 
 
