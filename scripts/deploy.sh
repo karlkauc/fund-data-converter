@@ -28,6 +28,11 @@ ENV_VARS="MAX_UPLOAD_MB=25,MAX_POSITIONS=10000,MAX_CONCURRENT_CONVERSIONS=1,TRUS
 # The address search engines index (canonical, sitemap). Every other host – including the
 # *.run.app URL – answers with X-Robots-Tag: noindex.
 ENV_VARS+=",SITE_ORIGIN=${SITE_ORIGIN:-https://www.fund-data-converter.eu}"
+# --set-env-vars below replaces every plain env var: take the IndexNow key from the repo's .env when
+# it is not in the environment, or the deployed service stops serving <site>/<key>.txt.
+if [[ -z "${INDEXNOW_KEY:-}" && -f .env ]]; then
+  INDEXNOW_KEY="$(sed -n 's/^INDEXNOW_KEY=//p' .env | head -1)"
+fi
 if [[ -n "${INDEXNOW_KEY:-}" ]]; then ENV_VARS+=",INDEXNOW_KEY=${INDEXNOW_KEY}"; fi
 USAGE_FLAGS=()
 if gcloud secrets describe tptconverter-db-password --project "$PROJECT" >/dev/null 2>&1; then
