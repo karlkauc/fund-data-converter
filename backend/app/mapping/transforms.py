@@ -124,7 +124,8 @@ ZERO_COUPON_RATE = Transform(
 
 
 def _tpt_version_to(v: str, ctx: dict[str, str]) -> tuple[str | None, bool]:
-    # The V7 block only accepts "V7.0"; the full label (or a V8 label) is kept separately.
+    # The V7 block only accepts "V7.0"; the full label (or the V8 label) is kept separately.
+    # FundsXML 4.2.11 has no V8 block, so V8 data goes here too (see to_fundsxml._v8_notes).
     version = ctx.get("_version", "V7")
     return "V7.0", version == "V7" and v.strip() == VERSION_LABELS["V7"]
 
@@ -137,7 +138,9 @@ TPT_VERSION = Transform("tpt_version", _tpt_version_to, _tpt_version_from, "V7.0
 
 
 def _securitised_to(v: str, _ctx: dict[str, str]) -> tuple[str | None, bool]:
-    # V8 split code "e" into e1/e2/e3; the V7 block only knows "e".
+    # V8 split code "e" into e1/e2/e3 (Art. 178 (8), (8a), (9)); the V7 block only knows "e".
+    # The V8 issuer code type 2 needs no transform: the block's enum (1|9) rejects it and the
+    # value falls back to a custom attribute like any rejected value.
     s = v.strip()
     if s.lower() in ("e1", "e2", "e3"):
         return "e", False
@@ -145,6 +148,17 @@ def _securitised_to(v: str, _ctx: dict[str, str]) -> tuple[str | None, bool]:
 
 
 SECURITISED_V7 = Transform("securitised_v7", _securitised_to, _identity_from, "V8 e1/e2/e3 → e")
+
+
+def _code_type_to(v: str, _ctx: dict[str, str]) -> tuple[str | None, bool]:
+    # V8 code type 2 (external identifier); the V7 block only knows 1 (LEI) and 9 (none/internal).
+    s = v.strip()
+    if s == "2":
+        return "9", False
+    return s, True
+
+
+CODE_TYPE_V7 = Transform("code_type_v7", _code_type_to, _identity_from, "V8 code type 2 → 9")
 
 
 # -- CIC derived values ------------------------------------------------------

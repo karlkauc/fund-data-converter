@@ -38,5 +38,12 @@ See README.md for layout, commands and deployment.
   `frontend/src/lib/handoff.ts`, window.open + postMessage, nothing stored. `SENDER_ORIGINS` must match the
   allow-lists in `../xml-online-viewer` and `../findatex-validator` (`lib/handoff.ts` in both). Never send
   `Cross-Origin-Opener-Policy: same-origin` from the SPA, or the popup loses its opener.
+- **TPT catalogs** (`backend/app/spec/tpt_v7.json`, `tpt_v8.json`) are copied from `../findatex-validator` by
+  `tools/sync_specs.py`; never edit them by hand. V8 is the final version of 2026-10-08 (mandatory from the
+  end-of-March 2027 production). FundsXML 4.2.11 has no V8 block, so V8 goes into the V7 block plus `TPT_<field>`
+  custom attributes until FundsXML 4.2.12 is released. Version fitting (`to_tpt._adapt_version`): a V8 output
+  leaves the 18 N/A fields (`Catalog.not_applicable_keys()`) empty; a V7 output of V8 data drops 150/151, maps
+  e1/e2/e3 → e and issuer code type 2 → 9. In the V7 block, V8 data gets the V7-only required elements filled
+  (`to_fundsxml.V7_BLOCK_FILLERS`). Samples: `tools/make_samples.py` (needs the validator checkout).
 - **Dev venv**: Python 3.14 in `.venv`; Docker and CI use 3.12. Code must run on 3.12.
 - `frontend/.npmrc` sets `legacy-peer-deps` (vitest 4 and vite 6 peer ranges).

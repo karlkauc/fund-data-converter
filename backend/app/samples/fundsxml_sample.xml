@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <FundsXML4 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://github.com/fundsxml/schema/releases/download/4.2.11/FundsXML.xsd">
   <ControlData>
-    <UniqueDocumentID>TPT-ea537b6218a44cf9a56e</UniqueDocumentID>
-    <DocumentGenerated>2026-10-22T09:05:50</DocumentGenerated>
+    <UniqueDocumentID>TPT-ef77b67463f24ed28878</UniqueDocumentID>
+    <DocumentGenerated>2026-10-29T10:39:27</DocumentGenerated>
     <Version>4.2.11</Version>
     <ContentDate>2025-12-31</ContentDate>
     <DataSupplier>
@@ -491,6 +491,7 @@
                       <Nominal>2051149.18</Nominal>
                       <MarketValue>
                         <Amount ccy="EUR">1882520</Amount>
+                        <Amount ccy="USD">2037359.31</Amount>
                       </MarketValue>
                       <InterestClaimGross>
                         <Amount ccy="EUR">300700</Amount>

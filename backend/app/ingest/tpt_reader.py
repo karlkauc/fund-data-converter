@@ -137,7 +137,32 @@ def read_tpt(data: bytes, filename: str, version: str | None = None) -> TptDocum
                 "Fields 150/151 only exist in TPT V8; they are kept but the file is treated as V7.",
             )
         )
+    if chosen == "V8":
+        issues += _not_applicable_filled(rows, load_catalog("V8"))
     return TptDocument(chosen, source, columns, unmapped, rows, fmt, delim, issues)
+
+
+def _not_applicable_filled(rows: list[TptRow], catalog) -> list[Issue]:
+    """V8 keeps 18 fields FinDatEx no longer maintains (17b, 29, 31, …, 141); they must be empty."""
+    filled: dict[str, int] = {}
+    for row in rows:
+        for key in catalog.not_applicable_keys() & row.values.keys():
+            filled[key] = filled.get(key, 0) + 1
+    if not filled:
+        return []
+    keys = [k for k in catalog.key_order() if k in filled]
+    names = ", ".join(catalog.by_key[k].num_data for k in keys)
+    n = sum(filled.values())
+    return [
+        Issue(
+            "warning",
+            "v8_not_applicable",
+            f"{n} value(s) in field(s) TPT V8 no longer maintains (must be empty): {names}. "
+            "They are kept in FundsXML but left out of a V8 output.",
+            field=",".join(keys),
+            params={"n": n, "fields": names},
+        )
+    ]
 
 
 def detect_version(rows: list[TptRow], keys: set[str]) -> tuple[str, str]:

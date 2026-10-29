@@ -52,7 +52,9 @@ its underlying.
 FinDatEx revises the template every few years. This converter supports the two current versions:
 
 - **TPT V7** — the official version dated 25 November 2024.
-- **TPT V8** — the official version dated 26 May 2026, adds fields 150/151 and the securitisation codes e1–e3.
+- **TPT V8** — the official version dated 8 October 2026 (published 28 October 2026), mandatory from the
+  end-of-March 2027 production: adds fields 150/151, makes issuer identification mandatory, retires 18 fields and
+  splits securitisation code e into e1–e3.
 
 [TPT V7 vs V8](/guides/tpt-v7-vs-v8) lists the differences.
 

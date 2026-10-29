@@ -18,11 +18,13 @@ ROOT = Path(__file__).resolve().parent.parent
 TARGET = ROOT / "backend" / "app" / "spec"
 CATALOGS = {
     "tpt_v7.json": "TPT_V7_20241125.catalog.json",
-    "tpt_v8.json": "TPT_V8_20260526.catalog.json",
+    "tpt_v8.json": "TPT_V8_20261008.catalog.json",
 }
 # Codes the workbook parser picked up from prose, not real closed-list entries.
 BOGUS_CODES = {"56": {"securitisation"}}
 KEEP = ("numData", "name", "fundXmlPath", "definition", "codification", "flags", "applicableCic")
+# The V8 workbook names the full XPath of the V8 block (FundsXML 4.2.12); keep the path below the block.
+PATH_PREFIXES = ("/FundsXML4/RegulatoryReportings/IndirectReporting/TripartiteTemplateSolvencyII_V8/", ".../")
 
 
 def num_key(num_data: str) -> str:
@@ -36,6 +38,10 @@ def clean(field: dict) -> dict:
     bogus = BOGUS_CODES.get(num_key(field["numData"]), set())
     cod["closedList"] = [c for c in cod.get("closedList", []) if c["code"] not in bogus]
     out["codification"] = cod
+    path = (out.get("fundXmlPath") or "").strip()
+    for prefix in PATH_PREFIXES:
+        path = path.removeprefix(prefix)
+    out["fundXmlPath"] = path or None
     out["numKey"] = num_key(field["numData"])
     return out
 

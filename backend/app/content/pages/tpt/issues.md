@@ -20,11 +20,16 @@ The column is ignored. Check for typos, or for extra columns such as internal id
 **Fields 150/151 only exist in TPT V8** (`v8_fields_in_v7`) — the file says V7 (field 1000) but has V8 columns.
 The values are kept; set the version to V8 if the file really is V8.
 
+**Values in fields TPT V8 no longer maintains** (`v8_not_applicable`) — a V8 file fills one of the 18 fields
+FinDatEx retired in V8 (17b, 29, 31, 35, 36, 44, 54, 58b, 106, 108, 114, 116, 118, 120, 124, 125, 126, 141).
+They must be empty in V8. The values still reach FundsXML, but a V8 output leaves them out.
+
 ## Writing FundsXML
 
 **FundsXML 4.2.11 has no TPT V8 block** (`v8_in_v7_block`) — V8 data goes into the V7 block; fields 150/151, the
-full version label and the codes e1/e2/e3 are kept as custom attributes. Informational; nothing is lost.
-See [TPT V7 vs V8](/guides/tpt-v7-vs-v8).
+full version label, the codes e1/e2/e3 and the issuer code type 2 are kept as custom attributes, and the
+elements the V7 block requires but V8 no longer has (116/120/141, 118, 36, 44) are filled from the V8 data.
+Informational; nothing is lost. See [TPT V7 vs V8](/guides/tpt-v7-vs-v8).
 
 **Not accepted by the TPT block** (`block_value_rejected`) and **not accepted by the core structures**
 (`core_value_rejected`) — the FundsXML schema refuses the value (too long, wrong format, unknown code). It is
@@ -53,6 +58,15 @@ show which fields are mandatory and where the converter looks for them.
 
 **Older TPT block not supported** (`older_tpt_block`) — the document has a `…_V5` or `…_V6` block; only the V7
 block and the core structures are read.
+
+**TPT V8 no longer maintains field(s)** (`v8_not_applicable_dropped`) — the output is V8, and the document holds
+V7 data with values for fields V8 requires to be empty (typically the code types 116/120 or the NACE sector 54).
+They are left out of the file; the message counts them. Choose V7 if you need them. For V8 data the fields are
+dropped silently: they hold only what the V7 block required or what was already reported when the file was read.
+
+**V8 value(s) adapted for TPT V7** (`v7_downgrade`) — the output is V7, but the document holds V8 data: fields
+150/151 are left out, securitisation codes e1/e2/e3 are written as `e`, and the issuer code type 2 (external
+identifier) as 9. Choose V8 to keep them.
 
 **Core portfolio and TPT block differ** (`core_mismatch`) — the two hold a different number of positions, so
 values from the core structures are not merged into the block's rows.

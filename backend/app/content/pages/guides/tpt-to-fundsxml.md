@@ -43,8 +43,8 @@ The fund itself gets only the mandatory name and currency: a TPT describes share
 ## Lossless: custom attributes
 
 Some TPT values have no place in FundsXML 4.2.11 — fields 17b and 114, the V8 fields 150/151, the V8 codes
-e1/e2/e3 of field 56 — and the schema rejects others (an over-long name, an unknown code). None of them is
-dropped. They are written as
+e1/e2/e3 of field 56 and the V8 issuer code type 2 — and the schema rejects others (an over-long name, an
+unknown code). None of them is dropped. They are written as
 
 ```xml
 <CustomAttributes>

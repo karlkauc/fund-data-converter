@@ -12,17 +12,19 @@ regular fund, position and asset structures, and is validated against the FundsX
 [[faq]]
 q = "Which TPT versions and file formats are supported?"
 a = """
-TPT V7 and V8, as `.xlsx` or as CSV separated by semicolon, comma, pipe or tab. The version is taken from field
-1000 or from the V8-only fields 150/151; you can also set it by hand. The header row is found automatically among
-the first 50 rows, and columns may be named `12`, `12_CIC_code_of_the_instrument` or just the field name.
+TPT V7 (25 November 2024) and the final TPT V8 (8 October 2026), as `.xlsx` or as CSV separated by semicolon,
+comma, pipe or tab. The version is taken from field 1000 or from the V8-only fields 150/151; you can also set it
+by hand. The header row is found automatically among the first 50 rows, and columns may be named `12`,
+`12_CIC_code_of_the_instrument` or just the field name.
 """
 
 [[faq]]
 q = "Is the conversion lossless?"
 a = """
-Yes, for TPT → FundsXML → TPT. Values without an element in FundsXML 4.2.11 — such as the V8 fields 150/151 or
-the codes e1/e2/e3 of field 56 — are kept as custom attributes named `TPT_<field>` and restored on the way back.
-The report lists every value that was moved or could not be written.
+Yes, for TPT → FundsXML → TPT. Values without an element in FundsXML 4.2.11 — such as the V8 fields 150/151, the
+codes e1/e2/e3 of field 56 or the issuer code type 2 — are kept as custom attributes named `TPT_<field>` and
+restored on the way back. The report lists every value that was moved or could not be written. The one exception
+is deliberate: a V8 output leaves the 18 fields V8 no longer maintains empty.
 """
 
 [[faq]]

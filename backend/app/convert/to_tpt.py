@@ -8,6 +8,11 @@ Sources, in order of precedence for every field:
 2. the TPT block ``TripartiteTemplateSolvencyII_V7``;
 3. the core structures (fund, NAV, position, referenced asset).
 
+The rows are then adapted to the output version (``_adapt_version``): a V8
+output leaves the 18 fields FinDatEx no longer maintains empty; a V7 output of
+V8 data drops 150/151 and maps the V8-only codes back (56 e1/e2/e3 → e, issuer
+code type 2 → 9). Both are reported.
+
 Without a TPT block, every share class becomes a TPT portfolio (field 1 = its
 ISIN). Its positions come from ``ShareClass/Portfolios``, else from the fund
 portfolio ``FundDynamicData/Portfolios``, which is then repeated for each share
@@ -153,6 +158,7 @@ def extract_tpt(root: etree._Element, version: str | None = None) -> TptExtract:
         )
         for k in [k for k, v in r.items() if not v]:
             del r[k]
+    issues += _adapt_version(rows, detected, out_version)
     if not rows:
         issues.append(
             Issue(
@@ -585,14 +591,85 @@ def _version_label(version: str) -> str:
     return VERSION_LABELS[version]
 
 
+# V8-only codes a V7 file cannot hold: securitisation sub-types and the external issuer identifier.
+_DOWNGRADE_CODES = {
+    "56": {"e1": "e", "e2": "e", "e3": "e"},
+    "48": {"2": "9"},
+    "51": {"2": "9"},
+    "82": {"2": "9"},
+    "85": {"2": "9"},
+}
+_V8_ONLY_FIELDS = ("150", "151")
+
+
+def _adapt_version(rows: list[dict[str, str]], detected: str, out_version: str) -> list[Issue]:
+    """Make the rows fit ``out_version``; returns the issues for what had to go.
+
+    * V8 output: the fields FinDatEx no longer maintains (17b, 29, 31, …, 141) must be empty.
+      Reported for V7 data; for V8 data they hold only what the V7 block required
+      (``to_fundsxml._block_row``) or what the reader already warned about.
+    * V7 output of V8 data: fields 150/151 are dropped, ``56`` e1/e2/e3 become ``e`` and the
+      issuer code type ``2`` (external identifier) becomes ``9``.
+    """
+    catalog = load_catalog(out_version)
+    issues: list[Issue] = []
+    if out_version == "V8":
+        dropped = _drop_fields(rows, catalog.not_applicable_keys())
+        if dropped and detected != "V8":
+            keys, n = _field_summary(catalog, dropped)
+            issues.append(
+                Issue(
+                    "warning",
+                    "v8_not_applicable_dropped",
+                    f"{n} value(s) left out: TPT V8 no longer maintains field(s) {keys} (must be empty).",
+                    field=",".join(k for k in catalog.key_order() if k in dropped),
+                    params={"n": n, "fields": keys},
+                )
+            )
+    elif detected == "V8":
+        changed = _drop_fields(rows, set(_V8_ONLY_FIELDS))
+        for r in rows:
+            for key, mapping in _DOWNGRADE_CODES.items():
+                new = mapping.get(r.get(key, "").strip().lower())
+                if new is not None:
+                    r[key] = new
+                    changed[key] = changed.get(key, 0) + 1
+        if changed:
+            v8 = load_catalog("V8")
+            keys, n = _field_summary(v8, changed)
+            issues.append(
+                Issue(
+                    "warning",
+                    "v7_downgrade",
+                    f"{n} V8 value(s) adapted for TPT V7 in field(s) {keys}: 150/151 left out, "
+                    "securitisation e1/e2/e3 written as e, issuer code type 2 as 9.",
+                    field=",".join(k for k in v8.key_order() if k in changed),
+                    params={"n": n, "fields": keys},
+                )
+            )
+    return issues
+
+
+def _drop_fields(rows: list[dict[str, str]], keys: set[str] | frozenset[str]) -> dict[str, int]:
+    dropped: dict[str, int] = {}
+    for r in rows:
+        for key in keys & r.keys():
+            del r[key]
+            dropped[key] = dropped.get(key, 0) + 1
+    return dropped
+
+
+def _field_summary(catalog, counts: dict[str, int]) -> tuple[str, int]:
+    names = ", ".join(catalog.by_key[k].num_data for k in catalog.key_order() if k in counts)
+    return names, sum(counts.values())
+
+
 def _missing_mandatory(rows: list[dict[str, str]], version: str, issues: list[Issue]) -> None:
     catalog = load_catalog(version)
-    always = [
-        f
-        for f in catalog.fields
-        if f.mandatory
-        and f.num_key in ("1", "2", "3", "4", "5", "6", "7", "12", "14", "15", "17", "21", "22", "24", "26")
-    ]
+    keys = {"1", "2", "3", "4", "5", "6", "7", "12", "14", "15", "17", "21", "22", "24", "26"}
+    if version == "V8":
+        keys |= {"47", "48", "50", "51"}  # issuer and group identification: mandatory for every CIC
+    always = [f for f in catalog.fields if f.mandatory and f.num_key in keys]
     missing: dict[str, int] = {}
     for r in rows:
         for f in always:

@@ -64,4 +64,6 @@ share class NAV implies; the report says when that happened.
 
 - **XLSX** with one sheet, or **CSV** separated by semicolon (default), comma, pipe or tab — UTF-8 with BOM.
 - **All columns** (default) or only the columns that hold a value.
-- **V7 or V8.** V8-only values kept as custom attributes are written to V8 and reported as lost for V7.
+- **V7 or V8.** A V8 output leaves the 18 fields V8 no longer maintains empty; a V7 output of V8 data leaves out
+  150/151, writes e1/e2/e3 as `e` and the issuer code type 2 as 9. The report lists both — see
+  [TPT V7 vs V8](/guides/tpt-v7-vs-v8).

@@ -12,7 +12,7 @@ SPEC_DIR = Path(__file__).resolve().parent
 VERSIONS = ("V7", "V8")
 VERSION_LABELS = {
     "V7": "V7.0 (official) dated 25 November 2024",
-    "V8": "V8.0 (official) dated 26 May 2026",
+    "V8": "V8.0 (official) dated 8 October 2026",
 }
 
 
@@ -21,18 +21,26 @@ class TptField:
     num_key: str  # "12", "8b", "105a", "1000"
     num_data: str  # "12_CIC_code_of_the_instrument"
     definition: str
-    fundxml_hint: str  # column B of the spec ("Position / InstrumentCIC")
+    # Column B of the spec: V7 "Position / InstrumentCIC", V8 the path below the V8 block
+    # ("Portfolio/Positions/Position/CICCodeOfTheInstrument").
+    fundxml_hint: str
     kind: str  # NUMERIC, DATE, CLOSED_LIST, ...
     codes: tuple[str, ...]
     sii_flag: str  # M, C, O, I, NA, UNKNOWN
 
     @property
     def portfolio_level(self) -> bool:
-        return self.fundxml_hint.strip().startswith("Portfolio") or self.num_key == "1000"
+        hint = self.fundxml_hint.strip()
+        return (hint.startswith("Portfolio") and "/Positions/" not in hint) or self.num_key == "1000"
 
     @property
     def mandatory(self) -> bool:
         return self.sii_flag == "M"
+
+    @property
+    def not_applicable(self) -> bool:
+        """Retained in the template but no longer maintained by FinDatEx: must be left empty (V8)."""
+        return self.sii_flag == "NA"
 
 
 class Catalog:
@@ -65,6 +73,9 @@ class Catalog:
 
     def key_order(self) -> list[str]:
         return [f.num_key for f in self.fields]
+
+    def not_applicable_keys(self) -> frozenset[str]:
+        return frozenset(f.num_key for f in self.fields if f.not_applicable)
 
 
 def _norm(s: str) -> str:

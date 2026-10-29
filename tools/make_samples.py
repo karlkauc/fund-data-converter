@@ -3,7 +3,8 @@
 From findatex-validator's showcase TPT (Fund A of 00_showcase.xlsx: 20 clean positions):
 
 * tpt_v7_sample.xlsx      – the rows as TPT V7
-* tpt_v8_sample.xlsx      – the same as TPT V8 (fields 150/151, NACE header, codes)
+* tpt_v8_sample.xlsx      – the same as TPT V8: fields 150/151, renamed headers, one issuer with an external
+                            identifier (48 = 2), without the fields V8 no longer maintains
 * fundsxml_sample.xml     – the V7 sample converted with this app
 * openfunds_sample.xlsx   – the V7 sample as openfunds holdings, its share class with static data
 
@@ -48,7 +49,7 @@ from app.ingest.openfunds_reader import read_openfunds
 from app.ingest.tpt_reader import read_tpt
 from app.model.xmltree import Node, serialize_at
 from app.schema.model import fundsxml_model
-from app.spec.catalog import VERSION_LABELS
+from app.spec.catalog import VERSION_LABELS, load_catalog
 from app.validate.xsd import validate_fundsxml
 from app.writers.openfunds_writer import write_openfunds
 from app.writers.tpt_writer import write_csv, write_xlsx
@@ -84,6 +85,8 @@ OPENFUNDS_STATIC = {
 # V8 extras of the showcase rows: LTEI eligibility (150) for fund shares, legislative programmes (151)
 # for equities, the securitisation sub-types e1–e3 (56) do not occur in the showcase.
 V8_EXTRAS = {"4": ("1", "0"), "3": ("0", "2")}
+# The first corporate bond issuer gets a V8 external identifier (code type 2: VAT ID) instead of an LEI.
+V8_EXTERNAL_ISSUER = ("DE811907980", "2")
 
 
 def _write(name: str, data: bytes) -> None:
@@ -129,14 +132,23 @@ def make_showcase(src_root: Path) -> None:
 
     _save(OUT / "tpt_v7_sample.xlsx", "TPT V7.0", header, body)
 
-    v8_header = ["148_Economic_sector_NACE" if h == "148_Economic_sector_NACE2.1" else h for h in header]
-    v8_header += ["150_LTEI_Fund_Elligibility", "151_Legislative_program_investment"]
+    v8 = load_catalog("V8")
+    renamed = {"148_Economic_sector_NACE2.1": "148_Economic_sector_NACE"}
+    keep = [i for i, h in enumerate(header) if v8.match_header(h) not in v8.not_applicable_keys()]
+    v8_header = [renamed.get(header[i], header[i]) for i in keep]
+    v8_header += [v8.by_key["150"].num_data, v8.by_key["151"].num_data]
     i1000, i12 = header.index("1000_TPT_Version"), header.index("12_CIC_code_of_the_instrument")
+    i47 = header.index("47_Issuer_identification_code")
+    i48 = header.index("48_Type_of_identification_code_for_issuer")
     v8_body = []
+    external_done = False
     for r in body:
         r = list(r)
         r[i1000] = VERSION_LABELS["V8"]
-        v8_body.append(r + list(V8_EXTRAS.get(str(r[i12])[2:3], ("0", "0"))))
+        if not external_done and str(r[i12])[2:3] == "2":
+            r[i47], r[i48] = V8_EXTERNAL_ISSUER
+            external_done = True
+        v8_body.append([r[i] for i in keep] + list(V8_EXTRAS.get(str(r[i12])[2:3], ("0", "0"))))
     _save(OUT / "tpt_v8_sample.xlsx", "TPT V8.0", v8_header, v8_body)
 
     xml = _fundsxml("fundsxml_sample.xml", (OUT / "tpt_v7_sample.xlsx").read_bytes(), "tpt_v7_sample.xlsx")

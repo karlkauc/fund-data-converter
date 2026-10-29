@@ -22,7 +22,7 @@ _FLAGS = {
     "C": "Conditional",
     "O": "Optional",
     "I": "Indicative",
-    "NA": "Not applicable",
+    "NA": "Not applicable (no longer maintained, must be empty)",
 }
 _REGIMES = (
     ("SOLVENCY_II", "Solvency II"),
@@ -150,7 +150,7 @@ def field_pages() -> list[Page]:
         if cod.get("maxLength"):
             body.append(f"| Maximum length | {cod['maxLength']} |")
         if (spec.get("fundXmlPath") or "").startswith(("Portfolio", "Position")):
-            body.append(f"| FinDatEx data model path | {_md(spec['fundXmlPath'])} |")
+            body.append(f"| FinDatEx path in the FundsXML TPT block | {_md(spec['fundXmlPath'])} |")
         for regime, label in _REGIMES:
             value = (spec.get("flags") or {}).get(regime)
             if value in _FLAGS:
@@ -173,7 +173,22 @@ def field_pages() -> list[Page]:
             old = raw[v].get(key)
             if old is None:
                 changes.append(f"New in TPT {latest}; TPT {v} has no field {key}.")
-            elif old.get("codification") != spec.get("codification"):
+                continue
+            old_flag = (old.get("flags") or {}).get("SOLVENCY_II", "")
+            if flag == "NA" and old_flag != "NA":
+                changes.append(
+                    f"No longer maintained in TPT {latest}: the column stays but must be left empty "
+                    f"(TPT {v}: {_FLAGS.get(old_flag, 'not stated').lower()})."
+                )
+            elif flag != old_flag and flag in _FLAGS and old_flag in _FLAGS:
+                changes.append(
+                    f"Solvency II flag in TPT {latest}: {_FLAGS[flag]} (TPT {v}: {_FLAGS[old_flag]})."
+                )
+            if old["numData"] != spec["numData"]:
+                changes.append(f"Renamed in TPT {latest}; the TPT {v} column is `{old['numData']}`.")
+            if flag == "NA":
+                continue  # definition and codes are blank in the catalog
+            if old.get("codification") != spec.get("codification"):
                 old_codes = {c["code"] for c in (old.get("codification") or {}).get("closedList", [])}
                 added = [c["code"] for c in cod.get("closedList", []) if c["code"] not in old_codes]
                 what = f"codes {', '.join(added)} added" if added else "codification changed"
@@ -236,7 +251,8 @@ def _hub(keys: list[str], raw: dict[str, dict], table: dict[str, dict]) -> Page:
         "definition, the format and allowed codes, the CIC categories it applies to and where the "
         "Fund Data Converter puts the value in FundsXML 4.",
         "",
-        "Solvency II flags: **M** mandatory, **C** conditional, **O** optional, **I** indicative. "
+        "Solvency II flags: **M** mandatory, **C** conditional, **O** optional, **I** indicative, "
+        "**NA** retained in V8 but no longer maintained (must be empty). "
         "*TPT block* means the Solvency II block `TripartiteTemplateSolvencyII_V7`, *core* the regular "
         "FundsXML fund, position and asset structures.",
         "",

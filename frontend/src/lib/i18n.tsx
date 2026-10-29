@@ -373,7 +373,12 @@ const ISSUES: Record<Lang, Record<string, string>> = {
     portfolio_value_differs: "Differs from the first row of portfolio {portfolio}; kept as custom attribute",
     xsd_invalid: "The generated document has {n} XSD validation error(s).",
     v8_in_v7_block:
-      "FundsXML 4.2.11 has no TPT V8 block: V8 data goes into the V7 block; fields 150/151, the full version label (1000) and codes e1/e2/e3 (56) are kept as custom attributes.",
+      "FundsXML 4.2.11 has no TPT V8 block: V8 data goes into the V7 block; fields 150/151, the full version label (1000), codes e1/e2/e3 (56) and issuer code type 2 (48/51/82/85) are kept as custom attributes. Elements the V7 block requires are filled from the V8 data: {fillers}.",
+    v8_not_applicable:
+      "{n} value(s) in field(s) TPT V8 no longer maintains (must be empty): {fields}. They are kept in FundsXML but left out of a V8 output.",
+    v8_not_applicable_dropped: "{n} value(s) left out: TPT V8 no longer maintains field(s) {fields} (must be empty).",
+    v7_downgrade:
+      "{n} V8 value(s) adapted for TPT V7 in field(s) {fields}: 150/151 left out, securitisation e1/e2/e3 written as e, issuer code type 2 as 9.",
     unmapped_columns: "{n} column(s) are not TPT fields and were ignored: {columns}",
     duplicate_column: "Column appears twice; the first one is used.",
     v8_fields_in_v7: "Fields 150/151 only exist in TPT V8; they are kept, but the file is treated as V7.",
@@ -413,7 +418,12 @@ const ISSUES: Record<Lang, Record<string, string>> = {
     portfolio_value_differs: "Weicht von der ersten Zeile des Portfolios {portfolio} ab; als CustomAttribute erhalten",
     xsd_invalid: "Das erzeugte Dokument hat {n} XSD-Validierungsfehler.",
     v8_in_v7_block:
-      "FundsXML 4.2.11 hat keinen TPT-V8-Block: V8-Daten werden in den V7-Block geschrieben; Felder 150/151, das vollständige Versionslabel (1000) und die Codes e1/e2/e3 (56) bleiben als CustomAttributes erhalten.",
+      "FundsXML 4.2.11 hat keinen TPT-V8-Block: V8-Daten werden in den V7-Block geschrieben; Felder 150/151, das vollständige Versionslabel (1000), die Codes e1/e2/e3 (56) und der Emittenten-Codetyp 2 (48/51/82/85) bleiben als CustomAttributes erhalten. Vom V7-Block verlangte Elemente werden aus den V8-Daten ergänzt: {fillers}.",
+    v8_not_applicable:
+      "{n} Wert(e) in Feldern, die TPT V8 nicht mehr pflegt (müssen leer sein): {fields}. Sie bleiben in FundsXML erhalten, fehlen aber in einer V8-Ausgabe.",
+    v8_not_applicable_dropped: "{n} Wert(e) weggelassen: TPT V8 pflegt die Felder {fields} nicht mehr (müssen leer sein).",
+    v7_downgrade:
+      "{n} V8-Wert(e) für TPT V7 angepasst in den Feldern {fields}: 150/151 weggelassen, Verbriefung e1/e2/e3 als e, Emittenten-Codetyp 2 als 9 geschrieben.",
     unmapped_columns: "{n} Spalte(n) sind keine TPT-Felder und wurden ignoriert: {columns}",
     duplicate_column: "Spalte kommt doppelt vor; die erste wird verwendet.",
     v8_fields_in_v7: "Felder 150/151 gibt es nur in TPT V8; sie bleiben erhalten, die Datei wird aber als V7 behandelt.",

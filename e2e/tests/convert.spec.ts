@@ -66,10 +66,10 @@ test("unreadable file shows an error", async ({ page }) => {
 
 test("mapping page lists and filters fields", async ({ page }) => {
   await page.goto("/mapping");
-  await expect(page.getByText("150_LTEI_Fund_Elligibility", { exact: true })).toBeVisible();
+  await expect(page.getByText("150_LTEI_Fund_Eligibility", { exact: true })).toBeVisible();
   await page.getByRole("searchbox").fill("CouponRate");
   await expect(page.getByText("33_Coupon_rate")).toBeVisible();
-  await expect(page.getByText("150_LTEI_Fund_Elligibility", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("150_LTEI_Fund_Eligibility", { exact: true })).toHaveCount(0);
 });
 
 test("home shows the FAQ, titles follow navigation, guides render without the SPA", async ({ page }) => {

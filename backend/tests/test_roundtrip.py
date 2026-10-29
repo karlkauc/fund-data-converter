@@ -88,14 +88,106 @@ def test_v8_specifics_survive(fixture_bytes):
     data = fixture_bytes("tpt_v8_sample.xlsx")
     doc = read_tpt(data, "v8.xlsx")
     doc.rows[0].values["56"] = "e2"
+    doc.rows[0].values.update({"47": "DE811907980", "48": "2"})
     result = convert_tpt_to_fundsxml(doc)
     xml = result.xml.decode()
     assert "<TPTVersion>V7.0</TPTVersion>" in xml
-    assert "TPT_150_LTEI_Fund_Elligibility" in xml
+    assert "TPT_150_LTEI_Fund_Eligibility" in xml
+    assert "TPT_48_Type_of_identification_code_for_issuer" in xml  # the V7 block only knows 1 and 9
     rows = extract_tpt(parse_fundsxml(result.xml)).rows
     assert rows[0]["56"] == "e2"
+    assert rows[0]["48"] == "2"
     assert rows[0]["150"] == "0"
-    assert rows[0]["1000"].startswith("V8.0")
+    assert rows[0]["1000"] == "V8.0 (official) dated 8 October 2026"
+
+
+NOT_APPLICABLE_V8 = {
+    *("17b", "29", "31", "35", "36", "44", "54", "58b", "106"),
+    *("108", "114", "116", "118", "120", "124", "125", "126", "141"),
+}
+
+
+def test_v8_no_longer_maintained_fields():
+    """The 18 fields of the Technical Annex "retained but no longer maintained" are N/A in the V8 catalog."""
+    from app.spec.catalog import load_catalog
+
+    assert load_catalog("V8").not_applicable_keys() == NOT_APPLICABLE_V8
+    assert load_catalog("V7").not_applicable_keys() < NOT_APPLICABLE_V8
+
+
+def test_v8_output_leaves_unmaintained_fields_empty(fixture_bytes):
+    """V7 data (fund issuer code types 116/120, NACE 54 …) written as V8: those fields stay empty."""
+    doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
+    assert {"116", "120", "54"} <= set(doc.rows[0].values)
+    extract = extract_tpt(parse_fundsxml(convert_tpt_to_fundsxml(doc).xml), "V8")
+    assert extract.version == "V8"
+    assert not any(NOT_APPLICABLE_V8 & set(r) for r in extract.rows)
+    assert extract.rows[0]["1000"] == "V8.0 (official) dated 8 October 2026"
+    (issue,) = [i for i in extract.issues if i.code == "v8_not_applicable_dropped"]
+    assert "116_Fund_issuer_code_type" in issue.params["fields"] and issue.params["n"] > 0
+    # Reading such a V8 file back warns, and the values still reach FundsXML (the V7 block has them).
+    doc8 = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx", version="V8")
+    (warning,) = [i for i in doc8.issues if i.code == "v8_not_applicable"]
+    assert "54_Economic_sector" in warning.params["fields"]
+    assert "<EconomicSector>" in convert_tpt_to_fundsxml(doc8).xml.decode()
+
+
+def test_v8_data_keeps_the_v7_block_complete(fixture_bytes):
+    """The V7 block requires 116/118/120, 36 and 44, which V8 no longer has: they are filled from V8
+    data, and the V8 issuer code type 2 is written as 9, so no subtree is dropped."""
+    from lxml import etree
+
+    doc = read_tpt(fixture_bytes("tpt_v8_sample.xlsx"), "v8.xlsx")
+    floater = next(r for r in doc.rows if r.values.get("34"))
+    floater.values.pop("36", None)
+    floater.values.setdefault(
+        "33", "3.5"
+    )  # the V7 block needs a coupon rate; the showcase floaters have none
+    callable_bond = next(r for r in doc.rows if r.values.get("39") and r is not floater)
+    callable_bond.values.update(
+        {"42": "Cal", "43": "2028-06-30", "45": "100", "48": "2", "47": "DE811907980"}
+    )
+    result = convert_tpt_to_fundsxml(doc)
+    rejected = [
+        i for i in result.issues if i.code == "block_value_rejected" and i.row == callable_bond.source_row
+    ]
+    assert [i.field for i in rejected] == ["47"]  # a VAT ID is not an LEI; nothing else of the row is lost
+    root = etree.fromstring(result.xml)
+    block = root.find("RegulatoryReportings/IndirectReporting/TripartiteTemplateSolvencyII_V7/Portfolio")
+    qrt = block.find("QRTPortfolioInformation")
+    assert qrt.findtext("FundIssuer/CodeType") == "1" and qrt.findtext("FundIssuer/EconomicSector") == "K6430"
+    assert qrt.findtext("FundIssuerGroup/CodeType") == "1" and qrt.findtext("FundCIC")
+    positions = block.findall("Positions/Position")
+    by_row = {r.source_row: p for r, p in zip(doc.rows, positions, strict=True)}
+    option = by_row[callable_bond.source_row].find("InterestRateInstrumentCharacteristics/EmbeddedOption")
+    assert option.findtext("OptionDirection") == "I" and option.findtext("CallPutDate") == "2028-06-30"
+    issuer = by_row[callable_bond.source_row].find("CreditRiskData/InstrumentIssuer")
+    assert issuer.findtext("CodeType") == "9" and issuer.findtext("Name")
+    variable = by_row[floater.source_row].find("InterestRateInstrumentCharacteristics/VariableRate")
+    assert variable.findtext("IndexName") == floater.values["34"]
+    # Back as V8: the fillers are N/A fields and vanish, the original values come back.
+    rows = {r["14"]: r for r in extract_tpt(parse_fundsxml(result.xml), "V8").rows}
+    back = rows[callable_bond.values["14"]]
+    assert (back["48"], back["47"], back.get("44"), back.get("116")) == ("2", "DE811907980", None, None)
+    assert rows[floater.values["14"]].get("36") is None
+    # Back as V7: a complete V7 file.
+    v7 = {r["14"]: r for r in extract_tpt(parse_fundsxml(result.xml), "V7").rows}
+    assert v7[callable_bond.values["14"]]["44"] == "I" and v7[callable_bond.values["14"]]["116"] == "1"
+
+
+def test_v8_data_written_as_v7_is_downgraded(fixture_bytes):
+    doc = read_tpt(fixture_bytes("tpt_v8_sample.xlsx"), "v8.xlsx")
+    doc.rows[0].values.update({"56": "e2", "48": "2", "150": "1"})
+    xml = convert_tpt_to_fundsxml(doc).xml
+    v7 = extract_tpt(parse_fundsxml(xml), "V7")
+    assert v7.rows[0]["56"] == "e" and v7.rows[0]["48"] == "9"
+    assert not any({"150", "151"} & set(r) for r in v7.rows)
+    assert v7.rows[0]["1000"] == "V7.0 (official) dated 25 November 2024"
+    (issue,) = [i for i in v7.issues if i.code == "v7_downgrade"]
+    assert issue.params["n"] >= 3 and "56_Securitisation" in issue.params["fields"]
+    v8 = extract_tpt(parse_fundsxml(xml), "V8")
+    assert (v8.rows[0]["56"], v8.rows[0]["48"], v8.rows[0]["150"]) == ("e2", "2", "1")
+    assert not [i for i in v8.issues if i.code in ("v7_downgrade", "v8_not_applicable_dropped")]
 
 
 def test_portfolio_is_written_under_the_share_class(fixture_bytes):
@@ -117,6 +209,23 @@ def test_output_version_can_be_chosen(fixture_bytes):
     doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
     xml = convert_tpt_to_fundsxml(doc).xml
     assert extract_tpt(parse_fundsxml(xml), "V8").version == "V8"
+
+
+def test_v8_mandatory_issuer_fields_are_checked(fixture_bytes):
+    """47/48/50/51 are mandatory for every CIC in V8 (conditional in V7)."""
+    doc = read_tpt(fixture_bytes("tpt_v7_sample.xlsx"), "v7.xlsx")
+    for row in doc.rows:
+        for key in ("47", "48", "50", "51"):
+            row.values.pop(key, None)
+    xml = convert_tpt_to_fundsxml(doc).xml
+    v7_missing = {
+        i.field for i in extract_tpt(parse_fundsxml(xml), "V7").issues if i.code == "mandatory_missing"
+    }
+    v8_missing = {
+        i.field for i in extract_tpt(parse_fundsxml(xml), "V8").issues if i.code == "mandatory_missing"
+    }
+    assert "47" in v8_missing and "50" in v8_missing
+    assert not {"47", "48", "50", "51"} & v7_missing
 
 
 def test_core_only_fundsxml_without_custom_attributes(fixture_bytes):

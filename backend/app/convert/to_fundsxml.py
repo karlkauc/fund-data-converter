@@ -14,6 +14,11 @@ V8 fields 150/151), values the schema rejects, values a transform cannot
 represent exactly – are kept as ``CustomAttributes`` named ``TPT_<field>``
 on the core position (or fund, for portfolio-level fields), so the reverse
 conversion restores the original file.
+
+FundsXML 4.2.11 has no V8 block, so V8 data goes into the V7 block as well.
+The V7 block requires a few elements V8 no longer maintains (fund issuer code
+types and sector, option direction, index name); ``_block_row`` fills them
+from the V8 data so the block stays complete (see ``V7_BLOCK_FILLERS``).
 """
 
 from __future__ import annotations
@@ -119,11 +124,12 @@ def convert_tpt_to_fundsxml(doc: TptDocument, options: ConvertOptions | None = N
         pos_rules = [r for r in BLOCK_RULES if r.ctx == "tpt_position"]
         for group in groups:
             pf = block.add("Portfolio")
-            first = group.rows[0]
+            first = _block_row(group.rows[0], doc.version)
             _apply(pf, first, pf_rules, ctx_values(first), kept)
             positions = pf.ensure("Positions")
             for row in group.rows:
                 pos = positions.add("Position")
+                row = _block_row(row, doc.version)
                 _apply(pos, row, pos_rules, ctx_values(row), kept)
                 if not row.get("17"):
                     pos.ensure("InstrumentName")  # mandatory; empty, as the source has it
@@ -431,6 +437,33 @@ def _build_core(groups: list[PortfolioGroup], ctx_values, core_kept: dict[int, s
     return funds, assets.node, position_nodes
 
 
+# Elements the V7 block requires that V8 no longer maintains, and where V8 data implies them:
+# 115/119/140 must be LEIs in V8 (code type 1), the index is identified by its reference (34), a
+# callable bond is exercised by the issuer and a putable one by the bearer, and a fund issuer is a
+# collective investment undertaking (NACE K64.30).
+V7_BLOCK_FILLERS = "116/120/141 = 1, 118 = K6430, 36 = field 34, 44 = I (Cal) / B (Put)"
+_FUND_NACE = "K6430"
+_OPTION_DIRECTION = {"cal": "I", "put": "B"}
+
+
+def _block_row(row: TptRow, version: str) -> TptRow:
+    """The row as written to the V7 block: for V8 data, with the V7-only required elements filled."""
+    if version != "V8":
+        return row
+    v = row.values
+    extra: dict[str, str] = {}
+    for code, code_type in (("115", "116"), ("119", "120"), ("140", "141")):
+        if v.get(code) and not v.get(code_type):
+            extra[code_type] = "1"
+    if v.get("115") and not v.get("118"):
+        extra["118"] = _FUND_NACE
+    if v.get("34") and not v.get("36"):
+        extra["36"] = v["34"]
+    if not v.get("44") and (direction := _OPTION_DIRECTION.get(v.get("42", "").strip().lower())):
+        extra["44"] = direction
+    return TptRow({**v, **extra}, row.source_row) if extra else row
+
+
 def _custom_attribute(node: Node, catalog, key: str, value: str, origin: str) -> None:
     spec = catalog.by_key.get(key)
     name = CUSTOM_PREFIX + (spec.num_data if spec else key)
@@ -522,8 +555,10 @@ def _v8_notes(doc: TptDocument) -> list[Issue]:
             "info",
             "v8_in_v7_block",
             "FundsXML 4.2.11 has no TPT V8 block: V8 data is written to the V7 block; "
-            "fields 150/151, the full version label (1000) and codes e1/e2/e3 (56) are "
-            "kept as custom attributes.",
+            "fields 150/151, the full version label (1000), codes e1/e2/e3 (56) and issuer "
+            "code type 2 (48/51/82/85) are kept as custom attributes. Elements the V7 block "
+            f"requires are filled from the V8 data: {V7_BLOCK_FILLERS}.",
+            params={"fillers": V7_BLOCK_FILLERS},
         )
     ]
 

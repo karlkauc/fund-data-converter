@@ -423,7 +423,7 @@ def _fundsxml_to_tpt(req: Request):
     report = _tpt_output_report(
         req, "fundsxml-to-tpt", {"filename": req.filename, "kind": "fundsxml"}, extract
     )
-    return report, _write_tpt(req, extract), None
+    return report, _write_tpt(req, extract), _version_loss(extract)
 
 
 def _fundsxml_to_openfunds(req: Request):
@@ -458,7 +458,7 @@ def _openfunds_to_tpt(req: Request):
     extra = [h for r in doc.shareclasses + doc.holdings for h in r.extra]
     lost = not_carried_to_tpt([r.values for r in doc.shareclasses], [r.values for r in doc.holdings], extra)
     report["issues"] += _not_carried("openfunds", "TPT", lost)
-    return report, _write_tpt(req, extract), _hop_loss(lost)
+    return report, _write_tpt(req, extract), _hop_loss(lost, extract)
 
 
 HANDLERS = {
@@ -551,12 +551,30 @@ def _not_carried(source: str, target: str, names: list[str]) -> list[dict]:
     ]
 
 
-def _hop_loss(names: list[str]) -> dict:
+def _hop_loss(names: list[str], extract: TptExtract | None = None) -> dict:
+    version = _version_loss(extract) if extract is not None else None
     return {
-        "lost": len(names),
+        "lost": len(names) + (version["lost"] if version else 0),
         "keptAsCustomAttribute": 0,
         "notInCoreStructures": 0,
-        "codes": ["hop_data_loss"] if names else [],
+        "codes": (["hop_data_loss"] if names else []) + (version["codes"] if version else []),
+    }
+
+
+# Values the TPT output version cannot hold (app.convert.to_tpt._adapt_version).
+_VERSION_LOSS_CODES = ("v8_not_applicable_dropped", "v7_downgrade")
+
+
+def _version_loss(extract: TptExtract) -> dict | None:
+    """TPT values left out or changed to fit the output version; None if the version took everything."""
+    counts = {i.code: (i.params or {}).get("n", 0) for i in extract.issues if i.code in _VERSION_LOSS_CODES}
+    if not counts:
+        return None
+    return {
+        "lost": sum(counts.values()),
+        "keptAsCustomAttribute": 0,
+        "notInCoreStructures": 0,
+        "codes": sorted(counts),
     }
 
 

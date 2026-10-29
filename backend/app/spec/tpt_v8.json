@@ -1,11 +1,11 @@
 {
- "source": "TPT_V8_20260526.catalog.json",
- "fingerprint": "ce32dd40f44fe2015806cac8d66cb45a5ae342b5d5c6560748553f75676b8e81",
+ "source": "TPT_V8_20261008.catalog.json",
+ "fingerprint": "338cf7378f962aa17571af93396f9710be6c1f1730dedeffe258bf910f8504cf",
  "fields": [
   {
    "numData": "1_Portfolio_identifying_data",
    "name": "1_Portfolio_identifying_data",
-   "fundXmlPath": "Portfolio / PortfolioID / Code",
+   "fundXmlPath": "Portfolio/PortfolioID/PortfolioIdentifyingData",
    "definition": "Identification of the fund or share class",
    "codification": {
     "kind": "FREE_TEXT",
@@ -41,7 +41,7 @@
   {
    "numData": "2_Type_of_identification_code_for_the_fund_share_or_portfolio",
    "name": "2_Type_of_identification_code_for_the_fund_share_or_portfolio",
-   "fundXmlPath": "Portfolio / PortfolioID / CodificationSystem",
+   "fundXmlPath": "Portfolio/PortfolioID/TypeOfIdentificationCodeForTheFundShareOrPortfolio",
    "definition": "Codification chosen to identify the share of the CIS",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -118,7 +118,7 @@
   {
    "numData": "3_Portfolio_name",
    "name": "3_Portfolio_name",
-   "fundXmlPath": "Portfolio / PorfolioName",
+   "fundXmlPath": "Portfolio/PortfolioName",
    "definition": "Name of the Portfolio or name of the CIS",
    "codification": {
     "kind": "ALPHANUMERIC",
@@ -154,7 +154,7 @@
   {
    "numData": "4_Portfolio_currency_(B)",
    "name": "4_Portfolio_currency_(B)",
-   "fundXmlPath": "Portfolio / PortfolioCurrency",
+   "fundXmlPath": "Portfolio/PortfolioCurrency",
    "definition": "Valuation currency of the portfolio",
    "codification": {
     "kind": "ISO_4217",
@@ -190,7 +190,7 @@
   {
    "numData": "5_Net_asset_valuation_of_the_portfolio_or_the_share_class_in_portfolio_currency",
    "name": "5_Net_asset_valuation_of_the_portfolio_or_the_share_class_in_portfolio_currency",
-   "fundXmlPath": "Portfolio / TotalNetAssets",
+   "fundXmlPath": "Portfolio/NetAssetValuationInPortfolioCurrency",
    "definition": "Portfolio valuation",
    "codification": {
     "kind": "NUMERIC",
@@ -226,7 +226,7 @@
   {
    "numData": "6_Valuation_date",
    "name": "6_Valuation_date",
-   "fundXmlPath": "Portfolio / ValuationDate",
+   "fundXmlPath": "Portfolio/ValuationDate",
    "definition": "Date of valuation (date positions valid for)",
    "codification": {
     "kind": "DATE",
@@ -262,7 +262,7 @@
   {
    "numData": "7_Reporting_date",
    "name": "7_Reporting_date",
-   "fundXmlPath": "Portfolio / ReportingDate",
+   "fundXmlPath": "Portfolio/ReportingDate",
    "definition": "Date of reference for the reporting",
    "codification": {
     "kind": "DATE",
@@ -298,7 +298,7 @@
   {
    "numData": "8_Share_price",
    "name": "8_Share_price",
-   "fundXmlPath": "Portfolio / ShareClass / SharePrice",
+   "fundXmlPath": "Portfolio/ShareClass/SharePrice",
    "definition": "Share price of the fund/share class",
    "codification": {
     "kind": "NUMERIC",
@@ -334,7 +334,7 @@
   {
    "numData": "8b_Total_number_of_shares",
    "name": "8b_Total_number_of_shares",
-   "fundXmlPath": "Portfolio / ShareClass / TotalNumberOfShares",
+   "fundXmlPath": "Portfolio/ShareClass/TotalNumberOfShares",
    "definition": "Total number of shares (per share class, if applicable)",
    "codification": {
     "kind": "NUMERIC",
@@ -370,7 +370,7 @@
   {
    "numData": "9_Cash_ratio",
    "name": "9_Cash_ratio",
-   "fundXmlPath": "Portfolio / CashPercentage",
+   "fundXmlPath": "Portfolio/CashRatio",
    "definition": "Amount of cash of the fund / total net asset value of the fund, in %",
    "codification": {
     "kind": "NUMERIC",
@@ -389,7 +389,7 @@
   {
    "numData": "10_Portfolio_modified_duration",
    "name": "10_Portfolio_modified_duration",
-   "fundXmlPath": "Portfolio / PortfolioModifiedDuration",
+   "fundXmlPath": "Portfolio/PortfolioModifiedDuration",
    "definition": "Weighted average modified duration of portfolio positions",
    "codification": {
     "kind": "NUMERIC",
@@ -408,7 +408,7 @@
   {
    "numData": "11_Complete_SCR_delivery",
    "name": "11_Complete_SCR_delivery",
-   "fundXmlPath": "Portfolio / CompleteSCRDelivery",
+   "fundXmlPath": "Portfolio/CompleteSCRDelivery",
    "definition": "Y/N",
    "codification": {
     "kind": "ALPHA",
@@ -444,7 +444,7 @@
   {
    "numData": "12_CIC_code_of_the_instrument",
    "name": "12_CIC_code_of_the_instrument",
-   "fundXmlPath": "Position / InstrumentCIC",
+   "fundXmlPath": "Portfolio/Positions/Position/CICCodeOfTheInstrument",
    "definition": "CIC Code (Complementary Identification Code).",
    "codification": {
     "kind": "CIC",
@@ -480,7 +480,7 @@
   {
    "numData": "13_Economic_zone_of_the_quotation_place",
    "name": "13_Economic_zone_of_the_quotation_place",
-   "fundXmlPath": "Position / EconomicArea",
+   "fundXmlPath": "Portfolio/Positions/Position/EconomicZoneOfTheQuotationPlace",
    "definition": "Indication of the economic zone of the quotation place",
    "codification": {
     "kind": "FREE_TEXT",
@@ -501,7 +501,7 @@
   {
    "numData": "14_Identification_code_of_the_instrument",
    "name": "14_Identification_code_of_the_instrument",
-   "fundXmlPath": "Position / InstrumentCode / Code",
+   "fundXmlPath": "Portfolio/Positions/Position/InstrumentCode/IdentificationCodeOfTheInstrument",
    "definition": "Identification code of the financial instrument - including identifier for leg of instrument if required",
    "codification": {
     "kind": "FREE_TEXT",
@@ -537,7 +537,7 @@
   {
    "numData": "15_Type_of_identification_code_for_the_instrument",
    "name": "15_Type_of_identification_code_for_the_instrument",
-   "fundXmlPath": "Position / InstrumentCode / CodificationSystem",
+   "fundXmlPath": "Portfolio/Positions/Position/InstrumentCode/TypeOfIdentificationCodeForTheInstrument",
    "definition": "Codification chosen to identify the instrument",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -614,7 +614,7 @@
   {
    "numData": "16_Grouping_code_for_multiple_leg_instruments",
    "name": "16_Grouping_code_for_multiple_leg_instruments",
-   "fundXmlPath": "Position / GroupID",
+   "fundXmlPath": "Portfolio/Positions/Position/GroupingCodeForMultipleLegInstruments",
    "definition": "grouping code for operations on multi leg instruments",
    "codification": {
     "kind": "ALPHANUMERIC",
@@ -639,7 +639,7 @@
   {
    "numData": "17_Instrument_name",
    "name": "17_Instrument_name",
-   "fundXmlPath": "Position / InstrumentName",
+   "fundXmlPath": "Portfolio/Positions/Position/InstrumentName",
    "definition": "instrument name",
    "codification": {
     "kind": "ALPHANUMERIC",
@@ -675,27 +675,18 @@
   {
    "numData": "17b_Asset_liability",
    "name": "17b_Asset_liability",
-   "fundXmlPath": "Position / Valuation / AssetOrLiability",
-   "definition": "Asset/Liability identification if needed ",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "CLOSED_LIST",
+    "kind": "UNKNOWN",
     "maxLength": null,
-    "closedList": [
-     {
-      "code": "A",
-      "label": "A"
-     },
-     {
-      "code": "L",
-      "label": "L"
-     }
-    ]
+    "closedList": []
    },
    "flags": {
     "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "O"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
    "numKey": "17b"
@@ -703,7 +694,7 @@
   {
    "numData": "18_Quantity",
    "name": "18_Quantity",
-   "fundXmlPath": "Position / Valuation / Quantity",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/Quantity",
    "definition": "Number of instruments on position",
    "codification": {
     "kind": "NUMERIC",
@@ -731,7 +722,7 @@
   {
    "numData": "19_Nominal_amount",
    "name": "19_Nominal_amount",
-   "fundXmlPath": "Position / Valuation / TotalNominalValueQC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/NominalAmount",
    "definition": "Quantity * nominal unit amount ",
    "codification": {
     "kind": "NUMERIC",
@@ -764,7 +755,7 @@
   {
    "numData": "20_Contract_size_for_derivatives",
    "name": "20_Contract_size_for_derivatives",
-   "fundXmlPath": "Position / Valuation / ContractSize",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/ContractSizeForDerivatives",
    "definition": "Contract size",
    "codification": {
     "kind": "NUMERIC",
@@ -787,7 +778,7 @@
   {
    "numData": "21_Quotation_currency_(A)",
    "name": "21_Quotation_currency_(A)",
-   "fundXmlPath": "Position / Valuation / QuotationCurrency",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/QuotationCurrency",
    "definition": "Currency of quotation for the instrument or denomination",
    "codification": {
     "kind": "ISO_4217",
@@ -823,7 +814,7 @@
   {
    "numData": "22_Market_valuation_in_quotation_currency_(A)",
    "name": "22_Market_valuation_in_quotation_currency_(A)",
-   "fundXmlPath": "Position / Valuation / MarketValueQC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/MarketValuationInQuotationCurrency",
    "definition": "Market valuation of the position accrued interest included in quotation currency",
    "codification": {
     "kind": "NUMERIC",
@@ -859,7 +850,7 @@
   {
    "numData": "23_Clean_market_valuation_in_quotation_currency_(A)",
    "name": "23_Clean_market_valuation_in_quotation_currency_(A)",
-   "fundXmlPath": "Position / Valuation / CleanValueQC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/CleanMarketValuationInQuotationCurrency",
    "definition": "Market valuation of the position accrued interest excluded in quotation currency ",
    "codification": {
     "kind": "NUMERIC",
@@ -895,7 +886,7 @@
   {
    "numData": "24_Market_valuation_in_portfolio_currency_(B)",
    "name": "24_Market_valuation_in_portfolio_currency_(B)",
-   "fundXmlPath": "Position / Valuation / MarketValuePC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/MarketValuationInPortfolioCurrency",
    "definition": "Market valuation of the position accrued interest included in portfolio currency",
    "codification": {
     "kind": "NUMERIC",
@@ -931,7 +922,7 @@
   {
    "numData": "25_Clean_market_valuation_in_portfolio_currency_(B)",
    "name": "25_Clean_market_valuation_in_portfolio_currency_(B)",
-   "fundXmlPath": "Position / Valuation / CleanValuePC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/CleanMarketValuationInPortfolioCurrency",
    "definition": "Market valuation of the position accrued interest excluded in portfolio currency",
    "codification": {
     "kind": "NUMERIC",
@@ -967,7 +958,7 @@
   {
    "numData": "26_Valuation_weight",
    "name": "26_Valuation_weight",
-   "fundXmlPath": "Position / Valuation / PositionWeight",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/ValuationWeight",
    "definition": "Market valuation in portfolio currency / portfolio net asset value in %",
    "codification": {
     "kind": "NUMERIC",
@@ -1003,7 +994,7 @@
   {
    "numData": "27_Market_exposure_amount_in_quotation_currency_(A)",
    "name": "27_Market_exposure_amount_in_quotation_currency_(A)",
-   "fundXmlPath": "Position / Valuation / MarketExposureQC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/MarketExposureAmountInQuotationCurrency",
    "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset)  ",
    "codification": {
     "kind": "NUMERIC",
@@ -1039,7 +1030,7 @@
   {
    "numData": "28_Market_exposure_amount_in_portfolio_currency_(B)",
    "name": "28_Market_exposure_amount_in_portfolio_currency_(B)",
-   "fundXmlPath": "Position / Valuation / MarketExposurePC",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/MarketExposureAmountInPortfolioCurrency",
    "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset) in the quotation currency of the portfolio",
    "codification": {
     "kind": "NUMERIC",
@@ -1075,17 +1066,17 @@
   {
    "numData": "29_Market_exposure_amount_for_the_3rd_quotation_currency_(C)",
    "name": "29_Market_exposure_amount_for_the_3rd_quotation_currency_(C)",
-   "fundXmlPath": "Position / Valuation / MarketExposureLeg2",
-   "definition": "Market exposure amount different from market valuation for derivatives (valuation of the equivalent position on the underlying asset) in the quotation currency of the underlying asset",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "NUMERIC",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
@@ -1094,7 +1085,7 @@
   {
    "numData": "30_Market_exposure_in_weight",
    "name": "30_Market_exposure_in_weight",
-   "fundXmlPath": "Position / Valuation / MarketExposureWeight",
+   "fundXmlPath": "Portfolio/Positions/Position/Valuation/MarketExposureInWeight",
    "definition": "Exposure valuation in portfolio currency / total net asset value of the fund, in %",
    "codification": {
     "kind": "NUMERIC",
@@ -1130,29 +1121,27 @@
   {
    "numData": "31_Market_exposure_for_the_3rd_currency_in_weight_over_NAV",
    "name": "31_Market_exposure_for_the_3rd_currency_in_weight_over_NAV",
-   "fundXmlPath": "Position / Valuation / MarketExposureWeightLeg2",
-   "definition": "Exposure valuation for leg 2 in portfolio currency / total net asset value of the fund, in %",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "NUMERIC",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "C",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CICE"
-   ],
+   "applicableCic": [],
    "numKey": "31"
   },
   {
    "numData": "32_Interest_rate_type",
    "name": "32_Interest_rate_type",
-   "fundXmlPath": "Position / BondCharacteristics / RateType",
-   "definition": "* Fixed - plain vanilla fixed coupon rate\n* Floating - plain vanilla floating coupon rates (for all interest rates, which refer to a reference interest rate like EONIA or EURIBOR + margin in BP)\n* Variable - all other variable interest rates like step-up or step-down or fixed-to-float bonds. The variable feature is the (credit) margin or the change between fixed and float.\n* Infation_linked for inflation linked bonds in order to identify them.\n",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/InterestRateType",
+   "definition": "* Fixed - plain vanilla fixed coupon rate\n* Floating - plain vanilla floating coupon rates (for all interest rates, which refer to a reference interest rate like EONIA or EURIBOR + margin in BP)\n* Variable - all other variable interest rates like step-up or step-down or fixed-to-float bonds. The variable feature is the (credit) margin or the change between fixed and float.\n* Inflation_linked for inflation linked bonds in order to identify them.\n",
    "codification": {
     "kind": "CLOSED_LIST",
     "maxLength": null,
@@ -1197,7 +1186,7 @@
   {
    "numData": "33_Coupon_rate",
    "name": "33_Coupon_rate",
-   "fundXmlPath": "Position / BondCharacteristics / CouponRate",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/CouponRate",
    "definition": "Fixed rate: coupon rate as a percentage of nominal amount\nFloating rate: last fixing rate + margin as a percentage of nominal amount\nVariable rate: estimation of current rate over the period + margin as a percentage of nominal amount\nall rates are expressed on an annual basis",
    "codification": {
     "kind": "NUMERIC",
@@ -1226,7 +1215,7 @@
   {
    "numData": "34_Interest_rate_reference_identification",
    "name": "34_Interest_rate_reference_identification",
-   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexID / Code",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/VariableRate/InterestRateReferenceIdentification",
    "definition": "identification code for interest rate index",
    "codification": {
     "kind": "FREE_TEXT",
@@ -1255,65 +1244,45 @@
   {
    "numData": "35_Identification_type_for_interest_rate_index",
    "name": "35_Identification_type_for_interest_rate_index",
-   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexID / CodificationSystem",
-   "definition": "Type of codification used for interest rate index",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "C",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC1",
-    "CIC2",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "35"
   },
   {
    "numData": "36_Interest_rate_index_name",
    "name": "36_Interest_rate_index_name",
-   "fundXmlPath": "Position / BondCharacteristics / VariableRate / IndexName",
-   "definition": "name of interest rate index",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "C",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC1",
-    "CIC2",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "36"
   },
   {
    "numData": "37_Interest_rate_margin",
    "name": "37_Interest_rate_margin",
-   "fundXmlPath": "Position / BondCharacteristics / VariableRate / Margin",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/VariableRate/InterestRateMargin",
    "definition": "Facial margin as a percentage of nominal amount on an annual basis",
    "codification": {
     "kind": "NUMERIC",
@@ -1342,7 +1311,7 @@
   {
    "numData": "38_Coupon_payment_frequency",
    "name": "38_Coupon_payment_frequency",
-   "fundXmlPath": "Position / BondCharacteristics / CouponFrequency",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/CouponPaymentFrequency",
    "definition": "number of coupon payment per year\n0 = other than below options:\n1= annual\n2= biannual\n4= quarterly\n12= monthly\n52= weekly",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -1396,7 +1365,7 @@
   {
    "numData": "39_Maturity_date",
    "name": "39_Maturity_date",
-   "fundXmlPath": "Position / BondCharacteristics / Redemption / MaturityDate",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/Redemption/MaturityDate",
    "definition": "Last redemption date",
    "codification": {
     "kind": "DATE",
@@ -1428,7 +1397,7 @@
   {
    "numData": "40_Redemption_type",
    "name": "40_Redemption_type",
-   "fundXmlPath": "Position / BondCharacteristics / Redemption /Type",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/Redemption/RedemptionType",
    "definition": "Type of redemption payment schedule : bullet, constant annuity…",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -1469,7 +1438,7 @@
   {
    "numData": "41_Redemption_rate",
    "name": "41_Redemption_rate",
-   "fundXmlPath": "Position / BondCharacteristics / Redemption / Rate",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/Redemption/RedemptionRate",
    "definition": "Redemption amount in % of nominal amount",
    "codification": {
     "kind": "NUMERIC",
@@ -1497,7 +1466,7 @@
   {
    "numData": "42_Callable_putable",
    "name": "42_Callable_putable",
-   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / CallPutType",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/EmbeddedOption/CallablePutable",
    "definition": "Cal = Call\nPut = Put\nCap = Cap\nFlr= Floor\nempty if none",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -1540,7 +1509,7 @@
   {
    "numData": "43_Call_put_date",
    "name": "43_Call_put_date",
-   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / CallPutDate",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/EmbeddedOption/CallPutDate",
    "definition": "Next call/put date ",
    "codification": {
     "kind": "DATE",
@@ -1566,46 +1535,26 @@
   {
    "numData": "44_Issuer_bearer_option_exercise",
    "name": "44_Issuer_bearer_option_exercise",
-   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / OptionDirection",
-   "definition": "I : issuer\nB : bearer\nO : Both",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "CLOSED_LIST",
+    "kind": "UNKNOWN",
     "maxLength": null,
-    "closedList": [
-     {
-      "code": "I",
-      "label": "I"
-     },
-     {
-      "code": "B",
-      "label": "B"
-     },
-     {
-      "code": "O",
-      "label": "O"
-     }
-    ]
+    "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "C",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC1",
-    "CIC2",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8"
-   ],
+   "applicableCic": [],
    "numKey": "44"
   },
   {
    "numData": "45_Strike_price_for_embedded_(call_put)_options",
    "name": "45_Strike_price_for_embedded_(call_put)_options",
-   "fundXmlPath": "Position / BondCharacteristics / OptionalCallPut / StrikePrice",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/EmbeddedOption/StrikePriceForEmbeddedCallPutOptions",
    "definition": "strike price, floor or cap rate for embedded options expressed as a percentage of the nominal amount. ",
    "codification": {
     "kind": "NUMERIC",
@@ -1631,7 +1580,7 @@
   {
    "numData": "46_Issuer_name",
    "name": "46_Issuer_name",
-   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Name",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/InstrumentIssuer/IssuerName",
    "definition": "name of the issuer",
    "codification": {
     "kind": "FREE_TEXT",
@@ -1665,20 +1614,21 @@
   {
    "numData": "47_Issuer_identification_code",
    "name": "47_Issuer_identification_code",
-   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Code / Code",
-   "definition": "LEI",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/InstrumentIssuer/IssuerIdentificationCode",
+   "definition": "Identification code of the issuer",
    "codification": {
     "kind": "ALPHANUMERIC",
     "maxLength": 20,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
     "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
+    "CIC0",
     "CIC1",
     "CIC2",
     "CIC3",
@@ -1699,20 +1649,34 @@
   {
    "numData": "48_Type_of_identification_code_for_issuer",
    "name": "48_Type_of_identification_code_for_issuer",
-   "fundXmlPath": "Position / CreditRiskData / InstrumentIssuer / Code / CodificationSystem",
-   "definition": "C0220   1- LEI 9 - None",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/InstrumentIssuer/TypeOfIdentificationCodeForIssuer",
+   "definition": "Codification chosen to identify the issuer",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "CLOSED_LIST",
     "maxLength": null,
-    "closedList": []
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Legal Entity Identifier (LEI)"
+     },
+     {
+      "code": "2",
+      "label": "other external Identifier (for example European VAT number or countrycode +National regitration number\" )"
+     },
+     {
+      "code": "9",
+      "label": "internal"
+     }
+    ]
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
     "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
+    "CIC0",
     "CIC1",
     "CIC2",
     "CIC3",
@@ -1733,7 +1697,7 @@
   {
    "numData": "49_Name_of_the_group_of_the_issuer",
    "name": "49_Name_of_the_group_of_the_issuer",
-   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Name",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/IssuerGroup/NameOfTheGroupOfTheIssuer",
    "definition": "Name of the highest parent company",
    "codification": {
     "kind": "FREE_TEXT",
@@ -1767,20 +1731,21 @@
   {
    "numData": "50_Identification_of_the_group",
    "name": "50_Identification_of_the_group",
-   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Code / Code",
-   "definition": "LEI",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/IssuerGroup/IdentificationOfTheGroup",
+   "definition": "Identification code of the issuer group",
    "codification": {
     "kind": "ALPHANUMERIC",
     "maxLength": 20,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
     "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
+    "CIC0",
     "CIC1",
     "CIC2",
     "CIC3",
@@ -1801,20 +1766,34 @@
   {
    "numData": "51_Type_of_identification_code_for_issuer_group",
    "name": "51_Type_of_identification_code_for_issuer_group",
-   "fundXmlPath": "Position / CreditRiskData / IssuerGroup / Code / CodificationSystem",
-   "definition": "C0260   1- LEI 9 - None",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/IssuerGroup/TypeOfIdentificationCodeForIssuerGroup",
+   "definition": "Codification chosen to identify the issuer",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "CLOSED_LIST",
     "maxLength": null,
-    "closedList": []
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Legal Entity Identifier (LEI)"
+     },
+     {
+      "code": "2",
+      "label": "other external Identifier (for example European VAT number or countrycode +National regitration number\" )"
+     },
+     {
+      "code": "9",
+      "label": "internal"
+     }
+    ]
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
     "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
+    "CIC0",
     "CIC1",
     "CIC2",
     "CIC3",
@@ -1835,7 +1814,7 @@
   {
    "numData": "52_Issuer_country",
    "name": "52_Issuer_country",
-   "fundXmlPath": "Position / CreditRiskData / IssuerCountry",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/IssuerCountry",
    "definition": "Country of the issuer company",
    "codification": {
     "kind": "ISO_3166_A2",
@@ -1871,7 +1850,7 @@
   {
    "numData": "53_Issuer_economic_area",
    "name": "53_Issuer_economic_area",
-   "fundXmlPath": "Position / CreditRiskData / EconomicArea",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/IssuerEconomicArea",
    "definition": "Economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
    "codification": {
     "kind": "FREE_TEXT",
@@ -1890,41 +1869,26 @@
   {
    "numData": "54_Economic_sector",
    "name": "54_Economic_sector",
-   "fundXmlPath": "Position / CreditRiskData / EconomicSector",
-   "definition": "Economic sector",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "NACE",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
-    "NW_675": "C",
-    "SST": "C",
+    "SOLVENCY_II": "NA",
+    "NW_675": "UNKNOWN",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC1",
-    "CIC2",
-    "CIC3",
-    "CIC4",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CICA",
-    "CICB",
-    "CICC",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "54"
   },
   {
    "numData": "55_Covered_not_covered",
    "name": "55_Covered_not_covered",
-   "fundXmlPath": "Position / CreditRiskData / Covered",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/CoveredNotCovered",
    "definition": "",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -1955,7 +1919,7 @@
   {
    "numData": "56_Securitisation",
    "name": "56_Securitisation",
-   "fundXmlPath": "Position / Securitisation / Securitised",
+   "fundXmlPath": "Portfolio/Positions/Position/Securitisation",
    "definition": "Securitisation typology",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2026,7 +1990,7 @@
   {
    "numData": "57_Explicit_guarantee_by_the_country_of_issue",
    "name": "57_Explicit_guarantee_by_the_country_of_issue",
-   "fundXmlPath": "Position / CreditRiskData / StateGuarantee",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/ExplicitGuaranteeByTheCountryOfIssue",
    "definition": "Y = guaranteed\nN = without guarantee",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2059,7 +2023,7 @@
   {
    "numData": "58_Subordinated_debt",
    "name": "58_Subordinated_debt",
-   "fundXmlPath": "Position / SubordinatedDebt",
+   "fundXmlPath": "Portfolio/Positions/Position/SubordinatedDebt",
    "definition": "Subordinated or not ? ",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2087,17 +2051,17 @@
   {
    "numData": "58b_Nature_of_the_tranche",
    "name": "58b_Nature_of_the_tranche",
-   "fundXmlPath": "Position / Securitisation / TrancheLevel",
-   "definition": "Tranche level (seniority)",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
@@ -2106,7 +2070,7 @@
   {
    "numData": "59_Credit_quality_step",
    "name": "59_Credit_quality_step",
-   "fundXmlPath": "Position / CreditRiskData / CreditQualitStep",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/CreditQualityStep",
    "definition": "Credit quality step as defined by S2 regulation",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2137,7 +2101,7 @@
   {
    "numData": "60_Call_Put_Cap_Floor",
    "name": "60_Call_Put_Cap_Floor",
-   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / CallPutType",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/OptionCharacteristics/CallPutCapFloor",
    "definition": "Cal = Call\nPut = Put\nCap = Cap\nFlr= Floor\nempty if none",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2178,7 +2142,7 @@
   {
    "numData": "61_Strike_price",
    "name": "61_Strike_price",
-   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / StrikePrice",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/OptionCharacteristics/StrikePrice",
    "definition": "Strike price expressed as the quotation of the underlying asset",
    "codification": {
     "kind": "NUMERIC",
@@ -2200,9 +2164,9 @@
    "numKey": "61"
   },
   {
-   "numData": "62_Conversion_factor_(convertibles)_concordance_factor_parity_(options)",
-   "name": "62_Conversion_factor_(convertibles)_concordance_factor_parity_(options)",
-   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / ConversionRatio",
+   "numData": "62_Conversion_factor",
+   "name": "62_Conversion_factor",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/OptionCharacteristics/ConversionFactor",
    "definition": "Conversion factor for convertible",
    "codification": {
     "kind": "NUMERIC",
@@ -2223,7 +2187,7 @@
   {
    "numData": "63_Effective_date_of_instrument",
    "name": "63_Effective_date_of_instrument",
-   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / Effective Date",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/EffectiveDateOfInstrument",
    "definition": "Effective Date",
    "codification": {
     "kind": "DATE",
@@ -2242,7 +2206,7 @@
   {
    "numData": "64_Exercise_type",
    "name": "64_Exercise_type",
-   "fundXmlPath": "Position / DerivativeOrConvertible / OptionCharacteristics / OptionStyle",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/OptionCharacteristics/ExerciseType",
    "definition": "AMerican, EUropean, ASiatic, BErmudian",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2281,7 +2245,7 @@
   {
    "numData": "65_Hedging_rolling",
    "name": "65_Hedging_rolling",
-   "fundXmlPath": "Position / HedgingStrategy",
+   "fundXmlPath": "Portfolio/Positions/Position/HedgingRolling",
    "definition": "Indication of existing Risk Mitigation program ( Y = used for Risk Mitigation purpose and the position is systematically rolled before maturity, N = used for hedging purpose but no systematic roll before maturity); EPM = Efficient Portfolio Management / not used for hedging purpose .",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2320,7 +2284,7 @@
   {
    "numData": "67_CIC_of_the_underlying_asset",
    "name": "67_CIC_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentCIC",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CICOfTheUnderlyingAsset",
    "definition": "CIC Code (Complementary Identification Code).",
    "codification": {
     "kind": "CIC",
@@ -2346,7 +2310,7 @@
   {
    "numData": "68_Identification_code_of_the_underlying_asset",
    "name": "68_Identification_code_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentCode / Code",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/InstrumentCode/IdentificationCodeOfTheUnderlyingAsset",
    "definition": "identification code of underlying asset",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2372,7 +2336,7 @@
   {
    "numData": "69_Type_of_identification_code_for_the_underlying_asset",
    "name": "69_Type_of_identification_code_for_the_underlying_asset",
-   "fundXmlPath": "Position / UnderlyingInstrument / InstrumentCode / CodificationSystem",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/InstrumentCode/TypeOfIdentificationCodeForTheUnderlyingAsset",
    "definition": "name of the codification used for identification of the underlying asset",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2439,7 +2403,7 @@
   {
    "numData": "70_Name_of_the_underlying_asset",
    "name": "70_Name_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / InstrumentName",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/NameOfTheUnderlyingAsset",
    "definition": "Name",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2465,7 +2429,7 @@
   {
    "numData": "71_Quotation_currency_of_the_underlying_asset_(C)",
    "name": "71_Quotation_currency_of_the_underlying_asset_(C)",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / Currency",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Valuation/QuotationCurrencyOfTheUnderlyingAsset",
    "definition": "currency of quotation for the asset",
    "codification": {
     "kind": "ISO_4217",
@@ -2491,7 +2455,7 @@
   {
    "numData": "72_Last_valuation_price_of_the_underlying_asset",
    "name": "72_Last_valuation_price_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / MarketPrice",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Valuation/LastValuationPriceOfTheUnderlyingAsset",
    "definition": "Last valuation price of the underlying asset",
    "codification": {
     "kind": "NUMERIC",
@@ -2517,7 +2481,7 @@
   {
    "numData": "73_Country_of_quotation_of_the_underlying_asset",
    "name": "73_Country_of_quotation_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / Country",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Valuation/CountryOfQuotationOfTheUnderlyingAsset",
    "definition": "Country of quotation of the underlying asset",
    "codification": {
     "kind": "ISO_3166_A2",
@@ -2536,7 +2500,7 @@
   {
    "numData": "74_Economic_area_of_quotation_of_the_underlying_asset",
    "name": "74_Economic_area_of_quotation_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible /  UnderlyingInstrument / Valuation / EconomicArea",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Valuation/EconomicAreaOfQuotationOfTheUnderlyingAsset",
    "definition": "economic area of quotation\n0= non listed, listed 1=EEA / 2=NON EEA / 3=NON OECD",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2561,7 +2525,7 @@
   {
    "numData": "75_Coupon_rate_of_the_underlying_asset",
    "name": "75_Coupon_rate_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / CouponRate",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Coupon/CouponRateOfTheUnderlyingAsset",
    "definition": "Fixed rate : coupon rate as a percentage of nominal amount\nall rates are expressed on an annual basis",
    "codification": {
     "kind": "NUMERIC",
@@ -2580,7 +2544,7 @@
   {
    "numData": "76_Coupon_payment_frequency_of_the_underlying_asset",
    "name": "76_Coupon_payment_frequency_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / CouponFrequency",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Coupon/CouponPaymentFrequencyOfTheUnderlyingAsset",
    "definition": "number of coupon payment per year\n0 = other than below options:\n1= annual\n2= biannual\n4= quarterly\n12= monthly\n52= weekly",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2624,7 +2588,7 @@
   {
    "numData": "77_Maturity_date_of_the_underlying_asset",
    "name": "77_Maturity_date_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / MaturityDate",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Redemption/MaturityDateOfTheUnderlyingAsset",
    "definition": "Last redemption date",
    "codification": {
     "kind": "DATE",
@@ -2643,7 +2607,7 @@
   {
    "numData": "78_Redemption_profile_of_the_underlying_asset",
    "name": "78_Redemption_profile_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / Type",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Redemption/RedemptionProfileOfTheUnderlyingAsset",
    "definition": "Type of redemption payment schedule : bullet, constant annuity…",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2671,7 +2635,7 @@
   {
    "numData": "79_Redemption_rate_of_the_underlying_asset",
    "name": "79_Redemption_rate_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / BondCharacteristics / Redemption / Rate",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/Redemption/RedemptionRateOfTheUnderlyingAsset",
    "definition": "Redemption amount in % of nominal amount",
    "codification": {
     "kind": "NUMERIC",
@@ -2690,7 +2654,7 @@
   {
    "numData": "80_Issuer_name_of_the_underlying_asset",
    "name": "80_Issuer_name_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Name",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/InstrumentIssuer/IssuerNameOfTheUnderlyingAsset",
    "definition": "name of the issuer",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2716,15 +2680,15 @@
   {
    "numData": "81_Issuer_identification_code_of_the_underlying_asset",
    "name": "81_Issuer_identification_code_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Code / Code",
-   "definition": "identification code of the issuer",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/InstrumentIssuer/IssuerIdentificationCodeOfTheUnderlyingAsset",
+   "definition": "Idenitification code of the issuer of the underlying security",
    "codification": {
-    "kind": "FREE_TEXT",
-    "maxLength": null,
+    "kind": "ALPHANUMERIC",
+    "maxLength": 20,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
     "SST": "O",
     "IORP_EIOPA_ECB": "UNKNOWN"
@@ -2742,17 +2706,30 @@
   {
    "numData": "82_Type_of_issuer_identification_code_of_the_underlying_asset",
    "name": "82_Type_of_issuer_identification_code_of_the_underlying_asset",
-   "fundXmlPath": "Position / UnderlyingInstrument / Issuer / InstrumentIssuer / Identification / Code",
-   "definition": "C0220   1- LEI 9 - None",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/InstrumentIssuer/TypeOfIssuerIdentificationCodeOfTheUnderlyingAsset",
+   "definition": "Codification chosen to identify the issuer",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "CLOSED_LIST",
     "maxLength": null,
-    "closedList": []
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Legal Entity Identifier (LEI)"
+     },
+     {
+      "code": "2",
+      "label": "other external Identifier (for example European VAT number or countrycode +National regitration number\" )"
+     },
+     {
+      "code": "9",
+      "label": "internal"
+     }
+    ]
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
@@ -2768,7 +2745,7 @@
   {
    "numData": "83_Name_of_the_group_of_the_issuer_of_the_underlying_asset",
    "name": "83_Name_of_the_group_of_the_issuer_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Name",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/IssuerGroup/NameOfTheGroupOfTheIssuerOfTheUnderlyingAsset",
    "definition": "Name of the highest parent company",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2794,11 +2771,11 @@
   {
    "numData": "84_Identification_of_the_group_of_the_underlying_asset",
    "name": "84_Identification_of_the_group_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Code / Code",
-   "definition": "Identification code of the group",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/IssuerGroup/IdentificationOfTheGroupOfTheUnderlyingAsset",
+   "definition": "Idenitification code of the issuer group of the underlying security",
    "codification": {
-    "kind": "FREE_TEXT",
-    "maxLength": null,
+    "kind": "ALPHANUMERIC",
+    "maxLength": 20,
     "closedList": []
    },
    "flags": {
@@ -2820,17 +2797,30 @@
   {
    "numData": "85_Type_of_the_group_identification_code_of_the_underlying_asset",
    "name": "85_Type_of_the_group_identification_code_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / IssuerGroup / Code / CodificationSystem",
-   "definition": "C0260   1- LEI 9 - None",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/IssuerGroup/TypeOfTheGroupIdentificationCodeOfTheUnderlyingAsset",
+   "definition": "Codification chosen to identify the issuer",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "CLOSED_LIST",
     "maxLength": null,
-    "closedList": []
+    "closedList": [
+     {
+      "code": "1",
+      "label": "Legal Entity Identifier (LEI)"
+     },
+     {
+      "code": "2",
+      "label": "other external Identifier (for example European VAT number or countrycode +National regitration number\" )"
+     },
+     {
+      "code": "9",
+      "label": "internal"
+     }
+    ]
    },
    "flags": {
-    "SOLVENCY_II": "C",
+    "SOLVENCY_II": "M",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "C",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [
@@ -2846,7 +2836,7 @@
   {
    "numData": "86_Issuer_country_of_the_underlying_asset",
    "name": "86_Issuer_country_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / Country",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/IssuerCountryOfTheUnderlyingAsset",
    "definition": "Country of the issuer company",
    "codification": {
     "kind": "ISO_3166_A2",
@@ -2872,7 +2862,7 @@
   {
    "numData": "87_Issuer_economic_area_of_the_underlying_asset",
    "name": "87_Issuer_economic_area_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / EconomicArea",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/IssuerEconomicAreaOfTheUnderlyingAsset",
    "definition": "economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2891,7 +2881,7 @@
   {
    "numData": "88_Explicit_guarantee_by_the_country_of_issue_of_the_underlying_asset",
    "name": "88_Explicit_guarantee_by_the_country_of_issue_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData  / StateGuarantee",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/ExplicitGuaranteeByTheCountryOfIssueOfTheUnderlyingAsset",
    "definition": "Y = Guaranteed\nN = without guarantee",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -2919,7 +2909,7 @@
   {
    "numData": "89_Credit_quality_step_of_the_underlying_asset",
    "name": "89_Credit_quality_step_of_the_underlying_asset",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData  / CreditQualityStep",
+   "fundXmlPath": "Portfolio/Positions/Position/DerivativeOrConvertible/UnderlyingInstrument/CreditRiskData/CreditQualityStepOfTheUnderlyingAsset",
    "definition": "Credit quality step as defined by S2 regulation",
    "codification": {
     "kind": "FREE_TEXT",
@@ -2944,7 +2934,7 @@
   {
    "numData": "90_Modified_duration_to_maturity_date",
    "name": "90_Modified_duration_to_maturity_date",
-   "fundXmlPath": "Position / Analytics / ModifiedDurationToMaturity",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/ModifiedDurationToMaturityDate",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -2974,7 +2964,7 @@
   {
    "numData": "91_Modified_duration_to_next_option_exercise_date",
    "name": "91_Modified_duration_to_next_option_exercise_date",
-   "fundXmlPath": "Position / Analytics / ModifiedDurationToCall",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/ModifiedDurationToNextOptionExerciseDate",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -3003,7 +2993,7 @@
   {
    "numData": "92_Credit_sensitivity",
    "name": "92_Credit_sensitivity",
-   "fundXmlPath": "Position / Analytics / CreditSensitivity",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/CreditSensitivity",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -3031,7 +3021,7 @@
   {
    "numData": "93_Sensitivity_to_underlying_asset_price_(delta)",
    "name": "93_Sensitivity_to_underlying_asset_price_(delta)",
-   "fundXmlPath": "Position / Analytics / Delta",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/SensitivityToUnderlyingAssetPriceDelta",
    "definition": "Sensitivity to the underlying asset",
    "codification": {
     "kind": "NUMERIC",
@@ -3059,7 +3049,7 @@
   {
    "numData": "94_Convexity_gamma_for_derivatives",
    "name": "94_Convexity_gamma_for_derivatives",
-   "fundXmlPath": "Position / Analytics / Convexity",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/ConvexityGammaForDerivatives",
    "definition": "Convexity for interest rates instruments; or \ngamma for derivatives with optional components ",
    "codification": {
     "kind": "NUMERIC",
@@ -3078,7 +3068,7 @@
   {
    "numData": "94b_Vega",
    "name": "94b_Vega",
-   "fundXmlPath": "Position / Analytics / Vega",
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/Vega",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -3097,7 +3087,7 @@
   {
    "numData": "95_Identification_of_the_original_portfolio_for_positions_embedded_in_a_fund",
    "name": "95_Identification_of_the_original_portfolio_for_positions_embedded_in_a_fund",
-   "fundXmlPath": "Position / LookThroughISIN",
+   "fundXmlPath": "Portfolio/Positions/Position/OriginalPortfolioIdentification",
    "definition": "identification code of the investee funds",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3133,7 +3123,7 @@
   {
    "numData": "97_SCR_mrkt_IR_up_weight_over_NAV",
    "name": "97_SCR_mrkt_IR_up_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktIntUp",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktIRUpWeightOverNAV",
    "definition": "Capital requirement for interest rate risk for the \"up\" shock    (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3152,7 +3142,7 @@
   {
    "numData": "98_SCR_mrkt_IR_down_weight_over_NAV",
    "name": "98_SCR_mrkt_IR_down_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktintDown",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktIRDownWeightOverNAV",
    "definition": "Capital requirement for interest rate risk for the \"down\" shock  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3171,7 +3161,7 @@
   {
    "numData": "99_SCR_mrkt_eq_type1_weight_over_NAV",
    "name": "99_SCR_mrkt_eq_type1_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktEqGlobal",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktEqType1WeightOverNAV",
    "definition": "Capital requirement for equity risk - Type 1 *)   (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3190,7 +3180,7 @@
   {
    "numData": "100_SCR_mrkt_eq_type2_weight_over_NAV",
    "name": "100_SCR_mrkt_eq_type2_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktEqOther",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktEqType2WeightOverNAV",
    "definition": "Capital requirement for equity risk - Type 2 *)  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3209,7 +3199,7 @@
   {
    "numData": "101_SCR_mrkt_prop_weight_over_NAV",
    "name": "101_SCR_mrkt_prop_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktProp",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktPropWeightOverNAV",
    "definition": "Capital requirement for property risk  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3228,7 +3218,7 @@
   {
    "numData": "102_SCR_mrkt_spread_bonds_weight_over_NAV",
    "name": "102_SCR_mrkt_spread_bonds_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktSpread / Bonds",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/MktSpread/SCRMrktSpreadBondsWeightOverNAV",
    "definition": "Capital requirement for spread risk on bonds  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3247,7 +3237,7 @@
   {
    "numData": "103_SCR_mrkt_spread_structured_weight_over_NAV",
    "name": "103_SCR_mrkt_spread_structured_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktSpread / Structured",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/MktSpread/SCRMrktSpreadStructuredWeightOverNAV",
    "definition": "Capital requirement for spread risk on structured products   (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3266,7 +3256,7 @@
   {
    "numData": "104_SCR_mrkt_spread_derivatives_up_weight_over_NAV",
    "name": "104_SCR_mrkt_spread_derivatives_up_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktSpread / DerivativesUp",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/MktSpread/SCRMrktSpreadDerivativesUpWeightOverNAV",
    "definition": "Capital requirement for spread risk - credit derivatives (upward shock)   (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3285,7 +3275,7 @@
   {
    "numData": "105_SCR_mrkt_spread_derivatives_down_weight_over_NAV",
    "name": "105_SCR_mrkt_spread_derivatives_down_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktSpread / DerivativesDown",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/MktSpread/SCRMrktSpreadDerivativesDownWeightOverNAV",
    "definition": "Capital requirement for spread risk - credit derivatives (downward shock)  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3304,7 +3294,7 @@
   {
    "numData": "105a_SCR_mrkt_FX_up_weight_over_NAV",
    "name": "105a_SCR_mrkt_FX_up_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktFXUp",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktFXUpWeightOverNAV",
    "definition": "Capital requirement for FX (upward shock)   (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3323,7 +3313,7 @@
   {
    "numData": "105b_SCR_mrkt_FX_down_weight_over_NAV",
    "name": "105b_SCR_mrkt_FX_down_weight_over_NAV",
-   "fundXmlPath": "Position / ContributionToSCR / MktFXDown",
+   "fundXmlPath": "Portfolio/Positions/Position/ContributionToSCR/SCRMrktFXDownWeightOverNAV",
    "definition": "Capital requirement for FX (downward shock)  (Delta between Market value before and market value after stress)",
    "codification": {
     "kind": "NUMERIC",
@@ -3342,38 +3332,17 @@
   {
    "numData": "106_Asset_pledged_as_collateral",
    "name": "106_Asset_pledged_as_collateral",
-   "fundXmlPath": "Position / QRTPositionInformation / CollateralisedAsset",
-   "definition": "Indicator used to identify the under-written instruments (Assets D1)",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "CLOSED_LIST",
+    "kind": "UNKNOWN",
     "maxLength": null,
-    "closedList": [
-     {
-      "code": "1",
-      "label": "Assets in the balance sheet that are collateral pledged"
-     },
-     {
-      "code": "2",
-      "label": "Collateral for reinsurance accepted"
-     },
-     {
-      "code": "3",
-      "label": "Collateral for securities borrowed"
-     },
-     {
-      "code": "4",
-      "label": "Repos"
-     },
-     {
-      "code": "9",
-      "label": "Not collateral"
-     }
-    ]
+    "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
@@ -3382,7 +3351,7 @@
   {
    "numData": "107_Place_of_deposit",
    "name": "107_Place_of_deposit",
-   "fundXmlPath": "Position / QRTPositionInformation / PlaceOfDeposit",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/PlaceOfDeposit",
    "definition": "Instruments' place of deposit (S.06.02 - old: Assets D1)",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3401,17 +3370,17 @@
   {
    "numData": "108_Participation",
    "name": "108_Participation",
-   "fundXmlPath": "Position / QRTPositionInformation / Participation",
-   "definition": "Indicator used to identify the guidelines of participation in accountancy terms",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
@@ -3420,7 +3389,7 @@
   {
    "numData": "110_Valorisation_method",
    "name": "110_Valorisation_method",
-   "fundXmlPath": "Position / QRTPositionInformation / ValorisationMethod",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/ValorisationMethod",
    "definition": "valuation method (cf specifications QRT) (S.06.02 - old: Assets D1)",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -3464,7 +3433,7 @@
   {
    "numData": "111_Value_of_acquisition",
    "name": "111_Value_of_acquisition",
-   "fundXmlPath": "Position / QRTPositionInformation / AverageBuyPrice",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/ValueOfAcquisition",
    "definition": "Value of acquisition (S.06.02 - old: Assets D1)",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3483,7 +3452,7 @@
   {
    "numData": "112_Credit_rating",
    "name": "112_Credit_rating",
-   "fundXmlPath": "Position / QRTPositionInformation / CounterpartyRating / RatingValue",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/CounterpartyRating/CreditRating",
    "definition": "Rating of the counterparty / issuer (cf specifications QRT) (S.06.02 - old: Assets D1)",
    "codification": {
     "kind": "UNKNOWN",
@@ -3502,7 +3471,7 @@
   {
    "numData": "113_Rating_agency",
    "name": "113_Rating_agency",
-   "fundXmlPath": "Position / QRTPositionInformation / CounterpartyRating / RatingAgency",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/CounterpartyRating/RatingAgency",
    "definition": "Name of the rating agency (cf specification QRT) (S.06.02 - old: Assets D1)",
    "codification": {
     "kind": "UNKNOWN",
@@ -3521,17 +3490,17 @@
   {
    "numData": "114_Issuer_economic_area",
    "name": "114_Issuer_economic_area",
-   "fundXmlPath": "Position / QRTPositionInformation / IssuerEconomicArea",
-   "definition": "economic area of the Issuer\n1=EEA / 2=NON EEA / 3=NON OECD",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
     "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
+    "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
@@ -3540,7 +3509,7 @@
   {
    "numData": "115_Fund_issuer_code",
    "name": "115_Fund_issuer_code",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Code / Code",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundIssuer/FundIssuerCode",
    "definition": "LEI",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3576,43 +3545,26 @@
   {
    "numData": "116_Fund_issuer_code_type",
    "name": "116_Fund_issuer_code_type",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Code / CodificationSystem",
-   "definition": "C0220   1- LEI 9 - None",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "M",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "M"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC0",
-    "CIC1",
-    "CIC2",
-    "CIC3",
-    "CIC4",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CIC9",
-    "CICA",
-    "CICB",
-    "CICC",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "116"
   },
   {
    "numData": "117_Fund_issuer_name",
    "name": "117_Fund_issuer_name",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Name",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundIssuer/FundIssuerName",
    "definition": "Name of Issuer of Fund  or Share Class",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3648,43 +3600,26 @@
   {
    "numData": "118_Fund_issuer_sector",
    "name": "118_Fund_issuer_sector",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / EconomicSector",
-   "definition": "NACE code of Issuer of Fund  or Share Class",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "FREE_TEXT",
+    "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "M",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "M"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC0",
-    "CIC1",
-    "CIC2",
-    "CIC3",
-    "CIC4",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CIC9",
-    "CICA",
-    "CICB",
-    "CICC",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "118"
   },
   {
    "numData": "119_Fund_issuer_group_code",
    "name": "119_Fund_issuer_group_code",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Code / Code",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundIssuerGroup/FundIssuerGroupCode",
    "definition": "LEI of ultimate parent ",
    "codification": {
     "kind": "FREE_TEXT",
@@ -3720,43 +3655,26 @@
   {
    "numData": "120_Fund_issuer_group_code_type",
    "name": "120_Fund_issuer_group_code_type",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Code / CodificationSystem",
-   "definition": "C0260   1- LEI 9 - None",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "M",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "M"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
-   "applicableCic": [
-    "CIC0",
-    "CIC1",
-    "CIC2",
-    "CIC3",
-    "CIC4",
-    "CIC5",
-    "CIC6",
-    "CIC7",
-    "CIC8",
-    "CIC9",
-    "CICA",
-    "CICB",
-    "CICC",
-    "CICD",
-    "CICE",
-    "CICF"
-   ],
+   "applicableCic": [],
    "numKey": "120"
   },
   {
    "numData": "121_Fund_issuer_group_name",
    "name": "121_Fund_issuer_group_name",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuerGroup / Name",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundIssuerGroup/FundIssuerGroupName",
    "definition": "Name of Ultimate parent of issuer of Fund or Share Class",
    "codification": {
     "kind": "UNKNOWN",
@@ -3792,7 +3710,7 @@
   {
    "numData": "122_Fund_issuer_country",
    "name": "122_Fund_issuer_country",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundIssuer / Country",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundIssuer/FundIssuerCountry",
    "definition": "Country ISO of Issuer of Fund  or Share Class",
    "codification": {
     "kind": "ISO_3166_A2",
@@ -3828,8 +3746,8 @@
   {
    "numData": "123_Fund_CIC",
    "name": "123_Fund_CIC",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / PortfolioCIC",
-   "definition": "CIC code - Fund  or Share Class (4 digits)",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundCIC",
+   "definition": "CIC code - Fund  or Share Class (4 characters)",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
@@ -3864,8 +3782,8 @@
   {
    "numData": "123a_Fund_custodian_country",
    "name": "123a_Fund_custodian_country",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / FundCustodianCountry",
-   "definition": "First level of Custody - Fund or seggregated account Custodian",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/FundCustodianCountry",
+   "definition": "First level of Custody - Fund or segregated account Custodian",
    "codification": {
     "kind": "ISO_3166_A2",
     "maxLength": null,
@@ -3900,18 +3818,18 @@
   {
    "numData": "124_Duration",
    "name": "124_Duration",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / PortfolioModifiedDuration",
-   "definition": "For funds or portfolios mainly invested in debt instruments (>50%) - Fund modified Duration (Residual modified duration)",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "M"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
    "numKey": "124"
@@ -3919,18 +3837,18 @@
   {
    "numData": "125_Accrued_income_(Security Denominated Currency)",
    "name": "125_Accrued_income_(Security Denominated Currency)",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation /  AccruedIncomeQC ????",
-   "definition": "Amount of accrued income in security denomination currency at report date",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "O"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
    "numKey": "125"
@@ -3938,18 +3856,18 @@
   {
    "numData": "126_Accrued_income_(Portfolio Denominated Currency)",
    "name": "126_Accrued_income_(Portfolio Denominated Currency)",
-   "fundXmlPath": "Portfolio / QRTPortfolioInformation / AccruedIncomePC",
-   "definition": "Amount of accrued income in portfolio denomination currency at report date",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
     "kind": "UNKNOWN",
     "maxLength": null,
     "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
-    "SST": "O",
-    "IORP_EIOPA_ECB": "M"
+    "SST": "UNKNOWN",
+    "IORP_EIOPA_ECB": "UNKNOWN"
    },
    "applicableCic": [],
    "numKey": "126"
@@ -3995,7 +3913,7 @@
   {
    "numData": "129_Valuation_yield",
    "name": "129_Valuation_yield",
-   "fundXmlPath": "Position / BondCharacteristics / ValuationYieldCurve /  Yield",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/ValuationYieldCurve/ValuationYield",
    "definition": "Valuation Yield of the interest rate instrument",
    "codification": {
     "kind": "NUMERIC",
@@ -4014,7 +3932,7 @@
   {
    "numData": "130_Valuation_z_spread",
    "name": "130_Valuation_z_spread",
-   "fundXmlPath": "Position / BondCharacteristics / ValuationYieldCurve /  Spread",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/ValuationYieldCurve/ValuationZSpread",
    "definition": "Issuer spread calculated from Z coupon IRS curve of quotation currency",
    "codification": {
     "kind": "NUMERIC",
@@ -4033,7 +3951,7 @@
   {
    "numData": "131_Underlying_asset_category",
    "name": "131_Underlying_asset_category",
-   "fundXmlPath": "Position / Instrument/ UAC",
+   "fundXmlPath": "Portfolio/Positions/Position/QRTPositionInformation/UnderlyingAssetCategory",
    "definition": "SII definition as per QRT S.06.03",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4142,7 +4060,7 @@
   {
    "numData": "132_Infrastructure_investment",
    "name": "132_Infrastructure_investment",
-   "fundXmlPath": "To be defined with Fundxml",
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/InfrastructureInvestment",
    "definition": "Type of infrastructure investment according to Type of infrastructure investment according to \nCOMMISSION DELEGATED REGULATION (EU) 2016/467 of 30 September 2015 amending Commission Delegated Regulation (EU) 2015/35 concerning the calculation of regulatory capital requirements for several categories of assets held by insurance and reinsurance undertakings and COMMISSION DELEGATED REGULATION (EU) 2017/1542 as of 8 June 2017 amending Delegated Regulation (EU) 2015/35 concerning the calculation of regulatory capital requirements for certain categories of assets held by insurance and reinsurance undertakings (infrastructure corporates).",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4194,8 +4112,8 @@
   {
    "numData": "133_custodian_name",
    "name": "133_custodian_name",
-   "fundXmlPath": "To be defined with Fundxml",
-   "definition": "Name of the custodian of the seggregated account",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/CustodianName",
+   "definition": "Name of the custodian of the segregated account",
    "codification": {
     "kind": "FREE_TEXT",
     "maxLength": null,
@@ -4213,7 +4131,7 @@
   {
    "numData": "134_type1_private_equity_portfolio_eligibility",
    "name": "134_type1_private_equity_portfolio_eligibility",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/Type1PrivateEquityPortfolioEligibility",
    "definition": "Eligibility of the investment to art 168a of the regulation UE DR 2019/981",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4248,7 +4166,7 @@
   {
    "numData": "135_type1_private_equity_issuer_beta",
    "name": "135_type1_private_equity_issuer_beta",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/Type1PrivateEquityIssuerBeta",
    "definition": "Beta of the issuer of the private equity calculated according to art 168a of the regulation UE DR 2019/981",
    "codification": {
     "kind": "NUMERIC",
@@ -4270,7 +4188,7 @@
   {
    "numData": "137_Counterparty_sector",
    "name": "137_Counterparty_sector",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/CounterpartySector",
    "definition": "Classification of the issuer or counterparty according to IORP II regulation based on FINREP breakdown ( ESA 2010) and EIOPA specifications",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4357,7 +4275,7 @@
   {
    "numData": "138_Collateral_eligibility",
    "name": "138_Collateral_eligibility",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/CollateralEligibility",
    "definition": "Eligibility of the collateral according to solvency regulation (RD UE 2015/35 art 176.5 and related art197, art214)",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4381,7 +4299,7 @@
      },
      {
       "code": "4",
-      "label": "Not elligible"
+      "label": "Not eligible"
      }
     ]
    },
@@ -4402,7 +4320,7 @@
   {
    "numData": "139_Collateral_Market_valuation_in_portfolio_currency",
    "name": "139_Collateral_Market_valuation_in_portfolio_currency",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/CollateralMarketValuationInPortfolioCurrency",
    "definition": "Market valuation of the collateral in portfolio currency",
    "codification": {
     "kind": "NUMERIC",
@@ -4425,7 +4343,7 @@
   {
    "numData": "140_Custodian_identification_code",
    "name": "140_Custodian_identification_code",
-   "fundXmlPath": "Position / DerivativeOrConvertible / UnderlyingInstrument / CreditRiskData / InstrumentIssuer / Code / Code",
+   "fundXmlPath": "Portfolio/QRTPortfolioInformation/CustodianIdentificationCode",
    "definition": "identification code of the custodian",
    "codification": {
     "kind": "FREE_TEXT",
@@ -4444,24 +4362,15 @@
   {
    "numData": "141_Type_of_custodian_identification_code",
    "name": "141_Type_of_custodian_identification_code",
-   "fundXmlPath": "Position / UnderlyingInstrument / Issuer / InstrumentIssuer / Identification / Code",
-   "definition": "C0220   1-LEI,  9-None or internal",
+   "fundXmlPath": null,
+   "definition": "",
    "codification": {
-    "kind": "CLOSED_LIST",
+    "kind": "UNKNOWN",
     "maxLength": null,
-    "closedList": [
-     {
-      "code": "1",
-      "label": "1"
-     },
-     {
-      "code": "9",
-      "label": "9"
-     }
-    ]
+    "closedList": []
    },
    "flags": {
-    "SOLVENCY_II": "O",
+    "SOLVENCY_II": "NA",
     "NW_675": "UNKNOWN",
     "SST": "UNKNOWN",
     "IORP_EIOPA_ECB": "UNKNOWN"
@@ -4472,7 +4381,7 @@
   {
    "numData": "142_Bail-in_Rule",
    "name": "142_Bail-in_Rule",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/BailInRule",
    "definition": "Indicate if there is a \"Bail-in\" Rule applicable for debt instrument",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4492,7 +4401,7 @@
      },
      {
       "code": "9",
-      "label": "Not Aplicable"
+      "label": "Not Applicable"
      }
     ]
    },
@@ -4511,7 +4420,7 @@
   {
    "numData": "143_Maturity_date_expected",
    "name": "143_Maturity_date_expected",
-   "fundXmlPath": "Expected redemption date after considering an expected prepayment / extension of the contractual terms based on the options in the instrument",
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/Redemption/MaturityDateExpected",
    "definition": "Expected redemption date after considering an expected prepayment / extension of the contractual terms based on the options in the instrument",
    "codification": {
     "kind": "DATE",
@@ -4530,7 +4439,7 @@
   {
    "numData": "144_Modified_duration_to_maturity_date_expected",
    "name": "144_Modified_duration_to_maturity_date_expected",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/ModifiedDurationToMaturityDateExpected",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -4549,7 +4458,7 @@
   {
    "numData": "145_Credit_sensitivity_expected",
    "name": "145_Credit_sensitivity_expected",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/Analytics/CreditSensitivityExpected",
    "definition": "",
    "codification": {
     "kind": "NUMERIC",
@@ -4568,7 +4477,7 @@
   {
    "numData": "146_PIK",
    "name": "146_PIK",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/Positions/Position/InterestRateInstrumentCharacteristics/Redemption/PIK",
    "definition": "",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4608,7 +4517,7 @@
   {
    "numData": "147_Infrastructure_investment_additional_QRT",
    "name": "147_Infrastructure_investment_additional_QRT",
-   "fundXmlPath": "To be defined with Fundxml",
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/InfrastructureInvestmentAdditionalQRT",
    "definition": "(for mandate or segregated account especially)\n\nIdentify if the asset is an infrastructure investment as defined in Article 1(55a) and (55b) of Delegated Regulation (EU) 2015/35. One of the options in the following closed list shall be used:",
    "codification": {
     "kind": "CLOSED_LIST",
@@ -4668,7 +4577,7 @@
   {
    "numData": "148_Economic_sector_NACE",
    "name": "148_Economic_sector_NACE",
-   "fundXmlPath": "Position / CreditRiskData / EconomicSector",
+   "fundXmlPath": "Portfolio/Positions/Position/CreditRiskData/EconomicSectorNACE",
    "definition": "Economic sector",
    "codification": {
     "kind": "NACE",
@@ -4700,10 +4609,10 @@
    "numKey": "148"
   },
   {
-   "numData": "150_LTEI_Fund_Elligibility",
-   "name": "150_LTEI_Fund_Elligibility",
-   "fundXmlPath": null,
-   "definition": "Elligibility of the held fund to LTEI dispositions according to regulation ",
+   "numData": "150_LTEI_Fund_Eligibility",
+   "name": "150_LTEI_Fund_Eligibility",
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/LTEIFundEligibility",
+   "definition": "Eligibility of the held fund to LTEI dispositions according to regulation ",
    "codification": {
     "kind": "CLOSED_LIST",
     "maxLength": null,
@@ -4718,7 +4627,7 @@
      },
      {
       "code": "2",
-      "label": "Not elligible"
+      "label": "Not eligible"
      }
     ]
    },
@@ -4737,8 +4646,8 @@
   {
    "numData": "151_Legislative_program_investment",
    "name": "151_Legislative_program_investment",
-   "fundXmlPath": null,
-   "definition": "Elligibility of the held equities to legislative programmes dispositions",
+   "fundXmlPath": "Portfolio/Positions/Position/AdditionalInformation/LegislativeProgramInvestment",
+   "definition": "Eligibility of the held equities to legislative programmes dispositions",
    "codification": {
     "kind": "CLOSED_LIST",
     "maxLength": null,
@@ -4753,7 +4662,7 @@
      },
      {
       "code": "2",
-      "label": "Not elligible"
+      "label": "Not eligible"
      }
     ]
    },
@@ -4771,7 +4680,7 @@
   {
    "numData": "1000_TPT_Version",
    "name": "1000_TPT_Version",
-   "fundXmlPath": null,
+   "fundXmlPath": "Portfolio/TPTVersion",
    "definition": "TPT Published Version",
    "codification": {
     "kind": "FREE_TEXT",

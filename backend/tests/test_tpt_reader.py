@@ -59,7 +59,7 @@ def test_xlsx_fixture(fixture_bytes):
 def test_version_detection():
     from app.ingest.tpt_reader import TptRow
 
-    assert detect_version([TptRow({"1000": "V8.0 (official) dated 26 May 2026"}, 2)], set()) == (
+    assert detect_version([TptRow({"1000": "V8.0 (official) dated 8 October 2026"}, 2)], set()) == (
         "V8",
         "field 1000",
     )

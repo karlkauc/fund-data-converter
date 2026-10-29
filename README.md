@@ -18,9 +18,14 @@ six directions. Runs as a single container on Google Cloud Run.
   1. custom attributes
   2. the TPT block
   3. the core structures
+
+  The rows are then fitted to the output version: a V8 file leaves the 18 fields V8 no longer maintains empty;
+  a V7 file of V8 data drops 150/151 and maps e1/e2/e3 → e and issuer code type 2 → 9 (both reported).
 - **Lossless round trip**: values that have no element in FundsXML, or that the schema rejects, are not
   dropped. They are stored as `Position/CustomAttributes/Attribute[Name=TPT_<field>]`. Examples: 17b, 114,
-  V8 fields 150/151, V8 codes e1/e2/e3 in field 56.
+  V8 fields 150/151, V8 codes e1/e2/e3 in field 56, V8 issuer code type 2.
+- **TPT versions**: V7 (25 November 2024) and the final V8 (8 October 2026). FundsXML 4.2.11 has no V8 block,
+  so V8 data is written to the V7 block plus custom attributes until FundsXML 4.2.12 is released.
 - **openfunds ⇄ FundsXML**
   - Share class rows are grouped into funds. Static and dynamic data use the rules in
     `app/mapping/openfunds_rules.py`.
