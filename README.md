@@ -162,3 +162,7 @@ Uploaded XML with a DOCTYPE or entity declaration is rejected, which rules out X
   default: the 2.13.0 field list on openfunds.org), then `python tools/build_openfunds_templates.py` to rejoin
   the template fields with the FundsXML schema. Check its "unmatched" list; `MANUAL`/`MANUAL_IDS` in the
   script take what the schema documents without (or with a wrong) number.
+
+## License
+
+[MIT](LICENSE)
