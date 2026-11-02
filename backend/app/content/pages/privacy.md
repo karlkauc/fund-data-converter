@@ -65,9 +65,6 @@ If you send feedback, we store your message, your email address if you give one,
 you were on, any error message shown, the visitor hash, your country, user agent, device type and the app version.
 Your file is not sent.
 
-If the database is unavailable, the feedback is written to the application log instead, including your message and
-email address, and is kept there for 30 days.
-
 The purpose is to handle your message and reply if you asked for that. The legal basis is our legitimate interest
 in answering and improving the site (Art. 6(1)(f) GDPR). Feedback is kept for as long as it is needed for this
 purpose. Giving an email address is optional.
