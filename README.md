@@ -41,8 +41,9 @@ six directions. Runs as a single container on Google Cloud Run.
   [findatex-validator.eu](https://www.findatex-validator.eu/). The file goes from browser tab to browser tab
   (`window.open` + `postMessage`); it is not uploaded anywhere on the way.
 - **Privacy**: files are processed in memory and never stored. No cookies, no client-side tracking.
-  Anonymous usage statistics (counts, sizes, durations, issue codes – never file content, file names
-  or IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`.
+  Usage statistics (counts, sizes, durations, issue codes – never file content, file names
+  or raw IPs) and feedback go to a Postgres when `USAGE_DB_URL` is set; see `docs/USAGE_STATS.md`. Cloud Run
+  request logs keep raw IPs for 30 days. `/imprint` and `/privacy` state this publicly; keep them true.
 
 ## API
 
@@ -75,7 +76,7 @@ backend/   FastAPI app (Python 3.12, lxml, openpyxl)
   app/writers/     TPT and openfunds writers
   app/spec/        TPT V7/V8 field catalogs (tools/sync_specs.py), openfunds catalog (tools/sync_openfunds.py)
   app/samples/     example files behind "Try an example" (tools/make_samples.py)
-  app/usage/       anonymous usage statistics + feedback store (docs/USAGE_STATS.md)
+  app/usage/       usage statistics + feedback store (docs/USAGE_STATS.md)
   app/content/     server-rendered guides (pages/*.md), one page per TPT field (fields.py) and per mapped
                    openfunds field (openfunds_fields.py), home FAQ
   sql/             DDL of the usage-statistics database

@@ -82,6 +82,22 @@ def test_content_pages_render_with_breadcrumbs_and_article(site):
     assert "https://tpt.example/api/convert" in api and "{{origin}}" not in api
 
 
+def test_imprint_and_privacy_are_linked_everywhere_but_not_indexed(site):
+    for path, heading in (("/imprint", "Imprint and about"), ("/privacy", "Privacy policy")):
+        r = site.get(path)
+        assert r.status_code == 200
+        assert f"<h1>{heading}</h1>" in r.text
+        assert '<meta name="robots" content="noindex" />' in r.text
+        assert ">Guides</a>" not in r.text.split("<h1>")[0]  # sits directly below the site
+    guide = site.get("/guides/what-is-tpt").text
+    assert 'href="/imprint"' in guide and 'href="/privacy"' in guide
+    assert ">Guides</a>" in guide.split("<h1>")[0]
+    sitemap = site.get("/sitemap.xml").text
+    assert "/imprint" not in sitemap and "/privacy" not in sitemap
+    hub = site.get("/guides").text.split("<footer")[0]
+    assert "/imprint" not in hub and "/privacy" not in hub
+
+
 def test_every_internal_link_of_the_content_pages_resolves(site):
     known = {f"/{route}" for route in spa.ROUTE_META} | {f"/{slug}" for slug in all_pages()}
     known |= {"/api/docs", "/content.css", "/favicon.svg"}

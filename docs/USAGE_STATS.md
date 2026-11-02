@@ -1,9 +1,11 @@
-# Anonymous usage statistics
+# Usage statistics
 
-The converter records **aggregate, anonymous** usage so it can be improved based on real use:
+The converter records **pseudonymous** usage so it can be improved based on real use:
 how many conversions run in which direction, which TPT versions, file sizes, how long they take,
 how often they fail and which conversion messages (issue codes) come up. **File content is never
-stored**, and the raw client IP is neither stored nor logged. No cookies, no client-side script.
+stored**, and the application neither stores nor logs the raw client IP. Cloud Run's request logs do
+(30 days, `_Default` log bucket). No cookies, no client-side script. The public statement is
+`backend/app/content/pages/privacy.md`: change it together with what is collected.
 
 The feature is **off by default**; it only switches on when `USAGE_DB_URL` is set.
 

@@ -41,7 +41,7 @@ class RouteMeta:
 
 _HOME = (
     "Free online converter for fund data: FinDatEx Tripartite Template (Solvency II TPT V7 and V8), "
-    "FundsXML 4 and openfunds, as Excel, CSV or XML, in every direction. No login, nothing stored."
+    "FundsXML 4 and openfunds, as Excel, CSV or XML, in every direction. No login, files not stored."
 )
 
 # Keep in sync with ROUTES and TITLES in frontend/src/lib/router.ts.
@@ -50,27 +50,27 @@ ROUTE_META: dict[str, RouteMeta] = {
     "fundsxml-to-tpt": RouteMeta(
         "FundsXML to TPT Converter – FundsXML 4 to Tripartite Template Excel/CSV",
         "Convert FundsXML 4 documents into Solvency II TPT V7 or V8 files as Excel (XLSX) or CSV, one "
-        "portfolio per share class. Free, no login, nothing stored.",
+        "portfolio per share class. Free, no login, files not stored.",
     ),
     "openfunds-to-fundsxml": RouteMeta(
         "openfunds to FundsXML Converter – OFST fields, holdings and EMT/EPT/EET to FundsXML 4",
         "Convert openfunds files (XLSX, CSV) into FundsXML 4: share class static data, NAVs, portfolio "
-        "holdings and the EMT, EPT, EET and EFT template fields. Lossless, free, nothing stored.",
+        "holdings and the EMT, EPT, EET and EFT template fields. Lossless, free, files not stored.",
     ),
     "fundsxml-to-openfunds": RouteMeta(
         "FundsXML to openfunds Converter – FundsXML 4 to openfunds Excel/CSV",
         "Convert FundsXML 4 documents into openfunds files with OF-ID columns: one row per share "
-        "class plus a holdings sheet. Free, no login, nothing stored.",
+        "class plus a holdings sheet. Free, no login, files not stored.",
     ),
     "tpt-to-openfunds": RouteMeta(
         "TPT to openfunds Converter – Tripartite Template to openfunds holdings (lossless)",
         "Convert Solvency II TPT V7/V8 files into openfunds: share class data and OFPH holdings, with "
-        "every TPT field kept. Free, no login, nothing stored.",
+        "every TPT field kept. Free, no login, files not stored.",
     ),
     "openfunds-to-tpt": RouteMeta(
         "openfunds to TPT Converter – openfunds holdings to Tripartite Template V7/V8",
         "Convert openfunds portfolio holdings (OFPH) and share class data into a Solvency II TPT V7 or "
-        "V8 file as Excel or CSV. Free, no login, nothing stored.",
+        "V8 file as Excel or CSV. Free, no login, files not stored.",
     ),
     "mapping": RouteMeta(
         "TPT ⇄ FundsXML field mapping – every TPT V7/V8 field and its FundsXML path",

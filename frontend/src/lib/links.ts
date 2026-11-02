@@ -15,3 +15,5 @@ export const GUIDES_URL = "/guides";
 export const FIELDS_URL = "/tpt/fields";
 export const OPENFUNDS_FIELDS_URL = "/openfunds/fields";
 export const MESSAGES_URL = "/tpt/issues";
+export const IMPRINT_URL = "/imprint";
+export const PRIVACY_URL = "/privacy";

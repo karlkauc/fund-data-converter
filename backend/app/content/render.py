@@ -75,7 +75,7 @@ def family_html() -> str:
 def _trail(page: Page) -> list[tuple[str, str]]:
     """Site › Guides › page; the hub itself sits directly below the site."""
     trail = [(site.SITE_NAME, "/")]
-    if page.slug != HUB_SLUG:
+    if "/" in page.slug:
         trail.append(("Guides", f"/{HUB_SLUG}"))
     return [*trail, (page.h1, f"/{page.slug}")]
 

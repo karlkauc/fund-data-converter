@@ -40,7 +40,7 @@ async def submit_feedback(request: Request, payload: FeedbackPayload) -> Respons
     if payload.website:
         return Response(status_code=204)
 
-    # Same anonymisation as usage events: the tracker (if any) supplies the
+    # Same pseudonymisation as usage events: the tracker (if any) supplies the
     # daily-salted visitor hash and GeoIP country; the raw IP is never stored.
     ctx = current()
     ua = ctx.user_agent if ctx else request.headers.get("user-agent")

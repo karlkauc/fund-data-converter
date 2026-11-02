@@ -52,7 +52,7 @@ def load_settings() -> Settings:
         max_positions=int(os.getenv("MAX_POSITIONS", "10000")),
         # Larger outputs are delivered zipped (Cloud Run caps responses at 32 MiB).
         zip_threshold_mb=int(os.getenv("ZIP_THRESHOLD_MB", "8")),
-        # Anonymous usage statistics (docs/USAGE_STATS.md); off unless USAGE_DB_URL is set.
+        # Usage statistics (docs/USAGE_STATS.md); off unless USAGE_DB_URL is set.
         # The URL carries no password; it comes from USAGE_DB_PASSWORD (a secret).
         usage_db_url=os.getenv("USAGE_DB_URL", ""),
         usage_db_password=os.getenv("USAGE_DB_PASSWORD", ""),
