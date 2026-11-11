@@ -26,7 +26,7 @@ from functools import lru_cache
 
 from lxml import etree
 
-from app.schema.model import UNBOUNDED, ComplexType, ElementDecl, SchemaModel, SimpleType
+from app.schema.model import STRING, UNBOUNDED, ComplexType, ElementDecl, SchemaModel, SimpleType
 
 _SEGMENT = re.compile(r"^(?P<name>@?[A-Za-z_][\w.\-]*)(?:\[(?P<pred>@?[\w.\-]+)=(?P<val>[^\]]*)\])?$")
 
@@ -137,6 +137,52 @@ class Node:
         return tuple(dict.fromkeys(found))
 
 
+class KeyedChildren:
+    """``node.ensure(f"{container}/{item}[{key}={value}]")`` without scanning every item.
+
+    ``ensure`` looks at each existing item, so thousands of custom attributes on one element
+    cost quadratic time. This index reads a node's items once, on first use, and must be the
+    only writer of such items while it is used.
+    """
+
+    def __init__(self, container: str, item: str, key: str):
+        self._container, self._item, self._key = container, item, key
+        self._nodes: dict[int, tuple[Node, Node, dict[str, Node]]] = {}
+        self._other: list[tuple[Node, Node]] = []  # changed through ``Node.ensure``
+        self._plain: set[str] = set()  # values the path syntax reads as they are
+
+    def changed(self) -> list[tuple[Node, Node]]:
+        """``(node, container)`` for every container changed so far (for ``SerializeMemo.forget``)."""
+        return [(node, holder) for node, holder, _ in self._nodes.values()] + self._other
+
+    def ensure(self, node: Node, value: str) -> Node:
+        if value not in self._plain:
+            path = f"{self._container}/{self._item}[{self._key}={value}]"
+            if _parse(path) != ((self._container, None, None), (self._item, self._key, value)):
+                # A value the path syntax reads differently: as before, and the index starts over.
+                self._nodes.pop(id(node), None)
+                found = node.ensure(path)
+                self._other.append((node, node.child(self._container)))
+                return found
+            self._plain.add(value)
+        entry = self._nodes.get(id(node))
+        if entry is None or entry[0] is not node:
+            holder = node.ensure(self._container)
+            index: dict[str, Node] = {}
+            for c in holder.children:
+                if c.name == self._item and (sub := c.child(self._key)) is not None and sub.text is not None:
+                    index.setdefault(sub.text, c)
+            entry = (node, holder, index)
+            self._nodes[id(node)] = entry
+        _, holder, index = entry
+        found = index.get(value)
+        if found is None:
+            found = holder.add(self._item)
+            found.add(self._key).text = value
+            index[value] = found
+        return found
+
+
 @lru_cache(maxsize=4096)
 def _parse(path: str) -> tuple[Segment, ...]:
     out = []
@@ -188,8 +234,32 @@ _INT_TYPES = {
 }
 
 
+_NORMALIZED_PER_TYPE = 4096  # cached values per simple type; the cache starts over beyond
+
+
 def normalize(value: str, simple: SimpleType) -> str:
-    """Return ``value`` in the lexical form of ``simple`` or raise ValueError."""
+    """Return ``value`` in the lexical form of ``simple`` or raise ValueError.
+
+    Results (and refusals) are cached per simple type: a large file repeats the same dates,
+    currencies and codes thousands of times.
+    """
+    cache = simple.__dict__.get("_normalized")
+    if cache is None or len(cache) > _NORMALIZED_PER_TYPE:
+        cache = {}
+        simple.__dict__["_normalized"] = cache
+    hit = cache.get(value)
+    if hit is None:
+        try:
+            hit = (True, _normalize(value, simple))
+        except ValueError as exc:
+            hit = (False, str(exc))
+        cache[value] = hit
+    if hit[0]:
+        return hit[1]
+    raise ValueError(hit[1])
+
+
+def _normalize(value: str, simple: SimpleType) -> str:
     v = value.strip()
     if not v:
         if simple.base == "string" and not (simple.enums or simple.patterns or simple.min_length):
@@ -276,10 +346,18 @@ def format_decimal(d: Decimal) -> str:
 _DATE_FORMATS = ("%Y-%m-%d", "%Y%m%d", "%d.%m.%Y", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y")
 
 
+_ISO_DATE = re.compile(r"([0-9]{4})-([0-9]{2})-([0-9]{2})")
+
+
 def parse_date(v: str) -> date:
     s = v.strip()
     if "T" in s or " " in s:
         s = re.split(r"[T ]", s, maxsplit=1)[0]
+    if m := _ISO_DATE.fullmatch(s):  # the common case, without strptime
+        try:
+            return date(int(m[1]), int(m[2]), int(m[3]))
+        except ValueError:
+            pass
     for fmt in _DATE_FORMATS:
         try:
             return datetime.strptime(s, fmt).date()
@@ -312,8 +390,9 @@ class Serializer:
     worse than an XSD error the user can see and fix at the source.
     """
 
-    def __init__(self, model: SchemaModel):
+    def __init__(self, model: SchemaModel, memo: SerializeMemo | None = None):
         self.model = model
+        self.memo = memo
         self.dropped: list[Dropped] = []
         self.invalid: list[Dropped] = []
         self.changed: list[Dropped] = []  # written, but in another spelling (enumeration codes)
@@ -325,6 +404,39 @@ class Serializer:
         """Return ``(element, is_invalid)``; element is None when dropped."""
         if required is None:
             required = decl.min_occurs >= 1
+        memo = self.memo
+        if memo is None or decl.type_key is None:
+            return self._element(node, decl, path, required)
+        entries = memo.entries
+        hit = entries.get(id(node))
+        if hit is not None and hit[0] is node and hit[1] is decl and hit[2] == path and hit[3] == required:
+            self.dropped += hit[5]
+            self.invalid += hit[6]
+            self.changed += hit[7]
+            self.sealed += hit[8]
+            return hit[4]
+        d0, i0, c0, s0 = len(self.dropped), len(self.invalid), len(self.changed), self.sealed
+        result = self._element(node, decl, path, required)
+        entries[id(node)] = (
+            node,
+            decl,
+            path,
+            required,
+            result,
+            self.dropped[d0:] if len(self.dropped) > d0 else (),
+            self.invalid[i0:] if len(self.invalid) > i0 else (),
+            self.changed[c0:] if len(self.changed) > c0 else (),
+            self.sealed - s0,
+        )
+        return result
+
+    def _element(
+        self, node: Node, decl: ElementDecl, path: str, required: bool
+    ) -> tuple[etree._Element | None, bool]:
+        if decl.type_key is not None and not node.attrs:
+            flat = self._flat(node, self.model.complex[decl.type_key], path)
+            if flat is not None:
+                return flat, False
         mark, sealed_before = len(self.invalid), self.sealed
         if decl.type_key is None:
             el, problems = self._leaf(node, decl.simple, path)
@@ -351,6 +463,46 @@ class Serializer:
             self.dropped.append(Dropped(path, node.text or "", "; ".join(reasons), origins))
         return None, False
 
+    def _flat(self, node: Node, ct: ComplexType, path: str) -> etree._Element | None:
+        """``_complex`` for an element of simple elements only that has no problem, else None.
+
+        Custom attributes and most identifier blocks look like this; whether their element names
+        fit the type is worked out once per name sequence (``_flat_plan``), so only the values
+        are checked here. Anything else (None) takes the general way, which reports the problem.
+        """
+        children = node.children
+        plan = _flat_plan(ct, tuple([c.name for c in children]))
+        if plan is None:
+            return None
+        simples, order = plan
+        texts: list[str | None] = []
+        changed: list[Dropped] = []
+        for child, simple in zip(children, simples, strict=True):
+            if child.children:
+                return None
+            text = child.text
+            if text is None:
+                if simple.base == "string" and not simple.min_length and not simple.enums:
+                    texts.append(None)
+                    continue
+                return None
+            try:
+                value = normalize(text, simple)
+            except ValueError:
+                return None
+            if simple.enums and value != text.strip():
+                changed.append(Dropped(f"{path}/{child.name}", text, f"written as {value}", child.origins()))
+            texts.append(value)
+        el = etree.Element(node.name)
+        sub_element = etree.SubElement
+        for i in order:
+            sub = sub_element(el, children[i].name)
+            if texts[i] is not None:
+                sub.text = texts[i]
+        if changed:
+            self.changed += changed
+        return el
+
     def _complex(self, node: Node, ct: ComplexType, path: str) -> tuple[etree._Element, list[str]]:
         el = etree.Element(node.name)
         problems: list[str] = []
@@ -363,11 +515,7 @@ class Serializer:
                 el.set(name, normalize(value, attr.simple))
             except ValueError as exc:
                 self._drop(f"{path}/@{name}", value, str(exc), node.attr_origins.get(name))
-        problems += [
-            f"required attribute {n} missing"
-            for n, a in ct.attributes.items()
-            if a.required and el.get(n) is None
-        ]
+        problems += [f"required attribute {n} missing" for n in _required_attributes(ct) if el.get(n) is None]
 
         if ct.simple_content is not None:
             if node.text is None:
@@ -380,6 +528,7 @@ class Serializer:
                     el.text = node.text
             return el, problems
 
+        memo = self.memo
         built: list[tuple[int, int, etree._Element]] = []
         counts: dict[str, int] = {}
         seen: dict[str, int] = {}
@@ -403,12 +552,27 @@ class Serializer:
                     self._drop_subtree(child, cpath, "conflicts with another choice branch")
                     continue
             required = None
-            if decl.type_key is None or self.model.complex[decl.type_key].simple_content is not None:
+            child_ct = None if decl.type_key is None else self.model.complex[decl.type_key]
+            if child_ct is None or child_ct.simple_content is not None:
                 # A repeated value element (e.g. Amount per currency) is only required
                 # while no further sibling can satisfy the minimum.
                 later = seen[child.name] < totals[child.name]
                 required = decl.min_occurs > counts.get(child.name, 0) and not later
-            sub, _bad = self.element(child, decl, cpath, required)
+            # The common cases without the bookkeeping of ``element``, which they would not need:
+            # a simple element or an element of simple elements without a problem. Anything else
+            # (and a result to reuse) goes the full way.
+            sub = None
+            if child_ct is None:
+                sub, leaf_problems = self._leaf(child, decl.simple, cpath)
+                if leaf_problems:
+                    sub = None
+            else:
+                if memo is not None:
+                    memo.parents[id(child)] = node
+                if not child.attrs and (memo is None or id(child) not in memo.entries):
+                    sub = self._flat(child, child_ct, cpath)
+            if sub is None:
+                sub, _bad = self.element(child, decl, cpath, required)
             if sub is None:
                 continue
             if decl.choice is not None:
@@ -416,8 +580,8 @@ class Serializer:
             counts[child.name] = counts.get(child.name, 0) + 1
             built.append((decl.order, seq, sub))
 
-        for decl in ct.children:
-            if decl.min_occurs < 1 or decl.name in counts:
+        for decl in _required_children(ct):
+            if decl.name in counts:
                 continue
             if decl.choice is not None:
                 cid, branch = decl.choice
@@ -453,7 +617,7 @@ class Serializer:
 
     def _leaf(self, node: Node, simple: SimpleType | None, path: str) -> tuple[etree._Element, list[str]]:
         el = etree.Element(node.name)
-        simple = simple or SimpleType("string")
+        simple = simple or STRING
         if node.children:
             return el, ["simple element cannot have children"]
         if node.text is None:
@@ -478,6 +642,80 @@ class Serializer:
             self.dropped.append(Dropped(path, node.text or "", reason, origins))
 
 
+def _required_attributes(ct: ComplexType) -> tuple[str, ...]:
+    names = ct.__dict__.get("_required_attributes")
+    if names is None:
+        names = tuple(n for n, a in ct.attributes.items() if a.required)
+        ct.__dict__["_required_attributes"] = names
+    return names
+
+
+def _required_children(ct: ComplexType) -> tuple[ElementDecl, ...]:
+    """The declared children with minOccurs ≥ 1, in declared order."""
+    decls = ct.__dict__.get("_required_children")
+    if decls is None:
+        decls = tuple(d for d in ct.children if d.min_occurs >= 1)
+        ct.__dict__["_required_children"] = decls
+    return decls
+
+
+_FLAT_PLANS_PER_TYPE = 256
+
+
+def _flat_plan(
+    ct: ComplexType, names: tuple[str, ...]
+) -> tuple[tuple[SimpleType, ...], tuple[int, ...]] | None:
+    """For ``Serializer._flat``: the simple types of child elements ``names`` and the order to
+    write them in, if ``_complex`` would take them all as simple elements without a problem that
+    depends on the names (unknown, repeated too often, choice conflict, required one missing);
+    else None."""
+    plans = ct.__dict__.setdefault("_flat_plans", {})
+    if names in plans:
+        return plans[names]
+    plan = None
+    if ct.simple_content is None and not _required_attributes(ct):
+        decls: list[ElementDecl] = []
+        counts: dict[str, int] = {}
+        branch_of_choice: dict[int, int] = {}
+        for name in names:
+            decl = ct.child(name)
+            if decl is None or decl.type_key is not None:
+                break
+            if decl.max_occurs != UNBOUNDED and counts.get(name, 0) >= decl.max_occurs:
+                break
+            if decl.choice is not None:
+                chosen = branch_of_choice.get(decl.choice[0])
+                if chosen is not None and chosen != decl.choice[1]:
+                    break
+                branch_of_choice[decl.choice[0]] = decl.choice[1]
+            counts[name] = counts.get(name, 0) + 1
+            decls.append(decl)
+        else:
+            if not any(_missing(decl, ct, counts, branch_of_choice) for decl in _required_children(ct)):
+                order = sorted(range(len(names)), key=lambda i: (decls[i].order, i))
+                plan = (tuple(d.simple or STRING for d in decls), tuple(order))
+    if len(plans) < _FLAT_PLANS_PER_TYPE:
+        plans[names] = plan
+    return plan
+
+
+def _missing(
+    decl: ElementDecl, ct: ComplexType, counts: dict[str, int], branch_of_choice: dict[int, int]
+) -> bool:
+    """Whether ``_complex`` would have to add (or report) the required element ``decl``."""
+    if decl.name in counts:
+        return False
+    if decl.choice is not None:
+        cid, branch = decl.choice
+        group = ct.choices.get(cid)
+        chosen = branch_of_choice.get(cid)
+        if chosen is not None and chosen != branch:
+            return False
+        if chosen is None and (group is None or group.min_occurs < 1):
+            return False
+    return True
+
+
 @dataclass
 class SerializeResult:
     element: etree._Element | None
@@ -486,9 +724,46 @@ class SerializeResult:
     changed: list[Dropped] = field(default_factory=list)
 
 
-def serialize_at(model: SchemaModel, node: Node, path: list[str]) -> SerializeResult:
-    """Serialise ``node`` as the element at ``path`` (element names below the root; [] = root)."""
-    ser = Serializer(model)
+class SerializeMemo:
+    """Results of serialised subtrees, reused when the same tree is serialised again.
+
+    A subtree is serialised the same way every time it is unchanged, so a second pass after a
+    few additions (custom attributes) only has to redo the changed parts. Whoever changes a tree
+    between two passes calls :meth:`forget` for what it changed. The lxml elements are handed
+    out again, i.e. moved out of the earlier result: only the last result stays complete.
+    """
+
+    def __init__(self) -> None:
+        # id(node) -> (node, decl, path, required, (element, invalid), dropped, invalid, changed, sealed)
+        self.entries: dict[int, tuple] = {}
+        self.parents: dict[int, Node] = {}  # id(element node) -> the node it was serialised under
+
+    def forget(self, changes: list[tuple[Node, Node | None]]) -> None:
+        """Drop the results that ``(parent, child)`` changes make stale: ``child`` and everything
+        below it changed or is new, so ``parent`` and its ancestors changed too."""
+        entries, parents = self.entries, self.parents
+        climbed: set[int] = set()
+        for parent, child in changes:
+            stack = [child] if child is not None else []
+            while stack:
+                n = stack.pop()
+                entries.pop(id(n), None)
+                stack.extend(n.children)
+            node: Node | None = parent
+            while node is not None and id(node) not in climbed:
+                climbed.add(id(node))
+                entries.pop(id(node), None)
+                node = parents.get(id(node))
+
+
+def serialize_at(
+    model: SchemaModel, node: Node, path: list[str], memo: SerializeMemo | None = None
+) -> SerializeResult:
+    """Serialise ``node`` as the element at ``path`` (element names below the root; [] = root).
+
+    ``memo`` reuses (and records) the results of subtrees serialised before; see SerializeMemo.
+    """
+    ser = Serializer(model, memo)
     decl = model.decl_at(path)
     if decl is None:
         raise ValueError(f"unknown schema path {'/'.join(path)}")

@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import base64
+import gc
 import hashlib
 import io
 import re
+import threading
 import zipfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import PurePath
 
@@ -18,9 +22,9 @@ from app.convert.openfunds_to_fundsxml import OfConvertOptions, convert_openfund
 from app.convert.to_fundsxml import TPT_BLOCK, ConversionResult, ConvertOptions, convert_tpt_to_fundsxml
 from app.convert.to_tpt import TptExtract, extract_tpt
 from app.ingest.fundsxml_reader import FundsXmlReadError, parse_fundsxml
-from app.ingest.limits import TooManyRowsError
+from app.ingest.limits import TooManyRowsError, check_xlsx_rows
 from app.ingest.openfunds_reader import OfDocument, OpenfundsReadError, looks_like_openfunds, read_openfunds
-from app.ingest.tpt_reader import TptDocument, TptReadError, read_tpt
+from app.ingest.tpt_reader import TptDocument, TptReadError, pick_sheet, read_tpt
 from app.mapping.openfunds_templates import templates
 from app.mapping.transforms import cic_category
 from app.model.issues import Issue
@@ -94,14 +98,15 @@ class OutputFile:
 
 
 def detect_kind(data: bytes, filename: str) -> str:
-    head = data[:2048].lstrip(b"\xef\xbb\xbf \t\r\n")
-    if head.startswith(b"<"):
-        return "fundsxml"
-    if filename.lower().endswith(".xml"):
+    if _is_fundsxml(data, filename):
         return "fundsxml"
     if looks_like_openfunds(data, filename):
         return "openfunds"
     return "tpt"
+
+
+def _is_fundsxml(data: bytes, filename: str) -> bool:
+    return data[:2048].lstrip(b"\xef\xbb\xbf \t\r\n").startswith(b"<") or filename.lower().endswith(".xml")
 
 
 def resolve_direction(req: Request, kind: str) -> str:
@@ -128,8 +133,43 @@ def run(req: Request) -> dict:
     return report
 
 
+_gc_lock = threading.Lock()
+_gc_users = 0
+_gc_was_enabled = False
+
+
+@contextmanager
+def _cyclic_gc_paused() -> Iterator[None]:
+    """Pause Python's cycle collector while conversions run.
+
+    A conversion builds millions of small objects (tree nodes, elements, records) that live until
+    it ends and form no reference cycles. Each full collection walks all of them, which cost about
+    a fifth of the time of a large file on Python 3.12. Reference counting still frees everything
+    as usual; the collector resumes when the last running conversion ends.
+    """
+    global _gc_users, _gc_was_enabled
+    with _gc_lock:
+        if _gc_users == 0:
+            _gc_was_enabled = gc.isenabled()
+            gc.disable()
+        _gc_users += 1
+    try:
+        yield
+    finally:
+        with _gc_lock:
+            _gc_users -= 1
+            if _gc_users == 0 and _gc_was_enabled:
+                gc.enable()
+
+
 def convert(req: Request) -> tuple[dict, OutputFile]:
     """The report (``output`` holds metadata only) and the converted file."""
+    with _cyclic_gc_paused():
+        return _convert(req)
+
+
+def _convert(req: Request) -> tuple[dict, OutputFile]:
+    _refuse_large_xlsx(req)
     direction = resolve_direction(req, detect_kind(req.data, req.filename))
     report, out, loss = HANDLERS[direction](req)
     report["output"] = {
@@ -153,6 +193,23 @@ def convert(req: Request) -> tuple[dict, OutputFile]:
         for key in ("preview", "xmlPreview", "xmlPreviewTruncated"):
             report.pop(key, None)
     return report, out
+
+
+def _refuse_large_xlsx(req: Request) -> None:
+    """Refuse a TPT or openfunds XLSX with too many rows before reading it at all.
+
+    Telling TPT from openfunds reads the workbook, which for a large sheet without a stored
+    dimension costs as much as reading it. Whichever it is, the reader refuses the file if its
+    TPT sheet has too many rows (openfunds reads every sheet), so that is checked first – when
+    nothing else could refuse the request sooner (a direction or target that does not fit).
+    """
+    target = (req.target or "").lower()
+    if req.direction != "auto" or (target and target not in FORMATS) or _is_fundsxml(req.data, req.filename):
+        return
+    try:
+        check_xlsx_rows(req.data, pick_sheet)
+    except TooManyRowsError as exc:
+        raise _too_large(exc) from exc
 
 
 def _data_loss(issues: list[dict], totals: dict[str, int]) -> dict:

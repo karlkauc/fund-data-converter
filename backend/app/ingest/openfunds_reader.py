@@ -27,10 +27,10 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 from pathlib import PurePath
 
-from app.ingest.limits import archive_problem, guarded, sheet_rows, text_lines
+from app.ingest.limits import archive_problem, check_xlsx_rows, guarded, sheet_rows, text_lines
 from app.ingest.tpt_reader import _cell_text, _decode, _looks_like_xlsx
 from app.model.issues import Issue
-from app.spec.openfunds import OfCatalog, load_openfunds
+from app.spec.openfunds import OfCatalog, OfField, load_openfunds
 
 HEADER_SCAN_ROWS = 50
 SNIFF_BYTES = 256 * 1024  # enough for the header rows when only sniffing
@@ -179,8 +179,9 @@ def read_openfunds(data: bytes, filename: str) -> OfDocument:
             )
         )
     records = list(shareclasses.values())
+    checks = _ValueChecks(catalog)
     for rec in records + holdings:
-        issues += _check_values(rec, catalog)
+        issues += checks.issues(rec)
     return OfDocument(
         records, holdings, columns, extra_columns, "narrow" if narrow else "flat", fmt, delim, issues
     )
@@ -232,15 +233,35 @@ def _merge(records: dict[str, OfRecord], rec: OfRecord, issues: list[Issue]) -> 
                 )
 
 
-def _check_values(rec: OfRecord, catalog: OfCatalog) -> list[Issue]:
-    issues = []
-    for col, value in rec.values.items():
-        match = catalog.match_header(col)
-        f = catalog.by_id.get(match.of_id) if match else None
-        if f is None:
-            continue
-        reason = _invalid(f.data_type, f.codes, value, f.values)
-        if reason:
+class _ValueChecks:
+    """``_invalid`` for every value of a record; columns and repeated values are looked up once."""
+
+    def __init__(self, catalog: OfCatalog):
+        self.catalog = catalog
+        self.fields: dict[str, OfField | None] = {}
+        self.reasons: dict[tuple[str, str], str | None] = {}
+
+    def field(self, col: str) -> OfField | None:
+        if col not in self.fields:
+            match = self.catalog.match_header(col)
+            self.fields[col] = self.catalog.by_id.get(match.of_id) if match else None
+        return self.fields[col]
+
+    def reason(self, f: OfField, value: str) -> str | None:
+        key = (f.of_id, value)
+        if key not in self.reasons:
+            self.reasons[key] = _invalid(f.data_type, f.codes, value, f.values)
+        return self.reasons[key]
+
+    def issues(self, rec: OfRecord) -> list[Issue]:
+        issues = []
+        for col, value in rec.values.items():
+            f = self.field(col)
+            if f is None:
+                continue
+            reason = self.reason(f, value)
+            if not reason:
+                continue
             issues.append(
                 Issue(
                     "warning",
@@ -251,7 +272,7 @@ def _check_values(rec: OfRecord, catalog: OfCatalog) -> list[Issue]:
                     params={"field": col, "name": f.name, "value": value, "expected": reason},
                 )
             )
-    return issues
+        return issues
 
 
 def _invalid(data_type: str, codes: tuple[str, ...], value: str, values: str = "") -> str | None:
@@ -404,6 +425,8 @@ def _xlsx_tables(data: bytes, limit: int | None = None) -> list[_Table]:
 
     if problem := archive_problem(data):
         raise OpenfundsReadError(f"not a readable XLSX file: {problem}")
+    if limit is None:
+        check_xlsx_rows(data, lambda titles: range(len(titles)))  # every sheet is read
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except (zipfile.BadZipFile, KeyError, OSError, ValueError) as exc:

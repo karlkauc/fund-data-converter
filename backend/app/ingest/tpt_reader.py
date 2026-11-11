@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 
-from app.ingest.limits import archive_problem, guarded, sheet_rows, text_lines
+from app.ingest.limits import archive_problem, check_xlsx_rows, guarded, sheet_rows, text_lines
 from app.model.issues import Issue
 from app.spec.catalog import VERSIONS, Catalog, load_catalog
 
@@ -190,6 +190,7 @@ def _read_xlsx(data: bytes) -> list[list[str]]:
 
     if problem := archive_problem(data):
         raise TptReadError(f"not a readable XLSX file: {problem}")
+    check_xlsx_rows(data, pick_sheet)  # before openpyxl spends seconds on a sheet it would refuse
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except (zipfile.BadZipFile, KeyError, OSError, ValueError) as exc:
@@ -201,11 +202,16 @@ def _read_xlsx(data: bytes) -> list[list[str]]:
 
 
 def _pick_sheet(wb):
-    # The first sheet, unless another one is plainly the TPT sheet.
-    for ws in wb.worksheets:
-        if re.search(r"\bTPT\b", ws.title, re.IGNORECASE):
-            return ws
-    return wb.worksheets[0]
+    return wb.worksheets[pick_sheet([ws.title for ws in wb.worksheets])[0]]
+
+
+def pick_sheet(titles: list[str]) -> list[int]:
+    """The sheet read (as a one-item list of its index): the first one, unless another one is
+    plainly the TPT sheet."""
+    for i, title in enumerate(titles):
+        if re.search(r"\bTPT\b", title, re.IGNORECASE):
+            return [i]
+    return [0]
 
 
 def _cell_text(value) -> str:

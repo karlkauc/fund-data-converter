@@ -44,7 +44,7 @@ from app.mapping.openfunds_templates import templates
 from app.mapping.rules import ASSET_FIELDS, PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIER, PORTFOLIO_FIELDS
 from app.mapping.rules import rules_for as tpt_rules_for
 from app.model.issues import Issue
-from app.model.xmltree import Dropped, Node, serialize_at
+from app.model.xmltree import Dropped, KeyedChildren, Node, SerializeMemo, serialize_at
 from app.schema.model import fundsxml_model, fundsxml_schema_url, fundsxml_version
 from app.spec.catalog import load_catalog
 from app.validate.xsd import validate_fundsxml
@@ -209,7 +209,10 @@ def _convert(
             if row.get("4") and row.get("4") == ccy:
                 core_kept[row.source_row].add("4")
 
-    reports, skipped = _template_records(model, records, kept)
+    # The trees are serialised more than once (template records, dry run, result); unchanged
+    # subtrees are not serialised again.
+    memo = SerializeMemo()
+    reports, skipped = _template_records(model, records, kept, memo)
     for rec, name, invalid in skipped:
         missing = sorted(
             {m for d in invalid for m in re.findall(r"required element (\w+) missing", d.reason)}
@@ -230,29 +233,30 @@ def _convert(
         )
 
     # Dry run: learn which values the schema rejects, so they get a custom attribute too.
-    dry_f = serialize_at(model, funds, ["Funds"])
-    dry_a = serialize_at(model, assets.node, ["AssetMasterData"])
-    dry_r = serialize_at(model, reports, ["RegulatoryReportings"])
+    dry_f = serialize_at(model, funds, ["Funds"], memo)
+    dry_a = serialize_at(model, assets.node, ["AssetMasterData"], memo)
+    dry_r = serialize_at(model, reports, ["RegulatoryReportings"], memo)
     _unkeep(kept, dry_f.dropped + dry_f.changed + dry_r.dropped + dry_r.changed)
     _unkeep(core_kept, dry_f.dropped + dry_a.dropped + dry_f.changed + dry_a.changed)
 
     custom_cols: set[str] = set()
+    attrs = KeyedChildren("CustomAttributes", "Attribute", "Name")  # find-or-add without a scan each
     for rec in records:
         sc = sc_nodes[rec.source_row]
         for col, value in rec.values.items():
             if col not in kept[rec.source_row]:
-                _custom(sc, CUSTOM_PREFIX + col, value, f"{rec.source_row}:{col}#custom")
+                _custom(attrs, sc, CUSTOM_PREFIX + col, value, f"{rec.source_row}:{col}#custom")
                 custom_cols.add(col)
         for header, value in extras[rec.source_row].items():
-            _custom(sc, _extra_name(header), value, f"{rec.source_row}:{header}#custom")
+            _custom(attrs, sc, _extra_name(header), value, f"{rec.source_row}:{header}#custom")
     gaps = _shared_asset_gaps(position_nodes) + _portfolio_gaps(groups, position_nodes)
     for row, pos, empty in gaps:
         for key in sorted(empty):
-            _custom(pos, _tpt_name(key), "", f"{row.source_row}:{key}#custom")
+            _custom(attrs, pos, _tpt_name(key), "", f"{row.source_row}:{key}#custom")
         if "4" in empty:
             # Without a portfolio currency the amounts in portfolio currency cannot be read back.
             for key in sorted(_IN_PORTFOLIO_CCY & set(row.values)):
-                _custom(pos, _tpt_name(key), row.get(key), f"{row.source_row}:{key}#custom")
+                _custom(attrs, pos, _tpt_name(key), row.get(key), f"{row.source_row}:{key}#custom")
     omitted: dict[int, tuple[int, dict[str, str], set[str]]] = {}
     for row, pos in position_nodes:
         values, extra, represented = holding_rows[row.source_row]
@@ -271,16 +275,17 @@ def _convert(
                 # A TPT value the core structures did not take: kept in TPT form, which reads back
                 # exactly (checked by holding_to_tpt) and is understood by the TPT extraction too.
                 for key in sorted(represented[col] - reached - implied):
-                    _custom(pos, _tpt_name(key), row.get(key), f"{row.source_row}:{col}#custom")
+                    _custom(attrs, pos, _tpt_name(key), row.get(key), f"{row.source_row}:{col}#custom")
                 continue
-            _custom(pos, CUSTOM_PREFIX + col, value, f"{row.source_row}:{col}#custom")
+            _custom(attrs, pos, CUSTOM_PREFIX + col, value, f"{row.source_row}:{col}#custom")
         for header, value in extra.items():
             if _tpt_key(header) not in implied:
-                _custom(pos, _extra_name(header), value, f"{row.source_row}:{header}#custom")
+                _custom(attrs, pos, _extra_name(header), value, f"{row.source_row}:{header}#custom")
 
-    res_f = serialize_at(model, funds, ["Funds"])
-    res_a = serialize_at(model, assets.node, ["AssetMasterData"])
-    res_r = serialize_at(model, reports, ["RegulatoryReportings"])
+    memo.forget(attrs.changed())  # only custom attributes were added since the dry run
+    res_f = serialize_at(model, funds, ["Funds"], memo)
+    res_a = serialize_at(model, assets.node, ["AssetMasterData"], memo)
+    res_r = serialize_at(model, reports, ["RegulatoryReportings"], memo)
     for d in res_r.dropped:
         issues.append(
             _issue(
@@ -369,15 +374,18 @@ def _positions_in_order(funds: Node) -> list[Node]:
 # ---------------------------------------------------------------------------
 
 
-def _template_records(model, records: list[TptRow], kept: dict[int, set[str]]):
+def _template_records(model, records: list[TptRow], kept: dict[int, set[str]], memo: SerializeMemo):
     """One FinDatEx template record (EMT, EPT, EET, EFT) per share class record with values for it."""
     reports = Node("RegulatoryReportings")
     skipped: list[tuple[TptRow, str, list[Dropped]]] = []
     for tpl in templates():
         record_type = model.type_at(tpl.record.split("/"))
         linkable = record_type is not None and record_type.child("FundOrShareClassIdentifiers") is not None
+        of_ids = frozenset(f.of_id for f in tpl.fields)
         for rec in records:
-            present = [(f, rec.get(f.of_id)) for f in tpl.fields if rec.get(f.of_id)]
+            if of_ids.isdisjoint(rec.values):
+                continue  # most records have no values of most templates
+            present = [(f, v) for f in tpl.fields if (v := rec.values.get(f.of_id))]
             if not present or all(f.of_id in kept[rec.source_row] for f, _ in present):
                 # Nothing, or only values a static rule placed already (OFEP000900, the fund CIC):
                 # no template record, and no warning about one that would be incomplete.
@@ -400,7 +408,7 @@ def _template_records(model, records: list[TptRow], kept: dict[int, set[str]]):
                     node.set(f.path, xml[0], origin)
             # A record without the template's mandatory content is not written; its values stay
             # custom attributes of the share class.
-            res = serialize_at(model, node, tpl.record.split("/"))
+            res = serialize_at(model, node, tpl.record.split("/"), memo)
             if res.invalid:
                 skipped.append((rec, tpl.name, res.invalid))
                 continue
@@ -552,8 +560,8 @@ def _extra_name(header: str) -> str:
     return header if header.startswith(TPT_PREFIX) else CUSTOM_PREFIX + header
 
 
-def _custom(node: Node, name: str, value: str, origin: str) -> None:
-    attr = node.ensure(f"CustomAttributes/Attribute[Name={name}]")
+def _custom(attrs: KeyedChildren, node: Node, name: str, value: str, origin: str) -> None:
+    attr = attrs.ensure(node, name)
     attr.set("Type", "T")
     attr.set("ValueText", value, origin, keep_empty=True)
 

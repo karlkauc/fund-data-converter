@@ -8,8 +8,11 @@ opening it and read rows through a ``RowGuard``, so memory stays bounded by the 
 from __future__ import annotations
 
 import io
+import re
 import zipfile
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
+
+from openpyxl.utils.cell import column_index_from_string
 
 from app.config import settings
 
@@ -52,6 +55,10 @@ def archive_problem(data: bytes) -> str | None:
     return None
 
 
+def _too_many_rows() -> TooManyRowsError:
+    return TooManyRowsError(f"the file has more than {settings.max_positions} positions")
+
+
 class RowGuard:
     """Counts the rows of one table: stops at a long blank run, refuses more rows than allowed."""
 
@@ -66,7 +73,7 @@ class RowGuard:
             self.filled += 1
             self.blank_run = 0
             if self.filled > self.cap:
-                raise TooManyRowsError(f"the file has more than {settings.max_positions} positions")
+                raise _too_many_rows()
             return True
         self.blank_run += 1
         return self.blank_run <= BLANK_RUN
@@ -103,3 +110,148 @@ def sheet_rows(ws, cell_text, max_row: int | None = None) -> Iterator[list[str]]
 def text_lines(text: str) -> Iterator[str]:
     """The lines of ``text``, each with its "\n", without building them all at once."""
     return iter(io.StringIO(text, newline=None))
+
+
+# ---------------------------------------------------------------------------
+# XLSX row count before reading
+# ---------------------------------------------------------------------------
+
+_P = rb"(?:[A-Za-z_][\w.-]*:)?"  # optional namespace prefix
+_SHEET_DATA = re.compile(rb"<" + _P + rb"sheetData\b")
+_DIMENSION = re.compile(rb"<" + _P + rb"dimension\b[^>]*?\sref=[\"']([^\"']*)[\"']")
+_ROW = re.compile(rb"<" + _P + rb"row\b([^>]*?)(/?)>")
+_ROW_END = re.compile(rb"</" + _P + rb"row\s*>")
+_SHEET_DATA_END = re.compile(rb"</" + _P + rb"sheetData\s*>")
+_CELL = re.compile(rb"<" + _P + rb"c\b([^>]*?)(?:/>|>(.*?)</" + _P + rb"c\s*>)", re.DOTALL)
+_ROW_NUMBER = re.compile(rb"(?:^|\s)r=[\"'](\d+)[\"']")
+_CELL_REF = re.compile(rb"(?:^|\s)r=[\"']([A-Z]{1,3})\d+[\"']")
+_CELL_TYPE = re.compile(rb"(?:^|\s)t=[\"'](\w+)[\"']")
+_VALUE = re.compile(rb"<" + _P + rb"v>([^<]*)</" + _P + rb"v\s*>")
+_TEXT = re.compile(rb"<" + _P + rb"t(?:\s[^>]*)?>([^<]+)</")
+_NUMBER = re.compile(rb"\s*[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?\s*")
+_CHUNK = 1024 * 1024
+
+
+def check_xlsx_rows(data: bytes, pick: Callable[[list[str]], Iterable[int]]) -> None:
+    """TooManyRowsError if a worksheet the reader would read certainly has too many rows.
+
+    Reading a large sheet with openpyxl takes many seconds before ``RowGuard`` refuses it;
+    this scans the sheet XML for rows with a value that is certainly not empty (a number, a
+    boolean, an inline or formula string) and applies the guard's rules to them: the
+    sheet's dimension, the column limit, blank runs. Values in the shared string table count
+    as maybe empty, so the count is a lower bound and the error is the one ``guarded`` would
+    raise as well, only sooner. Nothing happens when the file is fine, unusual (the reader
+    decides then) or no XLSX.
+
+    ``pick`` chooses from the worksheet titles (in order) the ones the reader reads.
+    """
+    if _over_limit(data, pick):
+        raise _too_many_rows()
+
+
+def _over_limit(data: bytes, pick: Callable[[list[str]], Iterable[int]]) -> bool:
+    from openpyxl.reader.excel import ExcelReader
+
+    if data[:4] != b"PK\x03\x04" or archive_problem(data):
+        return False
+    try:
+        reader = ExcelReader(io.BytesIO(data), read_only=True, data_only=True)
+        reader.read_manifest()
+        reader.read_workbook()
+        sheets = [
+            (sheet.name, rel.target)
+            for sheet, rel in reader.parser.find_sheets()
+            if rel.target in reader.valid_files and "chartsheet" not in rel.Type
+        ]
+        targets = [sheets[i][1] for i in pick([name for name, _ in sheets])]
+        return any(_sheet_over_limit(reader.archive, target) for target in targets)
+    except Exception:  # noqa: BLE001 – not decidable here; the reader reports what is wrong
+        return False
+
+
+def _sheet_over_limit(archive: zipfile.ZipFile, target: str) -> bool:
+    from openpyxl.utils.cell import range_boundaries
+
+    cap = settings.max_positions + ROW_SLACK
+    with archive.open(target) as src:
+        buf, pos, eof = b"", 0, False
+
+        def more() -> bool:
+            nonlocal buf, pos, eof
+            chunk = src.read(_CHUNK)
+            eof = not chunk
+            buf, pos = buf[pos:] + chunk, 0
+            return not eof
+
+        while not (m := _SHEET_DATA.search(buf)):
+            if not more():
+                return False
+        head = buf[: m.start()]
+        max_row, width = None, MAX_COLUMNS
+        if dim := _DIMENSION.search(head):
+            _min_col, _min_row, max_col, max_row = range_boundaries(dim.group(1).decode("ascii"))
+            width = min(max_col or MAX_COLUMNS, MAX_COLUMNS)
+        if max_row is not None and max_row <= cap:
+            return False  # openpyxl reads no rows beyond the dimension
+        pos = m.end()
+        counter, filled, blank_run = 1, 0, 0
+        while True:
+            row = _ROW.search(buf, pos)
+            end = row and (row.end() if row.group(2) else _ROW_END.search(buf, row.end()))
+            if row is None or end is None:
+                if _SHEET_DATA_END.search(buf, pos) or not more():
+                    return False
+                continue
+            number = _ROW_NUMBER.search(row.group(1))
+            if number is None:
+                return False  # rows without numbers: leave it to the reader
+            idx = int(number.group(1))
+            if max_row is not None and idx > max_row:
+                return False
+            if idx < counter:
+                return False
+            blank_run += idx - counter  # rows left out are blank rows
+            if blank_run > BLANK_RUN:
+                return False
+            counter = idx + 1
+            body = b"" if row.group(2) else buf[row.end() : end.start()]
+            pos = row.end() if row.group(2) else end.end()
+            if b"<!" in body:
+                return False  # comments or CDATA: leave it to the reader
+            if _has_value(body, width):
+                filled += 1
+                blank_run = 0
+                if filled > cap:
+                    return True
+            else:
+                blank_run += 1
+            if blank_run > BLANK_RUN:
+                return False
+
+
+def _has_value(row: bytes, width: int) -> bool:
+    """Whether a cell of the row within ``width`` columns certainly has a non-empty value."""
+    for cell in _CELL.finditer(row):
+        attrs, content = cell.group(1), cell.group(2)
+        if not content:
+            continue
+        ref = _CELL_REF.search(attrs)
+        if ref is None or column_index_from_string(ref.group(1).decode("ascii")) > width:
+            continue
+        kind = _CELL_TYPE.search(attrs)
+        kind = kind.group(1) if kind else b"n"
+        if kind == b"inlineStr":
+            if b"rPh" not in content and any(t.strip() for t in _TEXT.findall(content)):
+                return True
+            continue
+        value = _VALUE.search(content)
+        if value is None:
+            continue
+        v = value.group(1)
+        if (
+            (kind == b"n" and _NUMBER.fullmatch(v))
+            or (kind == b"b" and v in (b"0", b"1"))
+            or (kind in (b"e", b"str") and v.strip())
+        ):
+            return True
+    return False
