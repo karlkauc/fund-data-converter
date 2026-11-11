@@ -80,3 +80,19 @@ def test_empty_required_containers_are_created():
     tags = [c.tag for c in res.element]
     assert tags == ["Identifiers", "Names", "Currency", "SingleFundFlag", "SingleFund"]
     assert not res.invalid
+
+
+def test_quoted_predicate_values_carry_path_characters():
+    from app.model.xmltree import Node, _parse, quote_value
+
+    assert quote_value("plain") == "plain"
+    assert quote_value("a[1]") == "'a[1]'"
+    assert quote_value("O'Brien") == '"O\'Brien"'
+    assert _parse(f"List/Item[Name={quote_value('x/y [z]')}]/Value") == (
+        ("List", None, None),
+        ("Item", "Name", "x/y [z]"),
+        ("Value", None, None),
+    )
+    root = Node("Root")
+    root.ensure(f"List/Item[Name={quote_value('a]b')}]/Value").text = "1"
+    assert root.find(f"List/Item[Name={quote_value('a]b')}]/Value").text == "1"

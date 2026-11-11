@@ -32,6 +32,7 @@ from lxml import etree
 from app.convert.derive import amount, complete_portfolio, complete_position, dec
 from app.mapping.rules import PLACEHOLDER_COUNTRY, PLACEHOLDER_SUPPLIERS, Rule, rules_for
 from app.model.issues import Issue
+from app.model.xmltree import parse_segment, split_path
 from app.spec.catalog import VERSIONS, load_catalog
 
 CUSTOM_PREFIX = "TPT_"
@@ -186,30 +187,17 @@ def _compiled(path: str) -> etree.XPath:
 
 
 def _xpath(path: str) -> str:
-    """Rule path syntax → XPath (predicates ``[Child=value]`` / ``[@a=value]``)."""
+    """Rule path syntax → XPath (predicates ``[Child=value]`` / ``[@a=value]``, the value plain
+    or quoted, see :func:`app.model.xmltree.quote_value`). Other segments (``*``) pass as they are."""
     out = []
-    for seg in _segments(path):
-        if "[" in seg:
-            name, pred = seg[:-1].split("[", 1)
-            key, value = pred.split("=", 1)
-            out.append(f"{name}[{key}={_literal(value)}]")
-        else:
+    for seg in split_path(path):
+        parsed = parse_segment(seg)
+        if parsed is None:
             out.append(seg)
+            continue
+        name, pred, value = parsed
+        out.append(f"{name}[{pred}={_literal(value)}]" if pred else name)
     return "/".join(out)
-
-
-def _segments(path: str) -> list[str]:
-    segs, depth, cur = [], 0, ""
-    for ch in path:
-        depth += ch == "["
-        depth -= ch == "]"
-        if ch == "/" and depth == 0:
-            segs.append(cur)
-            cur = ""
-        else:
-            cur += ch
-    segs.append(cur)
-    return [s for s in segs if s]
 
 
 def _literal(value: str) -> str:

@@ -28,7 +28,25 @@ from lxml import etree
 
 from app.schema.model import STRING, UNBOUNDED, ComplexType, ElementDecl, SchemaModel, SimpleType
 
-_SEGMENT = re.compile(r"^(?P<name>@?[A-Za-z_][\w.\-]*)(?:\[(?P<pred>@?[\w.\-]+)=(?P<val>[^\]]*)\])?$")
+# A predicate value is plain (``[Name=Foo]``) or quoted (``[Name='Foo [x]']``, ``[Name="a/b"]``): a
+# value read from data may contain brackets or slashes, which only the quoted form carries (T4).
+_SEGMENT = re.compile(
+    r"^(?P<name>@?[A-Za-z_][\w.\-]*)"
+    r"(?:\[(?P<pred>@?[\w.\-]+)=(?:'(?P<sq>[^']*)'|\"(?P<dq>[^\"]*)\"|(?P<val>[^\]'\"]*))\])?$"
+)
+_PATH_SPECIAL = frozenset("[]/")
+
+
+def quote_value(value: str) -> str:
+    """``value`` as a predicate value: as it is when the path syntax reads it back unchanged,
+    else in quotes. A value with brackets or slashes and both kinds of quote cannot be written."""
+    if not (_PATH_SPECIAL & set(value)) and "'" not in value and '"' not in value:
+        return value
+    if "'" not in value:
+        return f"'{value}'"
+    if '"' not in value:
+        return f'"{value}"'
+    raise ValueError(f"value cannot be used in a path: {value!r}")
 
 
 @dataclass
@@ -148,23 +166,15 @@ class KeyedChildren:
     def __init__(self, container: str, item: str, key: str):
         self._container, self._item, self._key = container, item, key
         self._nodes: dict[int, tuple[Node, Node, dict[str, Node]]] = {}
-        self._other: list[tuple[Node, Node]] = []  # changed through ``Node.ensure``
-        self._plain: set[str] = set()  # values the path syntax reads as they are
 
     def changed(self) -> list[tuple[Node, Node]]:
         """``(node, container)`` for every container changed so far (for ``SerializeMemo.forget``)."""
-        return [(node, holder) for node, holder, _ in self._nodes.values()] + self._other
+        return [(node, holder) for node, holder, _ in self._nodes.values()]
 
     def ensure(self, node: Node, value: str) -> Node:
-        if value not in self._plain:
-            path = f"{self._container}/{self._item}[{self._key}={value}]"
-            if _parse(path) != ((self._container, None, None), (self._item, self._key, value)):
-                # A value the path syntax reads differently: as before, and the index starts over.
-                self._nodes.pop(id(node), None)
-                found = node.ensure(path)
-                self._other.append((node, node.child(self._container)))
-                return found
-            self._plain.add(value)
+        # The value is matched as plain text, never through the path syntax: a column header
+        # such as "Note [internal]" or "a[b=c]" is data, and as a path predicate it would not
+        # parse ("bad path segment", T4).
         entry = self._nodes.get(id(node))
         if entry is None or entry[0] is not node:
             holder = node.ensure(self._container)
@@ -183,22 +193,46 @@ class KeyedChildren:
         return found
 
 
+def parse_segment(seg: str) -> Segment | None:
+    """``(name, predicate, value)`` of one path segment, None if it is not path syntax."""
+    m = _SEGMENT.match(seg)
+    if not m:
+        return None
+    val = m.group("sq")
+    if val is None:
+        val = m.group("dq")
+    if val is None:
+        val = m.group("val")
+    return (m.group("name"), m.group("pred"), val)
+
+
 @lru_cache(maxsize=4096)
 def _parse(path: str) -> tuple[Segment, ...]:
     out = []
     for seg in _split(path):
-        m = _SEGMENT.match(seg)
-        if not m:
+        parsed = parse_segment(seg)
+        if parsed is None:
             raise ValueError(f"bad path segment {seg!r}")
-        out.append((m.group("name"), m.group("pred"), m.group("val")))
+        out.append(parsed)
     return tuple(out)
+
+
+def split_path(path: str) -> list[str]:
+    """The segments of a rule path (see :func:`_split`)."""
+    return _split(path)
 
 
 def _split(path: str) -> list[str]:
     # Split on "/" outside of [...] predicates.
-    out, depth, cur = [], 0, []
+    # Brackets and slashes inside a quoted predicate value are part of the value.
+    out, depth, cur, quote = [], 0, [], ""
     for ch in path:
-        if ch == "[":
+        if quote:
+            if ch == quote:
+                quote = ""
+        elif depth and ch in "'\"":
+            quote = ch
+        elif ch == "[":
             depth += 1
         elif ch == "]":
             depth -= 1

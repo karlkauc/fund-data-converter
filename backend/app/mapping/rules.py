@@ -45,6 +45,7 @@ from dataclasses import dataclass, replace
 
 from app.mapping import transforms as t
 from app.mapping.transforms import Transform, asset_type, cic_category, position_element
+from app.model.xmltree import quote_value
 
 Condition = Callable[[dict[str, str]], bool]
 
@@ -95,7 +96,12 @@ class Rule:
             value = row.get(path[start + 1 : end], "")
             if not value:
                 return None
-            path = path[:start] + value + path[end + 1 :]
+            # The value is data: quoted when it contains path syntax ("IDX[1]", "A/B Partners").
+            try:
+                quoted = quote_value(value)
+            except ValueError:
+                return None  # brackets/slashes plus both quote kinds: no path can name it
+            path = path[:start] + quoted + path[end + 1 :]
         return path
 
 

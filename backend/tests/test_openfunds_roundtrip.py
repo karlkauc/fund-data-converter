@@ -309,3 +309,41 @@ def test_implied_tpt_attributes_can_be_left_out(fixture_bytes, name):
     back_full, back_slim = (extract_openfunds(parse_fundsxml(r.xml)) for r in (full, slim))
     assert back_slim.holdings == back_full.holdings
     assert back_slim.shareclasses == back_full.shareclasses
+
+
+@pytest.mark.parametrize(
+    "header",
+    ["Note [internal]", "Rating]", "Score [1/2]", "a[b=c]", "Kommentar / Bemerkung", "x=y"],
+)
+def test_non_openfunds_headers_with_path_characters(header):
+    """T4: a column header is data, not path syntax — brackets, slashes and '=' in it
+    must neither break the conversion nor lose the value."""
+    row = {**SHARECLASS, header: "kept"}
+    data, filename, _ = write_openfunds([row, SECOND], HOLDINGS, "csv")
+    result = convert_openfunds_to_fundsxml(read_openfunds(data, filename))
+    assert result.valid, result.validation_errors[:5]
+    back = extract_openfunds(parse_fundsxml(result.xml))
+    assert back.shareclasses[0].get(header) == "kept"
+
+
+@pytest.mark.parametrize(
+    ("manager", "benchmark"),
+    [("Team [Equity]", "IDX[1]"), ("A/B Partners", "MSCI/World"), ("O'Brien [Lead]", 'X"Y')],
+)
+def test_keyed_list_values_with_path_characters(manager, benchmark):
+    """T4: values that key a list item (portfolio manager, benchmark ID) are data too, in both
+    directions."""
+    row = {
+        **SHARECLASS,
+        "OFPM000010": manager,
+        "OFPM000120": "2020-01-01",
+        "OFPM000111": "lead",
+        "OFST023800": benchmark,
+        "OFST023805": "EUR",
+    }
+    data, filename, _ = write_openfunds([row, SECOND], HOLDINGS, "csv")
+    result = convert_openfunds_to_fundsxml(read_openfunds(data, filename))
+    assert result.valid, result.validation_errors[:5]
+    back = extract_openfunds(parse_fundsxml(result.xml))
+    assert back.shareclasses[0].get("OFPM000010") == manager
+    assert back.shareclasses[0].get("OFST023800") == benchmark

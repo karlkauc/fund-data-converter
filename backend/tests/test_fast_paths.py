@@ -24,7 +24,7 @@ from app.ingest.openfunds_reader import read_openfunds
 from app.ingest.tpt_reader import pick_sheet
 from app.mapping.openfunds_templates import templates
 from app.model import xmltree
-from app.model.xmltree import KeyedChildren, Node, SerializeMemo, serialize_at
+from app.model.xmltree import KeyedChildren, Node, SerializeMemo, quote_value, serialize_at
 from app.schema.model import fundsxml_model
 from app.service import Request, TooLargeError, convert
 from app.spec.openfunds import load_openfunds
@@ -126,9 +126,10 @@ def test_keyed_children_finds_what_ensure_finds():
     assert etree.tostring(serialize_at(model, by_index, path).element) == etree.tostring(
         serialize_at(model, by_path, path).element
     )
-    # A name the path syntax cannot carry fails the same way.
-    with pytest.raises(ValueError, match="bad path segment"):
-        index.ensure(by_index, "OF_[x]")
+    # A name with path syntax in it is stored as it is (T4), and the quoted path finds that item.
+    odd = index.ensure(by_index, "OF_[x]")
+    assert odd.child("Name").text == "OF_[x]"
+    assert by_index.find(f"CustomAttributes/Attribute[Name={quote_value('OF_[x]')}]") is odd
 
 
 def test_memo_redoes_what_changed_and_reuses_the_rest():
